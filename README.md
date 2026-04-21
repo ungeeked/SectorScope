@@ -7,7 +7,7 @@ A visual dashboard for spotting under- and over-valued Indian sectors, using P/E
 [![No build step](https://img.shields.io/badge/build-none-brightgreen)](#quick-start)
 [![Data: NSE](https://img.shields.io/badge/data-NSE-orange)](https://www.nseindia.com/)
 
-**🔗 Live demo:** https://ungeeked.github.io/sectorscope/
+**🔗 Live demo:** https://ungeeked.github.io/SectorScope/
 
 ---
 
