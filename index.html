@@ -1,0 +1,3102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>SectorScope</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080b12;--bg2:#0d1120;--bg3:#131929;--sur:#1a2035;
+  --bdr:rgba(255,255,255,.07);--bdr2:rgba(255,255,255,.04);
+  --txt:#dce5f5;--sub:#7a8fb0;--ghost:#364460;
+  --mono:'JetBrains Mono',monospace;--cond:'Barlow Condensed',sans-serif;
+  --body:'Barlow',sans-serif;--ttl:'Bebas Neue',cursive;
+  --ease:cubic-bezier(.4,.2,.2,1);--card-h:430px;
+  /* bands */
+  --vchp-c:#00c853;--vchp-bg:#001a08;--vchp-bd:rgba(0,200,83,.35);   --vchp-tl:rgba(0,200,83,.10);
+  --chp-c: #69f0ae;--chp-bg: #001510;--chp-bd: rgba(105,240,174,.30);--chp-tl: rgba(105,240,174,.08);
+  --neu-c: #ffd740;--neu-bg: #1a1500;--neu-bd: rgba(255,215,64,.30); --neu-tl: rgba(255,215,64,.08);
+  --exp-c: #ff7043;--exp-bg: #1a0800;--exp-bd: rgba(255,112,67,.32); --exp-tl: rgba(255,112,67,.08);
+  --vexp-c:#ff1744;--vexp-bg:#1f0000;--vexp-bd:rgba(255,23,68,.35);  --vexp-tl:rgba(255,23,68,.09);
+  --na-c:  #4a5a78;--na-bg:  #0d1120;--na-bd: rgba(74,90,120,.25);   --na-tl: rgba(74,90,120,.05);
+}
+html.light{
+  --bg:#eef1f8;--bg2:#fff;--bg3:#f4f7fc;--sur:#e8edf7;
+  --bdr:rgba(0,0,0,.08);--bdr2:rgba(0,0,0,.04);
+  --txt:#0f172a;--sub:#475a7a;--ghost:#7a8fb0;
+  /* darker text colors so they're readable on white backgrounds */
+  --vchp-c:#047857;--chp-c:#059669;--neu-c:#b45309;--exp-c:#c2410c;--vexp-c:#b91c1c;
+  --vchp-bg:#f0fff5;--vchp-bd:rgba(0,150,60,.35);  --vchp-tl:rgba(0,150,60,.10);
+  --chp-bg: #f0fdf8;--chp-bd: rgba(5,150,105,.32);--chp-tl: rgba(5,150,105,.09);
+  --neu-bg: #fffbeb;--neu-bd: rgba(180,83,9,.32);  --neu-tl: rgba(180,83,9,.09);
+  --exp-bg: #fff4f0;--exp-bd: rgba(194,65,12,.32); --exp-tl: rgba(194,65,12,.08);
+  --vexp-bg:#fff0f2;--vexp-bd:rgba(185,28,28,.32);  --vexp-tl:rgba(185,28,28,.08);
+  --na-bg:  #fff;   --na-bd: rgba(150,160,180,.22); --na-tl: rgba(150,160,180,.05);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--body);min-height:100vh;-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 50% at 15% -5%,rgba(99,102,241,.06) 0%,transparent 55%),radial-gradient(ellipse 60% 45% at 88% 105%,rgba(16,185,129,.04) 0%,transparent 50%)}
+
+/* ── HEADER ── */
+header{position:sticky;top:0;z-index:200;padding:8px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;justify-content:space-between;background:rgba(8,11,18,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);transition:background .3s}
+html.light header{background:rgba(238,241,248,.94)}
+.h-brand{flex:1 1 auto;min-width:0}
+.h-title{font-family:var(--ttl);font-size:1.55rem;letter-spacing:2.5px;line-height:1;background:linear-gradient(100deg,var(--txt) 40%,var(--sub) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.h-sub{font-family:var(--mono);font-size:.5rem;color:var(--ghost);letter-spacing:1.2px;text-transform:uppercase;display:none;margin-top:2px}
+@media(min-width:560px){.h-sub{display:block}}
+.h-updated{font-family:var(--mono);font-size:.46rem;color:var(--ghost);letter-spacing:.8px;margin-top:1px;display:none}
+.h-updated.visible{display:block}
+.page-tabs{display:flex;gap:2px;background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;padding:3px;flex-shrink:0}
+.ptab{padding:5px 14px;border-radius:6px;font-family:var(--body);font-size:.72rem;font-weight:600;color:var(--sub);background:transparent;border:none;cursor:pointer;transition:all .18s;white-space:nowrap}
+.ptab.active{background:var(--sur);color:var(--txt);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+html.light .ptab.active{box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.ptab:not(.active):hover{color:var(--txt)}
+.h-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+#status-chip{font-family:var(--mono);font-size:.56rem;padding:3px 9px;border-radius:18px;border:1px solid var(--bdr);color:var(--ghost);white-space:nowrap;transition:all .4s}
+#live-chip{font-family:var(--mono);font-size:.52rem;padding:3px 9px;border-radius:18px;border:1px solid rgba(74,222,128,.3);color:#4ade80;background:rgba(74,222,128,.06);white-space:nowrap;display:none}
+html.light #live-chip{color:#15803d;border-color:rgba(21,128,61,.3);background:rgba(21,128,61,.06)}
+#live-chip.visible{display:inline-block}
+html.light #status-chip.done{color:#15803d;border-color:rgba(21,128,61,.3);background:rgba(21,128,61,.06)}
+@media(max-width:600px){#status-chip{font-size:.48rem;padding:2px 7px}}
+.icon-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;color:var(--sub);font-size:.9rem;cursor:pointer;transition:all .18s;flex-shrink:0}
+.icon-btn:hover{background:var(--sur);color:var(--txt)}
+.theme-pill{width:50px;height:26px;background:var(--bg3);border:1px solid var(--bdr);border-radius:26px;cursor:pointer;position:relative;transition:background .3s;flex-shrink:0;padding:0}
+.theme-pip{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--sub);display:flex;align-items:center;justify-content:center;font-size:.62rem;transition:transform .32s cubic-bezier(.34,1.56,.64,1),background .3s}
+html.light .theme-pip{transform:translateX(22px);background:#f59e0b}
+/* mobile: brand + right on row 1, tabs wrap to row 2 full-width */
+@media(max-width:680px){
+  header{padding:10px 14px;row-gap:10px}
+  .h-title{font-size:1.35rem;letter-spacing:2px}
+  .page-tabs{order:3;flex:1 1 100%;justify-content:stretch}
+  .ptab{flex:1;text-align:center;padding:6px 8px}
+}
+
+/* ── GRID ── */
+.dash-grid{position:relative;z-index:1;padding:20px 32px 52px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;max-width:1700px;margin:0 auto;transition:opacity .35s ease}
+.dash-grid.fading{opacity:0;pointer-events:none}
+@media(max-width:680px){.dash-grid{padding:10px;gap:10px}}
+
+/* ── CARD ── */
+/* contain:layout isolates the card from outside invalidation — during scroll
+   the sticky header's backdrop-filter repaint can't cascade into card layout.
+   Combined with dropping always-on will-change on .card-inner (which kept 10+
+   permanent GPU layers that got evicted under memory pressure = blank cards
+   flashing during scroll), this is the fix for the "cards disappearing on
+   scroll" bug. will-change is now applied only while actually flipping. */
+.s-card{height:var(--card-h);perspective:1200px;cursor:pointer;user-select:none;animation:cIn .46s var(--ease) both;contain:layout}
+.s-card:focus{outline:none}
+.s-card:focus-visible .card-face{outline:2px solid #6366f1;outline-offset:2px}
+@keyframes cIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+.card-inner{width:100%;height:100%;position:relative;transform-style:preserve-3d;transition:transform .66s var(--ease)}
+.s-card:hover .card-inner,.card-inner.flipped{will-change:transform}
+.card-inner.flipped{transform:rotateY(180deg)}
+.card-face{position:absolute;inset:0;border-radius:15px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;border:1px solid var(--bdr);transition:box-shadow .2s,border-color .2s}
+.s-card:hover .card-face{box-shadow:0 10px 36px rgba(0,0,0,.38)}
+html.light .s-card:hover .card-face{box-shadow:0 6px 24px rgba(0,0,0,.10)}
+.card-back{transform:rotateY(180deg)}
+/* band tints */
+.bvchp{background:var(--vchp-bg);border-color:var(--vchp-bd)}.bchp{background:var(--chp-bg);border-color:var(--chp-bd)}.bneu{background:var(--neu-bg);border-color:var(--neu-bd)}.bexp{background:var(--exp-bg);border-color:var(--exp-bd)}.bvexp{background:var(--vexp-bg);border-color:var(--vexp-bd)}.bna{background:var(--na-bg);border-color:var(--na-bd)}
+.card-face::after{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--acc,var(--ghost));opacity:.85}
+
+/* ── FRONT ── */
+.cf{height:100%;padding:13px 14px 11px;display:flex;flex-direction:column}
+/* min-height reserves enough vertical space for the tallest case (dual-metric
+   card with 2 pill-rows), so tiles/chart start at the same Y across all cards
+   regardless of whether the sector is single- or dual-metric. */
+.cf-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;flex-shrink:0;min-height:48px}
+.cf-name{font-family:var(--cond);font-size:1.32rem;font-weight:800;letter-spacing:-.2px;line-height:1.1;color:var(--txt);flex:1;min-width:0}
+/* cf-price hosts the price number AND (optionally) divergence capsules inline,
+   so the capsules no longer add a separate row that shifts everything below. */
+.cf-price{font-family:var(--mono);font-size:.88rem;font-weight:600;color:var(--sub);margin-top:3px;letter-spacing:.2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:20px}
+.pills-col{display:flex;flex-direction:column;gap:3px;align-items:flex-end;flex-shrink:0}
+/* pill-row packs the band pill + percentile badge onto the same line so dual
+   cards show 2 rows total (not 4), and single-metric cards show 1 row. */
+.pill-row{display:flex;align-items:center;gap:4px;flex-wrap:nowrap}
+.bpill{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:.54rem;font-weight:700;letter-spacing:.4px;padding:3px 8px;border-radius:16px;border:1px solid;white-space:nowrap}
+/* divergence capsule — amber, sits next to band pills on the front header */
+.div-cap{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:.48rem;font-weight:600;letter-spacing:.2px;padding:2px 7px;border-radius:12px;border:1px solid var(--neu-bd);background:var(--neu-tl);color:var(--neu-c);white-space:nowrap}
+/* tiles */
+.tiles{display:grid;gap:7px;margin-top:9px;flex-shrink:0}
+.t1{grid-template-columns:1fr}.t2{grid-template-columns:1fr 1fr}.t3{grid-template-columns:1fr 1fr 1fr}
+.tile{border-radius:9px;border:1px solid var(--bdr2);padding:8px 10px 7px;display:flex;flex-direction:column;gap:3px}
+.tlbl{font-family:var(--mono);font-size:.52rem;color:var(--sub);text-transform:uppercase;letter-spacing:.9px}
+.tval{font-family:var(--mono);font-size:1.38rem;font-weight:700;line-height:1;color:var(--txt)}
+.tval.xl{font-size:1.8rem}
+.eps-pct{font-family:var(--mono);font-size:.5rem;color:var(--sub);letter-spacing:.3px;margin-top:2px;line-height:1.1}
+.eps-row{display:flex;align-items:center;gap:4px;margin-top:3px;flex-wrap:wrap}
+.eps-yoy{font-family:var(--mono);font-size:.6rem;font-weight:700;letter-spacing:.2px;line-height:1}
+.eps-turn{display:inline-flex;align-items:center;font-family:var(--mono);font-size:.46rem;font-weight:700;color:var(--neu-c);background:var(--neu-tl);border:1px solid var(--neu-bd);border-radius:8px;padding:1px 5px;letter-spacing:.3px;line-height:1.2}
+.tpct{font-family:var(--mono);font-size:.5rem;color:var(--ghost);margin-top:2px}
+/* chart */
+.cf-chart{flex:1;margin-top:9px;min-height:0;border-radius:8px;border:1px solid var(--bdr2);background:rgba(0,0,0,.18);overflow:hidden;position:relative}
+html.light .cf-chart{background:rgba(0,0,0,.03)}
+.chart-legend{position:absolute;top:4px;left:7px;display:flex;align-items:center;gap:8px;z-index:1}
+.cl-item{display:flex;align-items:center;gap:3px;font-family:var(--mono);font-size:.48rem;color:var(--sub)}
+.cl-line{width:14px;height:2px;border-radius:1px;flex-shrink:0}
+.cl-dash{width:14px;height:0;border-top:1.5px dashed rgba(180,180,180,.45);flex-shrink:0}
+.cf-foot{margin-top:6px;display:flex;align-items:center;justify-content:flex-end;flex-shrink:0}
+.flip-hint{font-family:var(--mono);font-size:.48rem;color:var(--ghost);letter-spacing:.3px;transition:color .2s}
+.s-card:hover .flip-hint{color:var(--sub)}
+
+/* ── BACK ── */
+.cb{height:100%;display:flex;flex-direction:column}
+.cb-head{padding:9px 13px 8px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.cb-hl{display:flex;align-items:center;gap:7px}.cb-hr{display:flex;align-items:center;gap:4px}
+.cb-name{font-family:var(--cond);font-size:.92rem;font-weight:800;color:var(--txt)}
+.cb-hint{font-family:var(--mono);font-size:.48rem;color:var(--ghost)}
+.cb-body{flex:1;padding:6px 13px 8px;display:flex;flex-direction:column;overflow:hidden}
+.cb-cur{display:flex;align-items:baseline;justify-content:space-between;padding:3px 0 5px;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.cb-cur-l{font-family:var(--mono);font-size:.57rem;color:var(--sub)}
+.cb-cur-v{font-family:var(--mono);font-size:.98rem;font-weight:700}
+.cb-ref-note{font-family:var(--mono);font-size:.49rem;color:var(--ghost);padding:3px 0 1px;flex-shrink:0}
+.cb-sec{font-family:var(--mono);font-size:.49rem;text-transform:uppercase;letter-spacing:1px;color:var(--ghost);padding:5px 0 2px;flex-shrink:0}
+.cb-row{display:flex;align-items:center;gap:5px;padding:3.5px 0;border-bottom:1px solid var(--bdr2)}
+.cb-row:last-of-type{border-bottom:none}
+.cb-l{font-family:var(--body);font-size:.61rem;color:var(--sub);font-weight:500;flex:1}
+.cb-m{font-family:var(--mono);font-size:.57rem;color:var(--ghost);min-width:30px;text-align:right}
+.cb-x{font-family:var(--mono);font-size:.74rem;font-weight:700;min-width:40px;text-align:right;color:var(--txt)}
+.cb-divider{height:1px;background:var(--bdr);margin:4px 0;flex-shrink:0}
+.cb-eps-panel{margin-top:5px;padding:6px 9px;border-radius:7px;border:1px solid var(--bdr2);background:rgba(56,189,248,.04);display:flex;flex-direction:column;gap:3px;flex-shrink:0}
+html.light .cb-eps-panel{background:rgba(56,189,248,.06)}
+.cb-eps-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.cb-eps-lbl{font-family:var(--mono);font-size:.53rem;color:var(--sub);font-weight:500}
+.cb-eps-val{font-family:var(--mono);font-size:.66rem;font-weight:700;color:var(--txt);text-align:right}
+/* dual card */
+.card-face.dual-face{border:none;background:transparent}
+.dual-split{position:absolute;inset:0;border-radius:15px;overflow:hidden;border:1px solid}
+
+/* ── SKELETON + ERROR ── */
+.skel-wrap{padding:13px 14px;height:100%;display:flex;flex-direction:column;gap:8px}
+.sk{border-radius:6px;background:linear-gradient(90deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.03) 100%);background-size:400% 100%;animation:sh 1.9s linear infinite}
+html.light .sk{background:linear-gradient(90deg,rgba(0,0,0,.04) 0%,rgba(0,0,0,.09) 50%,rgba(0,0,0,.04) 100%);background-size:400% 100%}
+@keyframes sh{0%{background-position:400% 0}100%{background-position:-400% 0}}
+.card-err{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:18px;font-family:var(--mono);font-size:.64rem;color:#f87171;text-align:center;line-height:1.6}
+.retry-btn{padding:5px 13px;border-radius:14px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.07);color:#f87171;font-family:var(--mono);font-size:.58rem;font-weight:600;cursor:pointer;transition:all .18s}
+.retry-btn:hover{background:rgba(248,113,113,.15)}
+
+/* ═══════════════════════ BACKTEST ═══════════════════════ */
+#page-bt{position:relative;z-index:1;padding:20px 32px 56px;max-width:1100px;margin:0 auto}
+@media(max-width:680px){#page-bt{padding:10px}}
+.bt-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;margin-bottom:16px}
+.bt-card-head{padding:12px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bt-card-title{font-family:var(--cond);font-size:.98rem;font-weight:700;color:var(--txt);letter-spacing:.3px}
+.bt-load-chip{font-family:var(--mono);font-size:.6rem;color:var(--sub)}
+.bt-card-body{padding:16px 18px}
+.bt-ctrl-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:680px){.bt-ctrl-grid{grid-template-columns:1fr}}
+.bt-field{display:flex;flex-direction:column;gap:5px}
+.bt-lbl{font-family:var(--mono);font-size:.55rem;text-transform:uppercase;letter-spacing:.9px;color:var(--sub)}
+.bt-select,.bt-date-inp{background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;color:var(--txt);font-family:var(--body);font-size:.82rem;font-weight:500;padding:7px 10px;width:100%;outline:none;transition:border-color .18s;-webkit-appearance:none;appearance:none}
+.bt-select:focus,.bt-date-inp:focus{border-color:rgba(99,102,241,.5)}
+.bt-date-row{display:flex;align-items:center;gap:7px}
+.bt-date-row input{flex:1}
+.bt-date-sep{font-family:var(--mono);font-size:.68rem;color:var(--ghost);flex-shrink:0}
+/* metric checkboxes */
+.bt-metric-row{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
+.bt-metric-block{display:flex;flex-direction:column;gap:5px;flex:1;min-width:130px}
+.bt-cb-row{display:flex;align-items:center;gap:7px;cursor:pointer}
+.bt-cb-row input[type=checkbox]{width:15px;height:15px;accent-color:#6366f1;cursor:pointer;flex-shrink:0}
+.bt-cb-lbl{font-family:var(--body);font-size:.8rem;font-weight:600;color:var(--txt)}
+.bt-nodata-hint{font-family:var(--mono);font-size:.52rem;color:var(--neu-c);font-weight:600;margin-left:6px;padding:1px 6px;border-radius:8px;background:var(--neu-tl);border:1px solid var(--neu-bd)}
+.bt-slider-row{display:flex;align-items:center;gap:8px;margin-top:3px}
+.bt-slider{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--sur);outline:none;cursor:pointer;accent-color:#6366f1}
+.bt-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:#6366f1;cursor:pointer;box-shadow:0 0 5px rgba(99,102,241,.4)}
+.bt-slider-val{font-family:var(--mono);font-size:.82rem;font-weight:700;color:#a5b4fc;min-width:38px;text-align:right}
+.bt-slider-note{font-family:var(--mono);font-size:.54rem;color:var(--ghost);margin-top:2px}
+/* Only hide the slider wrapper when metric is unchecked — keep the checkbox clickable */
+#bt-sl-pe-wrap.hidden, #bt-sl-pb-wrap.hidden{display:none}
+/* Metric not supported by this sector: dim the label, disable the checkbox visually */
+.bt-metric-block.bt-disabled{opacity:.4}
+.bt-metric-block.bt-disabled .bt-cb-lbl{text-decoration:line-through}
+.bt-cb-row input[type=checkbox]:disabled{cursor:not-allowed;opacity:.5}
+/* run */
+.bt-run-row{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:6px}
+.bt-spinner{display:none;align-items:center;gap:7px;font-family:var(--mono);font-size:.68rem;color:var(--sub)}
+.bt-spinner.visible{display:flex}
+.spin-ring{width:15px;height:15px;border:2px solid var(--bdr);border-top-color:#6366f1;border-radius:50%;animation:spin .75s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.bt-run{padding:8px 22px;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:9px;font-family:var(--body);font-size:.8rem;font-weight:700;cursor:pointer;box-shadow:0 2px 10px rgba(99,102,241,.3);transition:opacity .18s}
+.bt-run:hover{opacity:.88}.bt-run:disabled{opacity:.38;cursor:not-allowed}
+/* results */
+.bt-ref-info{padding:10px 18px;border-bottom:1px solid var(--bdr);font-family:var(--mono);font-size:.62rem;color:var(--sub);line-height:1.5;display:flex;flex-wrap:wrap;gap:4px 14px}
+.bt-ref-info strong{color:var(--txt);font-weight:700}
+.bt-ref-info .bt-ref-item{display:inline-flex;gap:5px;align-items:baseline}
+.bt-summary{display:flex;flex-wrap:wrap;gap:8px;padding:12px 18px;border-bottom:1px solid var(--bdr)}
+.bt-stat{display:flex;flex-direction:column;gap:2px;background:var(--bg3);border:1px solid var(--bdr2);border-radius:9px;padding:8px 13px;min-width:80px}
+.bt-stat-lbl{font-family:var(--mono);font-size:.51rem;text-transform:uppercase;letter-spacing:.8px;color:var(--ghost)}
+.bt-stat-val{font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--txt)}
+.bt-stat-val.pos{color:var(--vchp-c)}.bt-stat-val.neg{color:var(--vexp-c)}.bt-stat-val.neu{color:var(--neu-c)}
+.bt-stat-sub{font-family:var(--mono);font-size:.48rem;color:var(--ghost);margin-top:1px}
+.bt-tbl-wrap{padding:0 18px 14px;overflow-x:auto}
+.bt-tbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.68rem}
+.bt-tbl thead th{padding:8px 8px 6px;text-align:right;font-size:.54rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ghost);border-bottom:1px solid var(--bdr);white-space:nowrap}
+.bt-tbl thead th:first-child,.bt-tbl thead th:nth-child(2){text-align:left}
+.bt-tbl tbody tr{border-bottom:1px solid var(--bdr2);transition:background .12s}
+.bt-tbl tbody tr:last-child{border-bottom:none}
+/* Row shading by realised CAGR outcome */
+.bt-tbl tbody tr.bt-row-green{background:rgba(0,200,83,.08)}
+.bt-tbl tbody tr.bt-row-yellow{background:rgba(255,200,0,.15)}
+.bt-tbl tbody tr.bt-row-red{background:rgba(255,82,82,.08)}
+html.light .bt-tbl tbody tr.bt-row-green{background:rgba(5,150,105,.08)}
+html.light .bt-tbl tbody tr.bt-row-yellow{background:rgba(180,120,0,.13)}
+html.light .bt-tbl tbody tr.bt-row-red{background:rgba(194,65,12,.08)}
+.bt-tbl tbody tr:hover{background:rgba(255,255,255,.022)}
+html.light .bt-tbl tbody tr:hover{background:rgba(0,0,0,.022)}
+.bt-tbl td{padding:7px 8px;text-align:right;vertical-align:middle;color:var(--sub)}
+.bt-tbl td:nth-child(2){text-align:left;color:var(--txt);font-weight:500}
+.bt-tbl td.vc{color:var(--txt);font-weight:600}
+.bt-tbl td:first-child{text-align:center}
+.cg-p{color:var(--vchp-c);font-weight:700}.cg-n{color:var(--vexp-c);font-weight:700}.cg-o{color:var(--sub);font-style:italic}
+.open-badge{font-size:.49rem;background:rgba(148,163,184,.12);color:var(--ghost);border-radius:3px;padding:1px 4px;margin-left:2px;vertical-align:middle}
+.no-signals{padding:28px 18px;text-align:center;font-family:var(--mono);font-size:.7rem;color:var(--ghost)}
+.trig-pe{color:#a78bfa;font-size:.58rem;font-weight:700}
+.trig-pb{color:#60a5fa;font-size:.58rem;font-weight:700}
+.trig-both{color:#34d399;font-size:.58rem;font-weight:700}
+/* trade checkbox */
+.trade-cb-inp{width:14px;height:14px;accent-color:#6366f1;cursor:pointer}
+.sel-all-cb{width:14px;height:14px;accent-color:#6366f1;cursor:pointer}
+
+/* ══════════════ HELP PAGE ══════════════ */
+#page-help{position:relative;z-index:1;padding:24px 32px 60px;max-width:860px;margin:0 auto;font-family:var(--body)}
+@media(max-width:680px){#page-help{padding:16px 14px 40px}}
+.hp-hero{margin-bottom:22px;padding:22px 24px;border-radius:14px;background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(16,185,129,.04));border:1px solid var(--bdr)}
+.hp-hero-ttl{font-family:var(--ttl);font-size:2.1rem;letter-spacing:2px;line-height:1;color:var(--txt);margin-bottom:6px}
+.hp-hero-sub{font-family:var(--body);font-size:.86rem;color:var(--sub);line-height:1.55}
+.hp-toc{margin-bottom:24px;padding:14px 18px;border-radius:10px;background:var(--bg2);border:1px solid var(--bdr)}
+.hp-toc-ttl{font-family:var(--mono);font-size:.58rem;color:var(--ghost);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
+.hp-toc-list{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--body);font-size:.82rem}
+.hp-toc-list a{color:var(--txt);text-decoration:none;padding:3px 0;border-bottom:1px solid transparent;transition:border-color .15s}
+.hp-toc-list a:hover{border-bottom-color:var(--sub)}
+.hp-sec{margin-bottom:28px;scroll-margin-top:70px}
+.hp-sec-h{font-family:var(--ttl);font-size:1.35rem;letter-spacing:1.4px;color:var(--txt);padding-bottom:6px;border-bottom:1px solid var(--bdr);margin-bottom:12px}
+.hp-sub-h{font-family:var(--cond);font-size:1rem;font-weight:700;color:var(--txt);margin-top:16px;margin-bottom:6px;letter-spacing:.2px}
+.hp-p{font-family:var(--body);font-size:.86rem;color:var(--txt);line-height:1.65;margin-bottom:10px}
+.hp-p .muted{color:var(--sub)}
+.hp-card{padding:14px 16px;border-radius:10px;background:var(--bg2);border:1px solid var(--bdr);margin:10px 0}
+.hp-card.tip{border-left:3px solid var(--chp-c);background:rgba(105,240,174,.04)}
+.hp-card.warn{border-left:3px solid var(--neu-c);background:rgba(255,215,64,.04)}
+.hp-card.info{border-left:3px solid #6366f1;background:rgba(99,102,241,.04)}
+.hp-card-ttl{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:1px;color:var(--sub);margin-bottom:5px}
+.hp-list{list-style:none;padding:0;margin:8px 0}
+.hp-list li{position:relative;padding:5px 0 5px 18px;font-family:var(--body);font-size:.84rem;color:var(--txt);line-height:1.55}
+.hp-list li::before{content:'•';position:absolute;left:4px;color:var(--sub);font-weight:700}
+.hp-list li strong{color:var(--txt);font-weight:700}
+.hp-kv{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;font-family:var(--mono);font-size:.76rem;margin:8px 0}
+.hp-kv dt{color:var(--sub);font-weight:600;white-space:nowrap}
+.hp-kv dd{color:var(--txt)}
+.hp-band-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0}
+.hp-band-cell{padding:10px 12px;border-radius:8px;border:1px solid;font-family:var(--mono);font-size:.72rem}
+.hp-band-cell .bn{font-weight:700;font-size:.85rem;margin-bottom:3px}
+.hp-band-cell .bd{font-size:.62rem;color:var(--sub);line-height:1.4}
+.hp-band-cell.vchp{background:var(--vchp-tl);border-color:var(--vchp-bd)}.hp-band-cell.vchp .bn{color:var(--vchp-c)}
+.hp-band-cell.chp{background:var(--chp-tl);border-color:var(--chp-bd)}.hp-band-cell.chp .bn{color:var(--chp-c)}
+.hp-band-cell.neu{background:var(--neu-tl);border-color:var(--neu-bd)}.hp-band-cell.neu .bn{color:var(--neu-c)}
+.hp-band-cell.exp{background:var(--exp-tl);border-color:var(--exp-bd)}.hp-band-cell.exp .bn{color:var(--exp-c)}
+.hp-band-cell.vexp{background:var(--vexp-tl);border-color:var(--vexp-bd)}.hp-band-cell.vexp .bn{color:var(--vexp-c)}
+.hp-inline-pill{display:inline-flex;font-family:var(--mono);font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:12px;border:1px solid;letter-spacing:.2px;vertical-align:middle}
+.hp-inline-pill.green{color:var(--chp-c);border-color:var(--chp-bd);background:var(--chp-tl)}
+.hp-inline-pill.amber{color:var(--neu-c);border-color:var(--neu-bd);background:var(--neu-tl)}
+.hp-inline-pill.red{color:var(--exp-c);border-color:var(--exp-bd);background:var(--exp-tl)}
+.hp-inline-pill.blue{color:#38bdf8;border-color:rgba(56,189,248,.3);background:rgba(56,189,248,.08)}
+.hp-step{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--bdr2)}
+.hp-step:last-child{border-bottom:none}
+.hp-step-num{flex-shrink:0;width:24px;height:24px;border-radius:50%;background:#6366f1;color:#fff;font-family:var(--mono);font-size:.7rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.hp-step-body{flex:1;font-family:var(--body);font-size:.84rem;color:var(--txt);line-height:1.5}
+.hp-step-body strong{display:block;margin-bottom:2px;color:var(--txt)}
+.hp-note{font-family:var(--mono);font-size:.68rem;color:var(--ghost);font-style:italic;padding:8px 0}
+/* ── EXPAND BUTTON on card foot ── */
+.expand-btn{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:.46rem;color:var(--ghost);background:transparent;border:none;cursor:pointer;padding:0;transition:color .2s;margin-right:auto;letter-spacing:.3px}
+.expand-btn:hover{color:var(--sub)}
+.expand-btn svg{width:11px;height:11px;flex-shrink:0;opacity:.7}
+.s-card:hover .expand-btn{color:var(--sub)}
+
+/* ── SECTOR DETAIL OVERLAY ── */
+#sector-detail{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;background:var(--bg);transform:translateY(100%);transition:transform .42s cubic-bezier(.4,.2,.2,1);will-change:transform}
+#sector-detail.open{transform:translateY(0)}
+.sd-header{position:sticky;top:0;z-index:10;padding:10px 22px;display:flex;align-items:center;gap:12px;background:rgba(8,11,18,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);flex-shrink:0;transition:background .3s}
+html.light .sd-header{background:rgba(238,241,248,.96)}
+.sd-color-bar{width:4px;height:28px;border-radius:2px;flex-shrink:0}
+.sd-title{font-family:var(--cond);font-size:1.4rem;font-weight:800;letter-spacing:-.2px;color:var(--txt);flex:1}
+.sd-close{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;color:var(--sub);font-size:1rem;cursor:pointer;transition:all .18s;flex-shrink:0}
+.sd-close:hover{background:var(--sur);color:var(--txt)}
+.sd-body{flex:1;overflow-y:auto;padding:20px 22px 48px}
+@media(max-width:680px){.sd-body{padding:14px 12px 40px}.sd-header{padding:10px 14px}}
+
+/* stat grid inside detail */
+.sd-section-title{font-family:var(--mono);font-size:.52rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--ghost);padding:4px 0 8px;border-bottom:1px solid var(--bdr);margin-bottom:12px}
+.sd-stats-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:22px}
+.sd-stat{background:var(--bg2);border:1px solid var(--bdr);border-radius:11px;padding:11px 14px;display:flex;flex-direction:column;gap:3px}
+.sd-stat-lbl{font-family:var(--mono);font-size:.48rem;text-transform:uppercase;letter-spacing:.9px;color:var(--ghost)}
+.sd-stat-val{font-family:var(--mono);font-size:1.22rem;font-weight:700;line-height:1;color:var(--txt)}
+.sd-stat-sub{font-family:var(--mono);font-size:.48rem;color:var(--sub);margin-top:2px}
+
+/* median comparison rows */
+.sd-med-block{background:var(--bg2);border:1px solid var(--bdr);border-radius:11px;overflow:hidden;margin-bottom:22px}
+.sd-med-head{padding:10px 14px 8px;border-bottom:1px solid var(--bdr);font-family:var(--mono);font-size:.55rem;font-weight:700;color:var(--txt);text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;justify-content:space-between}
+.sd-med-ref{font-family:var(--mono);font-size:.52rem;color:var(--sub);font-weight:400;letter-spacing:0;text-transform:none}
+.sd-med-row{display:grid;grid-template-columns:90px 1fr 70px 60px;align-items:center;gap:8px;padding:8px 14px;border-bottom:1px solid var(--bdr2);font-family:var(--mono);font-size:.68rem}
+.sd-med-row:last-child{border-bottom:none}
+.sd-med-lbl{color:var(--sub);font-size:.6rem}
+.sd-med-bar-wrap{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.sd-med-bar{height:100%;border-radius:3px;background:var(--ghost);transition:width .5s ease}
+.sd-med-num{color:var(--txt);font-weight:700;text-align:right}
+.sd-med-mult{color:var(--ghost);font-size:.58rem;text-align:right}
+
+/* EPS growth charts in detail overlay */
+.sd-eps-chart-wrap{background:var(--bg2);border:1px solid var(--bdr);border-radius:11px;overflow:hidden;margin-bottom:22px}
+.sd-eps-chart-head{padding:10px 14px 8px;border-bottom:1px solid var(--bdr);font-family:var(--mono);font-size:.55rem;font-weight:700;color:var(--txt);text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;justify-content:space-between}
+.sd-eps-chart-sub{font-family:var(--mono);font-size:.52rem;color:var(--sub);font-weight:400;letter-spacing:0;text-transform:none}
+.sd-eps-chart-body{padding:14px 16px 12px;overflow-x:auto}
+.sd-eps-chart-svg{display:block}
+.sd-eps-no-data{padding:16px;font-family:var(--mono);font-size:.62rem;color:var(--ghost);text-align:center}
+
+/* quarterly table */
+.sd-qtbl-wrap{background:var(--bg2);border:1px solid var(--bdr);border-radius:11px;overflow:hidden;margin-bottom:22px}
+.sd-qtbl-scroll{overflow-x:auto;max-height:340px;overflow-y:auto}
+.sd-qtbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.66rem}
+.sd-qtbl thead{position:sticky;top:0;z-index:2}
+.sd-qtbl thead th{padding:9px 12px 7px;text-align:right;font-size:.52rem;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--ghost);background:var(--bg3);border-bottom:1px solid var(--bdr);white-space:nowrap}
+.sd-qtbl thead th:first-child{text-align:left}
+.sd-qtbl tbody tr{border-bottom:1px solid var(--bdr2);transition:background .1s}
+.sd-qtbl tbody tr:last-child{border-bottom:none}
+.sd-qtbl tbody tr:hover{background:rgba(255,255,255,.025)}
+html.light .sd-qtbl tbody tr:hover{background:rgba(0,0,0,.025)}
+.sd-qtbl td{padding:7px 12px;text-align:right;color:var(--sub);vertical-align:middle}
+.sd-qtbl td:first-child{text-align:left;color:var(--txt);font-weight:600;white-space:nowrap}
+.sd-qtbl td.qt-hi{color:var(--vchp-c)}.sd-qtbl td.qt-lo{color:var(--exp-c)}
+
+/* ── HELP v2 ── */
+
+/* inline code */
+.hp-c{font-family:var(--mono);font-size:.8em;background:rgba(255,255,255,.08);padding:1px 6px;border-radius:4px;border:1px solid var(--bdr);white-space:nowrap}
+html.light .hp-c{background:rgba(0,0,0,.06)}
+
+/* ── Band spectrum ── */
+.hp-spectrum{display:flex;border-radius:10px;overflow:hidden;margin:14px 0;border:1px solid var(--bdr);height:56px}
+.hp-spec-seg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--mono);font-size:.55rem;font-weight:700;line-height:1.3;padding:4px 3px;text-align:center;border-right:1px solid rgba(0,0,0,.18);transition:flex .2s}
+.hp-spec-seg:last-child{border-right:none}
+.hp-spec-seg small{font-weight:400;opacity:.72;font-size:.45rem;display:block;margin-top:2px}
+.hp-spec-seg.vchp{background:var(--vchp-bg);color:var(--vchp-c)}
+.hp-spec-seg.chp{background:var(--chp-bg);color:var(--chp-c)}
+.hp-spec-seg.neu{background:var(--neu-bg);color:var(--neu-c);flex:1.6}
+.hp-spec-seg.exp{background:var(--exp-bg);color:var(--exp-c)}
+.hp-spec-seg.vexp{background:var(--vexp-bg);color:var(--vexp-c)}
+
+/* pointer-on-spectrum */
+.hp-spec-wrap{position:relative;margin:14px 0}
+.hp-spec-ptr{position:absolute;top:-8px;font-family:var(--mono);font-size:.52rem;color:var(--txt);background:var(--sur);border:1px solid var(--bdr);border-radius:5px;padding:1px 6px;white-space:nowrap;transform:translateX(-50%);pointer-events:none}
+.hp-spec-ptr::after{content:'▼';position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);font-size:.5rem;color:var(--sub)}
+
+/* ── Card anatomy mockup ── */
+.hp-mock-outer{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start;margin:14px 0}
+@media(max-width:600px){.hp-mock-outer{grid-template-columns:1fr}}
+.hp-mock{background:var(--chp-bg);border:1px solid var(--chp-bd);border-radius:13px;padding:13px 14px;position:relative;font-family:var(--mono)}
+.hp-mock::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--chp-c);border-radius:13px 13px 0 0;opacity:.85}
+.hp-mock-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px}
+.hp-mock-name{font-family:var(--cond);font-size:1.25rem;font-weight:800;color:var(--txt);line-height:1}
+.hp-mock-pills{display:flex;flex-direction:column;gap:3px;align-items:flex-end}
+.hp-mock-pill{font-size:.52rem;font-weight:700;padding:2px 8px;border-radius:13px;border:1px solid var(--chp-bd);color:var(--chp-c);background:var(--chp-tl);white-space:nowrap}
+.hp-mock-pill-sub{font-size:.42rem;color:var(--ghost);font-family:var(--mono)}
+.hp-mock-cap{display:inline-flex;align-items:center;gap:3px;font-size:.47rem;color:var(--neu-c);background:var(--neu-tl);border:1px solid var(--neu-bd);border-radius:9px;padding:2px 7px;margin-bottom:7px}
+.hp-mock-tiles{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:7px}
+.hp-mock-tile{background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.06);border-radius:7px;padding:7px 9px}
+html.light .hp-mock-tile{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.07)}
+.hp-mock-tile.tinted{background:var(--chp-tl);border-color:var(--chp-bd)}
+.hp-mock-tlbl{font-size:.48rem;color:var(--sub);text-transform:uppercase;letter-spacing:.7px;margin-bottom:2px}
+.hp-mock-tval{font-size:1.25rem;font-weight:700;color:var(--txt);line-height:1;font-family:var(--mono)}
+.hp-mock-tval.colored{color:var(--chp-c)}
+.hp-mock-tsub{font-size:.46rem;color:var(--sub);margin-top:3px;line-height:1.4}
+.hp-mock-tsub .yoy-green{color:var(--chp-c);font-weight:700}
+.hp-mock-chart{height:56px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.06);border-radius:7px;overflow:hidden;position:relative}
+html.light .hp-mock-chart{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.07)}
+.hp-mock-foot{display:flex;justify-content:flex-end;margin-top:6px}
+.hp-mock-flip{font-size:.46rem;color:var(--ghost);font-family:var(--mono)}
+
+/* ── Annotation list (numbered callouts) ── */
+.hp-ann-list{display:flex;flex-direction:column;gap:10px;padding:6px 0}
+.hp-ann-item{display:flex;align-items:flex-start;gap:10px}
+.hp-ann-badge{flex-shrink:0;width:22px;height:22px;border-radius:50%;font-family:var(--mono);font-size:.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;margin-top:1px}
+.hp-ann-badge.n1{background:#6366f1}
+.hp-ann-badge.n2{background:var(--chp-c);color:#003}
+.hp-ann-badge.n3{background:var(--neu-c);color:#321}
+.hp-ann-badge.n4{background:#38bdf8;color:#003}
+.hp-ann-badge.n5{background:var(--sub);color:var(--bg)}
+.hp-ann-badge.n6{background:var(--exp-c);color:#fff}
+.hp-ann-body{font-family:var(--body);font-size:.82rem;color:var(--txt);line-height:1.5;flex:1}
+.hp-ann-body strong{display:block;font-size:.84rem;margin-bottom:1px}
+.hp-ann-body span{color:var(--sub);font-size:.78rem}
+
+/* ── Weighted ref calculation box ── */
+.hp-calc{background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;margin:12px 0}
+.hp-calc-head{background:rgba(99,102,241,.08);border-bottom:1px solid var(--bdr);padding:8px 14px;font-family:var(--mono);font-size:.52rem;text-transform:uppercase;letter-spacing:1px;color:#a5b4fc}
+.hp-calc-body{padding:12px 14px;font-family:var(--mono);font-size:.76rem}
+.hp-calc-row{display:grid;grid-template-columns:130px 1fr 44px 80px;gap:4px 10px;align-items:center;padding:4px 0;border-bottom:1px solid var(--bdr2)}
+.hp-calc-row:last-of-type{border-bottom:none;font-weight:700}
+@media(max-width:500px){.hp-calc-row{grid-template-columns:100px 1fr 38px 70px;font-size:.68rem}}
+.hp-calc-lbl{color:var(--sub)}
+.hp-calc-track{height:5px;border-radius:3px;background:var(--bg2)}
+.hp-calc-fill{height:100%;border-radius:3px;background:rgba(99,102,241,.45)}
+.hp-calc-wt{color:var(--ghost);text-align:right}
+.hp-calc-val{color:var(--txt);font-weight:600;text-align:right}
+.hp-calc-divider{height:1px;background:var(--bdr);margin:8px 0}
+.hp-calc-result{display:flex;align-items:center;justify-content:space-between;padding:6px 0}
+.hp-calc-res-lbl{color:var(--sub);font-size:.72rem}
+.hp-calc-res-val{font-size:.94rem;font-weight:700;padding:3px 10px;border-radius:8px}
+.hp-calc-res-val.cheap{background:var(--chp-tl);color:var(--chp-c);border:1px solid var(--chp-bd)}
+.hp-calc-res-val.vchp{background:var(--vchp-tl);color:var(--vchp-c);border:1px solid var(--vchp-bd)}
+.hp-calc-res-val.neu{background:var(--neu-tl);color:var(--neu-c);border:1px solid var(--neu-bd)}
+
+/* ── 2-signal explainer ── */
+.hp-2sig{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+@media(max-width:480px){.hp-2sig{grid-template-columns:1fr}}
+.hp-2sig-panel{background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;padding:12px 14px;font-family:var(--mono);font-size:.7rem}
+.hp-2sig-ttl{font-family:var(--cond);font-size:.95rem;font-weight:800;color:var(--txt);margin-bottom:9px;letter-spacing:.2px}
+.hp-2sig-kv{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--bdr2)}
+.hp-2sig-kv:last-of-type{border-bottom:none}
+.hp-2sig-k{color:var(--sub)}
+.hp-2sig-v{font-weight:700}
+.hp-2sig-out{margin-top:9px;padding:5px 9px;border-radius:7px;font-size:.65rem;line-height:1.4}
+.hp-2sig-out.agree{background:rgba(0,200,83,.08);color:var(--chp-c);border:1px solid rgba(0,200,83,.2)}
+.hp-2sig-out.caution{background:rgba(255,215,64,.08);color:var(--neu-c);border:1px solid rgba(255,215,64,.2)}
+
+/* ── EPS scenario cards ── */
+.hp-eps-scen{display:grid;grid-template-columns:repeat(auto-fit,minmax(175px,1fr));gap:10px;margin:12px 0}
+.hp-scen{border-radius:10px;border:1px solid;padding:12px 13px;font-family:var(--mono);font-size:.7rem}
+.hp-scen.good{background:rgba(0,200,83,.05);border-color:rgba(0,200,83,.22)}
+.hp-scen.caution{background:rgba(255,215,64,.05);border-color:rgba(255,215,64,.22)}
+.hp-scen.trap{background:rgba(255,82,82,.05);border-color:rgba(255,82,82,.2)}
+.hp-scen-badge{display:inline-block;font-family:var(--cond);font-size:.95rem;font-weight:800;margin-bottom:8px;letter-spacing:.2px}
+.hp-scen.good .hp-scen-badge{color:var(--vchp-c)}
+.hp-scen.caution .hp-scen-badge{color:var(--neu-c)}
+.hp-scen.trap .hp-scen-badge{color:var(--exp-c)}
+.hp-scen-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.06)}
+html.light .hp-scen-row{border-bottom-color:rgba(0,0,0,.06)}
+.hp-scen-row:last-of-type{border-bottom:none}
+.hp-scen-lbl{color:var(--sub);font-size:.6rem}
+.hp-scen-val{font-weight:700;font-size:.66rem}
+.hp-scen-val.g{color:var(--chp-c)}
+.hp-scen-val.r{color:var(--exp-c)}
+.hp-scen-val.a{color:var(--neu-c)}
+.hp-scen-verdict{margin-top:8px;padding-top:7px;border-top:1px solid rgba(255,255,255,.07);font-size:.64rem;line-height:1.45;color:var(--sub)}
+html.light .hp-scen-verdict{border-top-color:rgba(0,0,0,.07)}
+.hp-scen-verdict strong{display:block;font-size:.7rem;margin-bottom:2px}
+.hp-scen.good .hp-scen-verdict strong{color:var(--vchp-c)}
+.hp-scen.caution .hp-scen-verdict strong{color:var(--neu-c)}
+.hp-scen.trap .hp-scen-verdict strong{color:var(--exp-c)}
+
+/* ── Backtest timeline ── */
+.hp-bt-timeline{margin:14px 0;border-radius:10px;border:1px solid var(--bdr);background:var(--bg3);overflow:hidden}
+.hp-bt-tl-head{padding:8px 14px;border-bottom:1px solid var(--bdr2);font-family:var(--mono);font-size:.52rem;text-transform:uppercase;letter-spacing:1px;color:var(--ghost)}
+.hp-bt-tl-svg{display:block;width:100%;height:130px}
+
+/* ── Row shade legend ── */
+.hp-shade-legend{display:flex;flex-direction:column;gap:7px;margin:10px 0}
+.hp-shade-row{display:flex;align-items:center;gap:12px;padding:9px 13px;border-radius:8px;font-family:var(--body);font-size:.82rem;color:var(--txt);line-height:1.45}
+.hp-shade-row.green{background:rgba(0,200,83,.07);border-left:3px solid var(--vchp-c)}
+.hp-shade-row.yellow{background:rgba(255,215,64,.06);border-left:3px solid var(--neu-c)}
+.hp-shade-row.red{background:rgba(255,82,82,.06);border-left:3px solid var(--exp-c)}
+.hp-shade-icon{font-size:1rem;flex-shrink:0;width:22px;text-align:center}
+.hp-shade-row strong{display:block;font-size:.83rem;margin-bottom:1px}
+.hp-shade-row small{color:var(--sub);font-size:.76rem}
+
+/* ── Decision matrix ── */
+.hp-matrix-wrap{overflow-x:auto;margin:12px 0}
+.hp-matrix{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.68rem;min-width:460px}
+.hp-matrix th{background:var(--bg3);padding:8px 10px;text-align:center;color:var(--ghost);font-size:.55rem;text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--bdr);border-right:1px solid var(--bdr2)}
+.hp-matrix th:first-child{text-align:left;width:28%}
+.hp-matrix th:last-child{border-right:none}
+.hp-matrix td{padding:7px 8px;text-align:center;border-bottom:1px solid var(--bdr2);border-right:1px solid var(--bdr2);color:var(--sub)}
+.hp-matrix td:first-child{text-align:left;font-weight:700;color:var(--txt);background:rgba(255,255,255,.02);border-right:1px solid var(--bdr)}
+html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
+.hp-matrix tr:last-child td{border-bottom:none}
+.hp-matrix td:last-child{border-right:none}
+.hmc{display:inline-block;padding:2px 7px;border-radius:7px;font-size:.6rem;font-weight:700;white-space:nowrap}
+.hmc.sb{background:rgba(0,200,83,.14);color:var(--vchp-c)}
+.hmc.b {background:rgba(105,240,174,.12);color:var(--chp-c)}
+.hmc.h {background:rgba(255,215,64,.10);color:var(--neu-c)}
+.hmc.s {background:rgba(255,112,67,.12);color:var(--exp-c)}
+.hmc.av{background:rgba(255,23,68,.12);color:var(--vexp-c)}
+.hmc.w {background:rgba(56,189,248,.10);color:#38bdf8}
+
+/* ── Sparkline explainer ── */
+.hp-spark-wrap{margin:12px 0;border-radius:10px;border:1px solid var(--bdr);background:var(--bg3);overflow:hidden}
+.hp-spark-head{padding:7px 14px;border-bottom:1px solid var(--bdr2);font-family:var(--mono);font-size:.52rem;text-transform:uppercase;letter-spacing:1px;color:var(--ghost)}
+.hp-spark-body{padding:10px 14px 14px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:start}
+@media(max-width:500px){.hp-spark-body{grid-template-columns:1fr}}
+.hp-spark-leg{display:flex;flex-direction:column;gap:9px;font-family:var(--body);font-size:.8rem;color:var(--txt)}
+.hp-spark-item{display:flex;align-items:center;gap:9px}
+.hp-spark-sym{flex-shrink:0;width:26px;display:flex;align-items:center;justify-content:center}
+
+/* ── Numbered step ── */
+.hp-step-body strong{font-size:.84rem}
+
+/* ── "Try it" prompt ── */
+.hp-try{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:9px;background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.2);margin:10px 0;font-family:var(--body);font-size:.82rem;color:var(--txt)}
+.hp-try-icon{font-size:1.2rem;flex-shrink:0}
+
+/* ── Expand button callout ── */
+.hp-expand-btn-demo{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.58rem;color:var(--sub);background:transparent;border:1px solid var(--bdr);border-radius:6px;padding:4px 10px;vertical-align:middle}
+.hp-expand-btn-demo svg{opacity:.7}
+
+/* ── Overlay sections layout ── */
+.hp-overlay-sections{display:flex;flex-direction:column;gap:10px;margin:14px 0}
+.hp-ov-section{background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;overflow:hidden}
+.hp-ov-head{background:var(--bg3);border-bottom:1px solid var(--bdr);padding:7px 13px;font-family:var(--mono);font-size:.52rem;text-transform:uppercase;letter-spacing:1.1px;color:var(--ghost)}
+.hp-ov-body{padding:10px 13px}
+
+/* snapshot stat mini-grid */
+.hp-snap-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+@media(max-width:480px){.hp-snap-grid{grid-template-columns:repeat(2,1fr)}}
+.hp-snap-cell{background:var(--bg3);border:1px solid var(--bdr2);border-radius:8px;padding:8px 10px;font-family:var(--mono)}
+.hp-snap-lbl{font-size:.48rem;text-transform:uppercase;letter-spacing:.8px;color:var(--ghost);margin-bottom:3px}
+.hp-snap-val{font-size:.98rem;font-weight:700;line-height:1}
+.hp-snap-sub{font-size:.5rem;margin-top:2px}
+
+/* median block mock */
+.hp-med-mock{font-family:var(--mono);font-size:.7rem}
+.hp-med-mock-head{display:flex;justify-content:space-between;align-items:center;padding:5px 0 7px;border-bottom:1px solid var(--bdr);font-weight:700;color:var(--txt)}
+.hp-med-mock-ref{font-weight:400;font-size:.6rem;color:var(--sub)}
+.hp-med-mock-row{display:grid;grid-template-columns:68px 1fr 52px 52px;align-items:center;gap:6px 10px;padding:5px 0;border-bottom:1px solid var(--bdr2)}
+.hp-med-mock-row:last-child{border-bottom:none}
+.hp-med-mock-row.cur{background:var(--chp-tl);border-radius:5px;padding:5px 6px;margin:0 -6px}
+.hp-med-mock-lbl{color:var(--sub);font-size:.6rem}
+.hp-med-mock-lbl.bold{color:var(--txt);font-weight:700}
+.hp-med-track{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden}
+.hp-med-fill{height:100%;border-radius:3px;background:rgba(105,240,174,.35)}
+.hp-med-num{text-align:right;color:var(--txt);font-weight:600}
+.hp-med-num.cur{color:var(--chp-c)}
+.hp-med-mult{text-align:right;font-size:.62rem;color:var(--ghost)}
+.hp-med-mult.cur{color:var(--ghost)}
+
+/* quarterly table mock */
+.hp-qtbl-mock{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.68rem}
+.hp-qtbl-mock th{background:var(--bg3);padding:6px 10px;text-align:right;font-size:.52rem;text-transform:uppercase;letter-spacing:.6px;color:var(--ghost);border-bottom:1px solid var(--bdr)}
+.hp-qtbl-mock th:first-child{text-align:left}
+.hp-qtbl-mock td{padding:6px 10px;text-align:right;border-bottom:1px solid var(--bdr2);color:var(--sub)}
+.hp-qtbl-mock td:first-child{text-align:left;color:var(--txt);font-weight:600}
+.hp-qtbl-mock tr:last-child td{border-bottom:none}
+.hp-qtbl-mock td.qt-hi{color:var(--vchp-c);font-weight:700}
+.hp-qtbl-mock td.qt-lo{color:var(--exp-c);font-weight:700}
+
+/* color key for quarterly table */
+.hp-qt-key{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:.64rem;color:var(--sub);margin-top:8px}
+.hp-qt-key-item{display:flex;align-items:center;gap:5px}
+.hp-qt-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+
+</style>
+</head>
+<body>
+<header>
+  <div class="h-brand">
+    <div class="h-title">SectorScope</div>
+    <div class="h-sub">India Equity · NSE</div>
+    <div class="h-updated" id="h-updated" aria-live="polite"></div>
+  </div>
+  <nav class="page-tabs" role="tablist" aria-label="Page navigation">
+    <button class="ptab active" id="tab-dash" role="tab" aria-selected="true" onclick="showPage('dashboard')">Dashboard</button>
+    <button class="ptab" id="tab-bt" role="tab" aria-selected="false" onclick="showPage('backtest')">Backtest</button>
+    <button class="ptab" id="tab-help" role="tab" aria-selected="false" onclick="showPage('help')">Help</button>
+  </nav>
+  <div class="h-right">
+    <div id="status-chip" role="status" aria-live="polite">⏳ Connecting…</div>
+    <div id="live-chip" title="Live intraday data · refreshes every 20 min">LIVE</div>
+    <button class="theme-pill" id="theme-pill-btn" onclick="toggleTheme()" aria-label="Toggle light/dark theme" aria-pressed="false">
+      <div class="theme-pip" id="theme-pip">🌙</div>
+    </button>
+    <button class="icon-btn" onclick="reloadAll()" aria-label="Refresh all sector data" title="Refresh">↻</button>
+  </div>
+</header>
+
+<div id="page-dashboard">
+  <div class="dash-grid" id="grid"></div>
+</div>
+
+<div id="page-bt" style="display:none">
+  <div class="bt-card">
+    <div class="bt-card-head">
+      <div class="bt-card-title">Backtest Configuration</div>
+      <div class="bt-load-chip" id="bt-load-chip"></div>
+    </div>
+    <div class="bt-card-body">
+      <div class="bt-ctrl-grid">
+        <div class="bt-field">
+          <div class="bt-lbl">Sector</div>
+          <select class="bt-select" id="bt-sector" onchange="btOnSectorChange()">
+            <option value="">— Select —</option>
+            <option value="Infra">Nifty Infra</option>
+            <option value="Realty">Nifty Realty</option>
+            <option value="Bank">Nifty Bank</option>
+            <option value="PSU Bank">Nifty PSU Bank</option>
+            <option value="IT">Nifty IT</option>
+            <option value="Auto">Nifty Auto</option>
+            <option value="FMCG">Nifty FMCG</option>
+            <option value="Energy">Nifty Energy</option>
+            <option value="Metals">Nifty Metals</option>
+            <option value="Pharma">Nifty Pharma</option>
+          </select>
+        </div>
+        <div class="bt-field">
+          <div class="bt-lbl">Backtest Period</div>
+          <div class="bt-date-row">
+            <input type="date" class="bt-date-inp" id="bt-start"/>
+            <span class="bt-date-sep">→</span>
+            <input type="date" class="bt-date-inp" id="bt-end"/>
+          </div>
+        </div>
+        <div class="bt-field">
+          <div class="bt-lbl">Metrics &amp; Thresholds</div>
+          <div class="bt-metric-row">
+            <!-- PE -->
+            <div class="bt-metric-block" id="bt-pe-block">
+              <label class="bt-cb-row">
+                <input type="checkbox" id="bt-cb-pe" onchange="btUpdateMetrics()">
+                <span class="bt-cb-lbl">P / E</span>
+              </label>
+              <div id="bt-sl-pe-wrap">
+                <div class="bt-slider-row">
+                  <input type="range" class="bt-slider" id="bt-sl-pe" min="50" max="150" value="90" oninput="btSlideLbl('pe',this.value)"/>
+                  <span class="bt-slider-val" id="bt-lbl-pe">90%</span>
+                </div>
+                <div class="bt-slider-note">Fires at <span id="bt-note-pe">90%</span> of weighted ref (±1%)</div>
+              </div>
+            </div>
+            <!-- PB -->
+            <div class="bt-metric-block" id="bt-pb-block">
+              <label class="bt-cb-row">
+                <input type="checkbox" id="bt-cb-pb" onchange="btUpdateMetrics()">
+                <span class="bt-cb-lbl">P / B</span>
+              </label>
+              <div id="bt-sl-pb-wrap">
+                <div class="bt-slider-row">
+                  <input type="range" class="bt-slider" id="bt-sl-pb" min="50" max="150" value="90" oninput="btSlideLbl('pb',this.value)"/>
+                  <span class="bt-slider-val" id="bt-lbl-pb">90%</span>
+                </div>
+                <div class="bt-slider-note">Fires at <span id="bt-note-pb">90%</span> of weighted ref (±1%)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bt-field" style="justify-content:flex-end">
+          <div class="bt-run-row">
+            <div class="bt-spinner" id="bt-spinner"><div class="spin-ring"></div><span>Computing…</span></div>
+            <button class="bt-run" id="bt-run-btn" onclick="btRun()" disabled>▶ Run Backtest</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bt-card" id="bt-results-card" style="display:none">
+    <div id="bt-ref-info" class="bt-ref-info"></div>
+    <div id="bt-summary-div"></div>
+    <div id="bt-table-div"></div>
+  </div>
+</div>
+
+<!-- ══════════════ HELP PAGE ══════════════ -->
+<div id="page-help" style="display:none">
+
+  <div class="hp-hero">
+    <div class="hp-hero-ttl">How this works</div>
+    <div class="hp-hero-sub">A visual walkthrough of every number on every card, and how to use the Backtest page to check if history backs up today's signal. Start at section 1 and work down — it takes about five minutes.</div>
+  </div>
+
+  <div class="hp-toc">
+    <div class="hp-toc-ttl">On this page</div>
+    <div class="hp-toc-list">
+      <a href="#h-quickstart">1 · Quick start</a>
+      <a href="#h-card">2 · Reading a card</a>
+      <a href="#h-bands">3 · Valuation bands</a>
+      <a href="#h-eps">4 · EPS metrics</a>
+      <a href="#h-chart">5 · Sparkline chart</a>
+      <a href="#h-backtest">6 · Backtest page</a>
+      <a href="#h-limits">7 · Limits &amp; caveats</a>
+    </div>
+  </div>
+
+  <!-- ══ 1. QUICK START ══ -->
+  <div class="hp-sec" id="h-quickstart">
+    <div class="hp-sec-h">1 · Quick start</div>
+    <div class="hp-p">This tool answers one question: <strong>which Indian sectors are attractively priced right now, relative to their own history?</strong> It doesn't pick stocks — it tells you whether an entire sector is trading cheap or expensive compared to what it has historically traded at.</div>
+    <div class="hp-p">Each sector gets a card. <span style="color:var(--vchp-c);font-weight:700">Green</span> = cheap vs history. <span style="color:var(--vexp-c);font-weight:700">Red</span> = expensive vs history. Cards are sorted cheapest-first.</div>
+
+    <div class="hp-card tip">
+      <div class="hp-card-ttl">Three-step workflow</div>
+      <div class="hp-step">
+        <div class="hp-step-num">1</div>
+        <div class="hp-step-body"><strong>Scan the Dashboard.</strong> Green cards at the top are candidates. Red cards at the bottom are sectors to be cautious on — or to consider reducing. Look for green cards where the EPS number is also healthy (not declining).</div>
+      </div>
+      <div class="hp-step">
+        <div class="hp-step-num">2</div>
+        <div class="hp-step-body"><strong>Tap any card to flip it.</strong> The back shows the full valuation breakdown: current P/E or P/B, the weighted historical reference, and how today compares to the 3yr / 5yr / 10yr medians side-by-side.</div>
+      </div>
+      <div class="hp-step">
+        <div class="hp-step-num">3</div>
+        <div class="hp-step-body"><strong>Verify on the Backtest page.</strong> For any sector that looks interesting, go to Backtest → pick the sector → Run. You'll see every past time the sector was at this valuation level and what happened to prices over the next 6 months and 1 year.</div>
+      </div>
+    </div>
+
+    <div class="hp-card warn">
+      <div class="hp-card-ttl">One thing to keep in mind before you start</div>
+      <div class="hp-p" style="margin-bottom:0"><strong>Cheap can get cheaper.</strong> A "Very Cheap" signal tells you the sector is unusually depressed vs its history. It is <em>not</em> a prediction of exactly when it will recover. These signals work best for patient investors with a 6–12 month horizon, not for next-week timing.</div>
+    </div>
+  </div>
+
+  <!-- ══ 2. READING A CARD ══ -->
+  <div class="hp-sec" id="h-card">
+    <div class="hp-sec-h">2 · Reading a card</div>
+    <div class="hp-p">Each card has two sides. Here's an annotated example of <strong>Nifty Auto</strong> — every element explained.</div>
+
+    <div class="hp-mock-outer">
+
+      <!-- Card mockup (front) -->
+      <div>
+        <div style="font-family:var(--mono);font-size:.52rem;text-transform:uppercase;letter-spacing:1px;color:var(--ghost);margin-bottom:6px">Card front (numbers at a glance)</div>
+        <div class="hp-mock">
+          <!-- top bar (::before) -->
+          <div class="hp-mock-top">
+            <div>
+              <div style="font-family:var(--mono);font-size:.46rem;color:var(--ghost);margin-bottom:3px">① sector name</div>
+              <div class="hp-mock-name">Auto</div>
+            </div>
+            <div class="hp-mock-pills">
+              <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);text-align:right;margin-bottom:2px">② band · ③ signals</div>
+              <div class="hp-mock-pill">Cheap</div>
+              <div class="hp-mock-pill-sub">P18 · 82% of ref</div>
+            </div>
+          </div>
+
+          <!-- caution capsule -->
+          <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);margin-bottom:3px">④ caution capsule (when shown)</div>
+          <div class="hp-mock-cap">⚠ often this cheap</div>
+
+          <!-- tiles -->
+          <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);margin-bottom:4px">⑤ metric tiles</div>
+          <div class="hp-mock-tiles">
+            <div class="hp-mock-tile tinted">
+              <div class="hp-mock-tlbl">P / E</div>
+              <div class="hp-mock-tval colored">24.5</div>
+              <div class="hp-mock-tsub">P18 · 82% of ref</div>
+            </div>
+            <div class="hp-mock-tile">
+              <div class="hp-mock-tlbl">EPS</div>
+              <div class="hp-mock-tval">312</div>
+              <div class="hp-mock-tsub">87% of peak<br><span class="yoy-green">▲ +14.2% YoY</span></div>
+            </div>
+          </div>
+
+          <!-- chart -->
+          <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);margin-bottom:4px">⑥ sparkline (3yr P/E + median)</div>
+          <div class="hp-mock-chart">
+            <svg viewBox="0 0 300 56" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">
+              <defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#69f0ae" stop-opacity=".25"/><stop offset="100%" stop-color="#69f0ae" stop-opacity="0"/></linearGradient></defs>
+              <!-- area fill -->
+              <path d="M0,35 L30,30 L60,26 L90,32 L120,28 L150,22 L180,18 L210,24 L240,28 L270,26 L300,22 L300,56 L0,56 Z" fill="url(#hg)"/>
+              <!-- PE line -->
+              <path d="M0,35 L30,30 L60,26 L90,32 L120,28 L150,22 L180,18 L210,24 L240,28 L270,26 L300,22" fill="none" stroke="#69f0ae" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+              <!-- 3yr median dashed line -->
+              <line x1="0" y1="30" x2="300" y2="30" stroke="rgba(255,255,255,.3)" stroke-width=".9" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
+              <!-- legend -->
+              <rect x="6" y="5" width="8" height="2" rx="1" fill="#69f0ae"/>
+              <text x="17" y="8" font-family="monospace" font-size="5" fill="rgba(255,255,255,.5)">3yr P/E</text>
+              <line x1="60" y1="6" x2="68" y2="6" stroke="rgba(255,255,255,.3)" stroke-width=".9" stroke-dasharray="3,2" vector-effect="non-scaling-stroke"/>
+              <text x="71" y="8" font-family="monospace" font-size="5" fill="rgba(255,255,255,.5)">3yr median</text>
+            </svg>
+          </div>
+
+          <div class="hp-mock-foot">
+            <span class="hp-mock-flip">Analysis ›</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Annotation list -->
+      <div class="hp-ann-list">
+        <div class="hp-ann-item">
+          <div class="hp-ann-badge n1">①</div>
+          <div class="hp-ann-body"><strong>Sector name</strong><span>Which Nifty sectoral index this card represents. The coloured top border and card background tint both match the band verdict.</span></div>
+        </div>
+        <div class="hp-ann-item">
+          <div class="hp-ann-badge n2">②</div>
+          <div class="hp-ann-body"><strong>Band verdict</strong><span>The headline signal — Very Cheap / Cheap / Neutral / Expensive / Very Exp. Driven by how today's P/E (or P/B) compares to its weighted historical median. See section 3.</span></div>
+        </div>
+        <div class="hp-ann-item">
+          <div class="hp-ann-badge n3">③</div>
+          <div class="hp-ann-body"><strong>Two signals: P18 · 82% of ref</strong><span><code class="hp-c">P18</code> = 18th percentile of its own last 5 years (cheap end). <code class="hp-c">82% of ref</code> = current P/E is 18% below its historical anchor. The second number drives the band. See section 3 for why.</span></div>
+        </div>
+        <div class="hp-ann-item">
+          <div class="hp-ann-badge n3">④</div>
+          <div class="hp-ann-body"><strong>Caution capsule (only appears when signals disagree)</strong><span>"often this cheap" means: yes, the sector is 18% below its anchor — but it has also spent a lot of the last 5 years at this level. Less contrarian than it looks. If there's no capsule, both signals agree.</span></div>
+        </div>
+        <div class="hp-ann-item">
+          <div class="hp-ann-badge n4">⑤</div>
+          <div class="hp-ann-body"><strong>Metric tiles</strong><span>Left tile (tinted with band color): the current P/E or P/B. Right tile: current EPS, % of its all-time peak, and year-on-year growth. See section 4.</span></div>
+        </div>
+        <div class="hp-ann-item">
+          <div class="hp-ann-badge n5">⑥</div>
+          <div class="hp-ann-body"><strong>Sparkline</strong><span>Three years of daily P/E (or P/B) as a line, with the 3yr median as a dashed horizontal. A quick visual to spot whether we're at the top or bottom of the recent range. See section 5.</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hp-sub-h">The card back (tap to flip)</div>
+    <div class="hp-p">Flipping the card reveals the detailed breakdown: the exact weighted reference, and how today's value compares to the 3yr, 5yr, and 10yr medians individually — each shown as a multiple (e.g. <code class="hp-c">0.82×</code> means current P/E is 82% of that window's median, or 18% below it).</div>
+
+    <div class="hp-sub-h">Which metric does each sector use?</div>
+    <div class="hp-p">The tool picks the right metric automatically — you don't need to change anything.</div>
+    <dl class="hp-kv">
+      <dt>P/E only</dt><dd>IT, Auto, FMCG, Pharma — stable, earnings-driven businesses where P/E is the primary lens.</dd>
+      <dt>P/B only</dt><dd>Bank, PSU Bank — for banks, earnings are distorted by provisioning cycles, so book value is the more reliable anchor.</dd>
+      <dt>Both P/E + P/B</dt><dd>Infra, Energy, Realty, Metals — asset-heavy cyclicals where you want both an earnings lens and an asset-value lens.</dd>
+    </dl>
+
+    <div class="hp-try">
+      <div class="hp-try-icon">💡</div>
+      <div>Try tapping a green card on the Dashboard now. On the back, find the <strong>3yr / 5yr / 10yr</strong> rows. If the 5yr median is significantly higher than the current value, that's the core signal.</div>
+    </div>
+
+    <div class="hp-sub-h">The Detail overlay — deeper data for any sector</div>
+    <div class="hp-p">At the bottom-left of every card front there's a small button that looks like this:</div>
+    <div style="margin:8px 0 12px">
+      <span class="hp-expand-btn-demo">
+        <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>
+        Detail
+      </span>
+    </div>
+    <div class="hp-p">Tapping it opens a full-screen overlay with more detail than the card can fit. There are three sections inside it. Here's what each one contains and how to read it.</div>
+
+    <!-- 3 sections -->
+    <div class="hp-overlay-sections">
+
+      <!-- Section A: Current Snapshot -->
+      <div class="hp-ov-section">
+        <div class="hp-ov-head">① Current Snapshot</div>
+        <div class="hp-ov-body">
+          <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">Four stat cards showing today's key numbers at a glance, each colored by its own band verdict:</div>
+          <div class="hp-snap-grid">
+            <div class="hp-snap-cell">
+              <div class="hp-snap-lbl">P / E</div>
+              <div class="hp-snap-val" style="color:var(--chp-c)">24.5</div>
+              <div class="hp-snap-sub" style="color:var(--chp-c)">Cheap</div>
+            </div>
+            <div class="hp-snap-cell">
+              <div class="hp-snap-lbl">P / B</div>
+              <div class="hp-snap-val" style="color:var(--neu-c)">3.12</div>
+              <div class="hp-snap-sub" style="color:var(--neu-c)">Neutral</div>
+            </div>
+            <div class="hp-snap-cell">
+              <div class="hp-snap-lbl">EPS</div>
+              <div class="hp-snap-val" style="color:var(--txt)">312</div>
+              <div class="hp-snap-sub" style="color:var(--chp-c)">+14.2% YoY</div>
+            </div>
+            <div class="hp-snap-cell">
+              <div class="hp-snap-lbl">Max EPS (all-time)</div>
+              <div class="hp-snap-val" style="color:var(--txt)">358</div>
+              <div class="hp-snap-sub" style="color:var(--sub)">87% of peak</div>
+            </div>
+          </div>
+          <div class="hp-p" style="margin-top:10px;margin-bottom:0;font-size:.8rem;color:var(--sub)">P/E and P/B show their individual band labels — useful when a dual-metric sector has one expensive and one cheap, which the card-level verdict averages over.</div>
+        </div>
+      </div>
+
+      <!-- Section B: Historical Medians -->
+      <div class="hp-ov-section">
+        <div class="hp-ov-head">② Historical Medians</div>
+        <div class="hp-ov-body">
+          <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">One block per metric. Each row is a time window — the bar length shows its median relative to the others, and the right column shows <strong>current ÷ that median</strong> as a multiplier.</div>
+          <div class="hp-med-mock">
+            <div class="hp-med-mock-head">P/E Medians <span class="hp-med-mock-ref">Weighted ref: 25.2</span></div>
+            <div class="hp-med-mock-row">
+              <div class="hp-med-mock-lbl">3-Year</div>
+              <div class="hp-med-track"><div class="hp-med-fill" style="width:92%"></div></div>
+              <div class="hp-med-num">26.2</div>
+              <div class="hp-med-mult">0.93×</div>
+            </div>
+            <div class="hp-med-mock-row">
+              <div class="hp-med-mock-lbl">5-Year</div>
+              <div class="hp-med-track"><div class="hp-med-fill" style="width:88%"></div></div>
+              <div class="hp-med-num">25.1</div>
+              <div class="hp-med-mult">0.97×</div>
+            </div>
+            <div class="hp-med-mock-row">
+              <div class="hp-med-mock-lbl">10-Year</div>
+              <div class="hp-med-track"><div class="hp-med-fill" style="width:80%"></div></div>
+              <div class="hp-med-num">22.8</div>
+              <div class="hp-med-mult">1.07×</div>
+            </div>
+            <div class="hp-med-mock-row cur">
+              <div class="hp-med-mock-lbl bold">Current</div>
+              <div class="hp-med-track"><div class="hp-med-fill" style="width:82%;background:rgba(105,240,174,.55)"></div></div>
+              <div class="hp-med-num cur">24.5</div>
+              <div class="hp-med-mult cur">1.00×</div>
+            </div>
+          </div>
+          <div class="hp-p" style="margin-top:10px;margin-bottom:0;font-size:.8rem;color:var(--sub)">Read the multiplier column as: <strong>below 1.00×</strong> = today is cheaper than that window's median. <strong>Above 1.00×</strong> = today is more expensive. The 10yr showing 1.07× in the example means today is slightly above the 10yr average — but below the 3yr and 5yr, which is what matters most for the signal.</div>
+        </div>
+      </div>
+
+      <!-- Section C: EPS Growth -->
+      <div class="hp-ov-section">
+        <div class="hp-ov-head">③ EPS Growth</div>
+        <div class="hp-ov-body">
+          <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">Two bar charts showing how the sector's earnings have evolved — one at annual resolution, one at quarterly resolution. Green bars = positive growth, red bars = contraction. Use these to sanity-check the valuation signal: a cheap sector with accelerating EPS is far more interesting than a cheap sector with collapsing EPS.</div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 4px">
+            <!-- Annual YoY mock -->
+            <div style="background:var(--bg3);border:1px solid var(--bdr2);border-radius:8px;padding:8px 10px 6px">
+              <div style="font-family:var(--mono);font-size:.5rem;color:var(--ghost);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">EPS YoY Growth <span style="text-transform:none;letter-spacing:0;color:var(--sub)">· annual · last 10 yrs</span></div>
+              <svg viewBox="0 0 280 110" style="width:100%;height:auto;display:block">
+                <!-- y axis + zero line -->
+                <line x1="30" y1="10" x2="30" y2="85" stroke="rgba(255,255,255,.11)" stroke-width="0.8" vector-effect="non-scaling-stroke"/>
+                <line x1="30" y1="47.5" x2="275" y2="47.5" stroke="rgba(255,255,255,.22)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                <!-- y labels -->
+                <text x="26" y="14" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.4)">+30%</text>
+                <text x="26" y="50.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.4)">0</text>
+                <text x="26" y="88" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.4)">-30%</text>
+                <!-- bars: year → pct -->
+                <g>
+                  <rect x="35"  y="33"   width="17" height="14.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="59"  y="19"   width="17" height="28.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="83"  y="47.5" width="17" height="14"   rx="2" fill="rgba(255,82,82,.72)"/>
+                  <rect x="107" y="38"   width="17" height="9.5"  rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="131" y="26"   width="17" height="21.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="155" y="47.5" width="17" height="7"    rx="2" fill="rgba(255,82,82,.72)"/>
+                  <rect x="179" y="31"   width="17" height="16.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="203" y="22"   width="17" height="25.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="227" y="15"   width="17" height="32.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="251" y="28"   width="17" height="19.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                </g>
+                <!-- x labels -->
+                <g font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(255,255,255,.36)" text-anchor="middle">
+                  <text x="43.5"  y="98">'16</text><text x="67.5" y="98">'17</text><text x="91.5" y="98">'18</text><text x="115.5" y="98">'19</text><text x="139.5" y="98">'20</text>
+                  <text x="163.5" y="98">'21</text><text x="187.5" y="98">'22</text><text x="211.5" y="98">'23</text><text x="235.5" y="98">'24</text><text x="259.5" y="98">'25</text>
+                </g>
+              </svg>
+            </div>
+
+            <!-- QoQ mock -->
+            <div style="background:var(--bg3);border:1px solid var(--bdr2);border-radius:8px;padding:8px 10px 6px">
+              <div style="font-family:var(--mono);font-size:.5rem;color:var(--ghost);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">EPS QoQ Growth <span style="text-transform:none;letter-spacing:0;color:var(--sub)">· last 4 quarters</span></div>
+              <svg viewBox="0 0 280 110" style="width:100%;height:auto;display:block">
+                <line x1="30" y1="10" x2="30" y2="85" stroke="rgba(255,255,255,.11)" stroke-width="0.8" vector-effect="non-scaling-stroke"/>
+                <line x1="30" y1="47.5" x2="275" y2="47.5" stroke="rgba(255,255,255,.22)" stroke-width="1" vector-effect="non-scaling-stroke"/>
+                <text x="26" y="14" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.4)">+10%</text>
+                <text x="26" y="50.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.4)">0</text>
+                <text x="26" y="88" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.4)">-10%</text>
+                <g>
+                  <rect x="60"  y="32"   width="38" height="15.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="110" y="47.5" width="38" height="9"    rx="2" fill="rgba(255,82,82,.72)"/>
+                  <rect x="160" y="38"   width="38" height="9.5"  rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="210" y="22"   width="38" height="25.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                </g>
+                <g font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(255,255,255,.36)" text-anchor="middle">
+                  <text x="79"  y="98">Q2 '24</text><text x="129" y="98">Q3 '24</text><text x="179" y="98">Q4 '24</text><text x="229" y="98">Q1 '25</text>
+                </g>
+              </svg>
+            </div>
+          </div>
+
+          <div class="hp-p" style="margin-top:10px;margin-bottom:6px;font-size:.8rem"><strong>Two chart types · two different questions</strong></div>
+          <dl class="hp-kv" style="margin-top:4px">
+            <dt>Annual YoY</dt><dd>Each bar = EPS today vs EPS 1 year earlier, stepping back 10 years. Answers "is this sector's earnings trajectory fundamentally up or down across cycles?"</dd>
+            <dt>Quarterly QoQ</dt><dd>Each bar = that quarter's average EPS vs the prior quarter. Answers "is earnings momentum <em>right now</em> accelerating, flat, or turning negative?" A run of green QoQ bars after a red YoY is a classic "earnings turning" setup.</dd>
+          </dl>
+
+          <div class="hp-p" style="margin-top:8px;margin-bottom:0;font-size:.8rem;color:var(--sub)">Y-axis auto-scales to the biggest absolute value in the chart — so a quiet sector with ±8% moves shows the same visual weight as a volatile one swinging ±40%. Compare <em>shape and sign</em>, not bar heights across two sectors. Each bar also has its exact percentage printed above (or below, for negatives).</div>
+        </div>
+      </div>
+
+      <!-- Section D: Quarterly Table -->
+      <div class="hp-ov-section">
+        <div class="hp-ov-head">④ Quarterly Averages · Last 5 Years</div>
+        <div class="hp-ov-body">
+          <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">A scrollable table showing quarterly average Price, P/E, P/B, and EPS going back 5 years. Most recent quarter is at the top. Two cells in each column are highlighted:</div>
+          <div style="overflow-x:auto">
+            <table class="hp-qtbl-mock">
+              <thead><tr>
+                <th>Quarter</th><th>Price</th><th>P/E</th><th>P/B</th><th>EPS</th>
+              </tr></thead>
+              <tbody>
+                <tr><td>Q1 2025</td><td>22,840</td><td class="qt-hi">24.5</td><td>3.12</td><td>312</td></tr>
+                <tr><td>Q4 2024</td><td>24,100</td><td>26.8</td><td>3.35</td><td>299</td></tr>
+                <tr><td>Q3 2024</td><td class="qt-hi">25,600</td><td>28.1</td><td class="qt-lo">3.58</td><td>287</td></tr>
+                <tr><td>Q2 2024</td><td>23,900</td><td>27.4</td><td>3.41</td><td>275</td></tr>
+                <tr><td>Q1 2024</td><td>21,200</td><td>27.0</td><td>3.22</td><td>265</td></tr>
+                <tr><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
+                <tr><td>Q1 2020</td><td class="qt-lo">11,400</td><td class="qt-lo">18.2</td><td>2.20</td><td class="qt-lo">198</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="hp-qt-key">
+            <div class="hp-qt-key-item"><div class="hp-qt-dot" style="background:rgba(0,200,83,.45)"></div><span style="color:var(--vchp-c);font-weight:700">Green</span><span>= best quarter in that column</span></div>
+            <div class="hp-qt-key-item"><div class="hp-qt-dot" style="background:rgba(255,112,67,.45)"></div><span style="color:var(--exp-c);font-weight:700">Red</span><span>= worst quarter in that column</span></div>
+          </div>
+          <div class="hp-p" style="margin-top:10px;margin-bottom:0;font-size:.8rem;color:var(--sub)">"Best" and "worst" are <em>inverted for valuation metrics</em>: the lowest P/E and P/B quarter is green (cheapest = good), the highest is red. For Price and EPS it's the other way: the highest price and highest EPS quarter are green. Only the single best and worst quarter across the whole 5-year history gets highlighted — all others are neutral.</div>
+        </div>
+      </div>
+
+    </div><!-- end overlay-sections -->
+
+    <div class="hp-card tip">
+      <div class="hp-card-ttl">Best use of the Detail overlay</div>
+      <div class="hp-p" style="margin-bottom:0">The overlay is most useful for <strong>dual sectors</strong> (Infra, Energy, Realty, Metals) where P/E and P/B can disagree. The card front shows a blended verdict — the overlay's Snapshot section shows the two metrics separately, so you can see if the cheapness is driven by one metric or both. The quarterly table is useful for spotting seasonal patterns — e.g. Auto tends to see PE compression every Q2 ahead of new model launches, which can look like a cheap signal but is cyclically normal.</div>
+    </div>
+
+    <div class="hp-p"><span class="muted">Close the overlay with the <strong>✕</strong> button in the top-right corner, or press <strong>Escape</strong> on a keyboard.</span></div>
+
+    <div class="hp-try">
+      <div class="hp-try-icon">💡</div>
+      <div>Try tapping a green card on the Dashboard now. On the back, find the <strong>3yr / 5yr / 10yr</strong> rows. If the 5yr median is significantly higher than the current value, that's the core signal.</div>
+    </div>
+  </div>
+
+  <!-- ══ 3. VALUATION BANDS ══ -->
+  <div class="hp-sec" id="h-bands">
+    <div class="hp-sec-h">3 · Valuation bands &amp; signals</div>
+    <div class="hp-p">The band (card color) is determined by one number: <strong>current P/E ÷ weighted historical reference</strong>. Call this the <em>ratio</em>. Here's how each ratio maps to a verdict:</div>
+
+    <!-- Band spectrum -->
+    <div class="hp-spectrum">
+      <div class="hp-spec-seg vchp">Very Cheap<small>≤ 80%</small></div>
+      <div class="hp-spec-seg chp">Cheap<small>80–90%</small></div>
+      <div class="hp-spec-seg neu">Neutral<small>90–105%</small></div>
+      <div class="hp-spec-seg exp">Expensive<small>105–120%</small></div>
+      <div class="hp-spec-seg vexp">Very Exp.<small>&gt; 120%</small></div>
+    </div>
+
+    <div class="hp-p">The Neutral band is slightly wider on the right side (up to 105% instead of a symmetric 100%) because sectors naturally drift slightly above their own median over long time periods. Being 5% above your median is not yet a warning.</div>
+
+    <div class="hp-sub-h">Worked example — how the band is calculated</div>
+    <div class="hp-p">Nifty Auto's P/E today is <strong>24.5</strong>. Its historical medians over different windows are:</div>
+
+    <div class="hp-calc">
+      <div class="hp-calc-head">Weighted Reference · Nifty Auto (example)</div>
+      <div class="hp-calc-body">
+        <div class="hp-calc-row">
+          <div class="hp-calc-lbl">3-yr median</div>
+          <div class="hp-calc-track"><div class="hp-calc-fill" style="width:90%"></div></div>
+          <div class="hp-calc-wt">× 30%</div>
+          <div class="hp-calc-val">26.2 → 7.86</div>
+        </div>
+        <div class="hp-calc-row">
+          <div class="hp-calc-lbl">5-yr median</div>
+          <div class="hp-calc-track"><div class="hp-calc-fill" style="width:86%"></div></div>
+          <div class="hp-calc-wt">× 60%</div>
+          <div class="hp-calc-val">25.1 → 15.06</div>
+        </div>
+        <div class="hp-calc-row">
+          <div class="hp-calc-lbl">10-yr median</div>
+          <div class="hp-calc-track"><div class="hp-calc-fill" style="width:78%"></div></div>
+          <div class="hp-calc-wt">× 10%</div>
+          <div class="hp-calc-val">22.8 → 2.28</div>
+        </div>
+        <div class="hp-calc-divider"></div>
+        <div class="hp-calc-result">
+          <span class="hp-calc-res-lbl">Weighted reference &nbsp;=&nbsp; 7.86 + 15.06 + 2.28</span>
+          <span class="hp-calc-res-val neu">= 25.2</span>
+        </div>
+        <div class="hp-calc-result" style="margin-top:4px">
+          <span class="hp-calc-res-lbl">Ratio &nbsp;=&nbsp; 24.5 ÷ 25.2</span>
+          <span class="hp-calc-res-val cheap">= 97% → Neutral</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hp-p">If the same sector had a P/E of <strong>20.7</strong> instead (say, after a sharp correction), the ratio would be 20.7 ÷ 25.2 = <strong>82% → Cheap</strong>. That's the number you see on the card as <code class="hp-c">82% of ref</code>.</div>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">Why 60% weight on the 5-year median?</div>
+      <div class="hp-p" style="margin-bottom:0">The 5-year window covers roughly one full business cycle in India — close enough to reflect today's regime, long enough to include both peaks and troughs. The 10-year leg gets only 10% weight so that sectors that have permanently re-rated (like IT after 2020, or PSU Banks after 2022) aren't forever compared against a baseline that no longer applies.</div>
+    </div>
+
+    <div class="hp-sub-h">The two signals on each card</div>
+    <div class="hp-p">Each card shows <em>two</em> valuation signals side-by-side, like <code class="hp-c">P18 · 82% of ref</code>. They measure different things and can sometimes disagree.</div>
+
+    <div class="hp-2sig">
+      <div class="hp-2sig-panel">
+        <div class="hp-2sig-ttl">% of ref (primary)</div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">What it asks</span><span class="hp-2sig-v" style="color:var(--txt)">How far is today from the anchor?</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Example</span><span class="hp-2sig-v">82% of ref</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Meaning</span><span class="hp-2sig-v">18% below the blended median</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Drives band?</span><span class="hp-2sig-v" style="color:var(--chp-c)">Yes — this sets the color</span></div>
+        <div class="hp-2sig-out agree">Measures <strong>magnitude</strong> — by how much is it cheap?</div>
+      </div>
+      <div class="hp-2sig-panel">
+        <div class="hp-2sig-ttl">Percentile rank (secondary)</div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">What it asks</span><span class="hp-2sig-v" style="color:var(--txt)">How rare is this level, last 5 years?</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Example</span><span class="hp-2sig-v">P18</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Meaning</span><span class="hp-2sig-v">Only 18% of last-5yr readings were lower</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Drives band?</span><span class="hp-2sig-v" style="color:var(--sub)">No — info only</span></div>
+        <div class="hp-2sig-out agree">Measures <strong>frequency</strong> — how often does it get this cheap?</div>
+      </div>
+    </div>
+
+    <div class="hp-sub-h">When the two signals disagree — the caution capsule</div>
+    <div class="hp-p">Sometimes a sector looks cheap vs its anchor (% of ref says Cheap) but is <em>not unusual at all</em> in its recent 5-year distribution (percentile says P45 — it's been here half the time). That's a much weaker signal than a sector that is both below its anchor <em>and</em> historically unusual.</div>
+
+    <div class="hp-2sig">
+      <div class="hp-2sig-panel">
+        <div class="hp-2sig-ttl">Clean signal — no capsule</div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">% of ref</span><span class="hp-2sig-v" style="color:var(--chp-c)">82% → Cheap</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Percentile</span><span class="hp-2sig-v" style="color:var(--chp-c)">P14 → also Cheap</span></div>
+        <div class="hp-2sig-out agree">✓ Both signals agree. Sector is genuinely depressed — it's both below its anchor AND near a 5-year low.</div>
+      </div>
+      <div class="hp-2sig-panel">
+        <div class="hp-2sig-ttl">Conflicted — capsule appears</div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">% of ref</span><span class="hp-2sig-v" style="color:var(--chp-c)">83% → Cheap</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Percentile</span><span class="hp-2sig-v" style="color:var(--neu-c)">P44 → Neutral</span></div>
+        <div class="hp-2sig-out caution">⚠ "often this cheap" — it IS below the anchor, but the sector has spent nearly half the last 5 years at this level. Less contrarian than the Cheap label suggests.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ 4. EPS METRICS ══ -->
+  <div class="hp-sec" id="h-eps">
+    <div class="hp-sec-h">4 · EPS metrics</div>
+    <div class="hp-p">A sector can look cheap for two very different reasons: <strong>(A)</strong> price has corrected but earnings are healthy — a genuine opportunity. <strong>(B)</strong> earnings are collapsing and price is following — a value trap. The three EPS indicators help you tell them apart.</div>
+
+    <div class="hp-sub-h">The three indicators</div>
+    <dl class="hp-kv">
+      <dt>% of peak</dt><dd>Current EPS divided by the sector's all-time high EPS. <em>87% of peak</em> means earnings are 13% below their historical best, with room to recover. Above 100% = earnings at a new high.</dd>
+      <dt>YoY growth</dt><dd>Current EPS vs EPS one year ago. Color-coded: <span style="color:var(--exp-c);font-weight:700">red</span> below 0%, <span style="color:var(--neu-c);font-weight:700">amber</span> 0–10%, <span style="color:var(--chp-c);font-weight:700">green</span> above 10%.</dd>
+      <dt>▲ TURNING</dt><dd>An amber pill that appears when EPS is rising over two consecutive ~90-day windows — i.e. today &gt; 90 days ago &gt; 180 days ago. This is an early-cycle inflection signal, often firing <em>before</em> YoY goes positive.</dd>
+    </dl>
+
+    <div class="hp-sub-h">Three scenarios — what to look for</div>
+
+    <div class="hp-eps-scen">
+      <!-- Best setup -->
+      <div class="hp-scen good">
+        <div class="hp-scen-badge">Best setup</div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">Valuation band</span><span class="hp-scen-val g">Very Cheap</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">% of peak EPS</span><span class="hp-scen-val">68%</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">YoY growth</span><span class="hp-scen-val r">−6%</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">Turning flag</span><span class="hp-scen-val g">▲ TURNING</span></div>
+        <div class="hp-scen-verdict"><strong>Early-cycle turnaround</strong>Earnings are still negative year-over-year — but they've stopped falling and are inflecting. Sector is cheap. This is the highest-conviction setup. Classic Metals / PSU Bank early-cycle entry.</div>
+      </div>
+
+      <!-- Watch out -->
+      <div class="hp-scen caution">
+        <div class="hp-scen-badge">Watch out</div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">Valuation band</span><span class="hp-scen-val a">Cheap</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">% of peak EPS</span><span class="hp-scen-val">94%</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">YoY growth</span><span class="hp-scen-val g">+12%</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">Turning flag</span><span class="hp-scen-val" style="color:var(--sub)">—</span></div>
+        <div class="hp-scen-verdict"><strong>Confirmed recovery, less upside</strong>Earnings are healthy and growing. Sector is cheap — but since recovery is already confirmed, the market has partially priced it. Still a good setup, just less asymmetric than the one above.</div>
+      </div>
+
+      <!-- Value trap -->
+      <div class="hp-scen trap">
+        <div class="hp-scen-badge">Value trap</div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">Valuation band</span><span class="hp-scen-val g">Very Cheap</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">% of peak EPS</span><span class="hp-scen-val">41%</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">YoY growth</span><span class="hp-scen-val r">−28%</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">Turning flag</span><span class="hp-scen-val" style="color:var(--sub)">—</span></div>
+        <div class="hp-scen-verdict"><strong>Cheap for a reason — wait</strong>Earnings are collapsing. P/E looks low because E is falling fast. The sector will appear cheap <em>and get cheaper</em> as long as earnings deteriorate. Do not act until either TURNING fires or YoY stabilises.</div>
+      </div>
+    </div>
+
+    <div class="hp-card tip">
+      <div class="hp-card-ttl">The most powerful combination</div>
+      <div class="hp-p" style="margin-bottom:0"><strong>Cheap/Very Cheap band + TURNING flag + YoY still negative.</strong> This fires at the exact inflection point, before the crowd notices. It works best on cyclicals: Metals, Auto, PSU Bank, Realty. For defensive sectors (FMCG, Pharma, IT), the turning signal matters less — earnings are steadier there and the valuation band alone is more reliable.</div>
+    </div>
+  </div>
+
+  <!-- ══ 5. SPARKLINE CHART ══ -->
+  <div class="hp-sec" id="h-chart">
+    <div class="hp-sec-h">5 · Sparkline chart</div>
+    <div class="hp-p">The small chart on each card front shows <strong>three years of daily P/E (or P/B)</strong>. Three things to read from it:</div>
+
+    <div class="hp-spark-wrap">
+      <div class="hp-spark-head">Annotated sparkline — Nifty Auto (example)</div>
+      <div class="hp-spark-body">
+        <div>
+          <svg viewBox="0 0 360 90" style="width:100%;height:90px;display:block" preserveAspectRatio="none">
+            <defs>
+              <linearGradient id="hsg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#69f0ae" stop-opacity=".2"/>
+                <stop offset="100%" stop-color="#69f0ae" stop-opacity="0"/>
+              </linearGradient>
+            </defs>
+            <!-- grid lines -->
+            <line x1="0" y1="80" x2="360" y2="80" stroke="rgba(255,255,255,.05)" stroke-width=".5" vector-effect="non-scaling-stroke"/>
+            <!-- area -->
+            <path d="M0,62 L36,55 L72,48 L108,58 L144,52 L180,40 L216,34 L252,44 L288,50 L324,46 L360,40 L360,80 L0,80 Z" fill="url(#hsg)"/>
+            <!-- PE line -->
+            <path d="M0,62 L36,55 L72,48 L108,58 L144,52 L180,40 L216,34 L252,44 L288,50 L324,46 L360,40" fill="none" stroke="#69f0ae" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+            <!-- EPS secondary -->
+            <path d="M0,72 L36,70 L72,65 L108,68 L144,62 L180,56 L216,50 L252,54 L288,56 L324,52 L360,48" fill="none" stroke="#38bdf8" stroke-width="1.1" opacity=".65" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
+            <!-- 3yr median dashed -->
+            <line x1="0" y1="52" x2="360" y2="52" stroke="rgba(255,255,255,.35)" stroke-width="1" stroke-dasharray="5,3" vector-effect="non-scaling-stroke"/>
+            <!-- annotation A: current is below median -->
+            <circle cx="360" cy="40" r="3.5" fill="#69f0ae"/>
+            <line x1="360" y1="40" x2="330" y2="15" stroke="rgba(255,255,255,.3)" stroke-width=".8" stroke-dasharray="2,2" vector-effect="non-scaling-stroke"/>
+            <text x="290" y="13" font-family="monospace" font-size="7" fill="rgba(255,255,255,.55)" text-anchor="end">P/E right now</text>
+            <!-- annotation B: median label -->
+            <text x="5" y="50" font-family="monospace" font-size="7" fill="rgba(255,255,255,.45)">3yr median</text>
+            <!-- x-axis labels -->
+            <text x="0" y="88" font-family="monospace" font-size="6.5" fill="rgba(255,255,255,.3)">3yr ago</text>
+            <text x="160" y="88" font-family="monospace" font-size="6.5" fill="rgba(255,255,255,.3)" text-anchor="middle">2yr ago</text>
+            <text x="360" y="88" font-family="monospace" font-size="6.5" fill="rgba(255,255,255,.3)" text-anchor="end">Today</text>
+          </svg>
+        </div>
+        <div class="hp-spark-leg">
+          <div class="hp-spark-item">
+            <div class="hp-spark-sym"><svg viewBox="0 0 26 8" width="26" height="8"><path d="M0,4 L26,4" stroke="#69f0ae" stroke-width="2" stroke-linecap="round"/></svg></div>
+            <div><strong>P/E line</strong> — colored to match the sector. Watch its trend direction over the 3 years.</div>
+          </div>
+          <div class="hp-spark-item">
+            <div class="hp-spark-sym"><svg viewBox="0 0 26 8" width="26" height="8"><path d="M0,4 L26,4" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" opacity=".7"/></svg></div>
+            <div><strong>EPS line</strong> (P/E cards only) — on its own scale. When P/E falls but EPS rises, it means the sector is getting cheaper for the right reason: price fell while earnings grew.</div>
+          </div>
+          <div class="hp-spark-item">
+            <div class="hp-spark-sym"><svg viewBox="0 0 26 8" width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="rgba(200,200,200,.5)" stroke-width="1" stroke-dasharray="4,3"/></svg></div>
+            <div><strong>3yr median</strong> — the dashed line. The card's primary signal compares current P/E to the blended reference (not just the 3yr), but the dashed line gives you a fast visual anchor. Current below the dashes = cheap zone.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hp-p">The shaded area under the main line is purely visual emphasis — it has no separate numeric meaning.</div>
+  </div>
+
+  <!-- ══ 6. BACKTEST ══ -->
+  <div class="hp-sec" id="h-backtest">
+    <div class="hp-sec-h">6 · Backtest page</div>
+    <div class="hp-p">The Backtest page answers: <strong>"Every time this sector was at this valuation level in the past — what happened to prices next?"</strong> It runs through history, finds every matching date, and shows you the forward returns.</div>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">The key connection to the dashboard</div>
+      <div class="hp-p" style="margin-bottom:0">The threshold slider on the Backtest page maps directly to the <code class="hp-c">% of ref</code> badge on a dashboard card. If a card shows <code class="hp-c">82% of ref</code> today, set the threshold to <strong>82%</strong> on the Backtest page and ask: "the last time this sector was at 82% of its reference, what happened over the next year?" — that's your historical precedent for today's signal.</div>
+    </div>
+
+    <div class="hp-sub-h">How signals fire — visual</div>
+
+    <div class="hp-bt-timeline">
+      <div class="hp-bt-tl-head">Backtest timeline — when signals fire and what happens next (illustrative)</div>
+      <svg class="hp-bt-tl-svg" viewBox="0 0 500 130" preserveAspectRatio="none">
+        <!-- background zones -->
+        <rect x="0" y="0" width="500" height="130" fill="transparent"/>
+        <!-- shaded "cheap zone" below threshold -->
+        <rect x="0" y="80" width="500" height="35" fill="rgba(0,200,83,.05)"/>
+        <!-- x-axis -->
+        <line x1="30" y1="115" x2="490" y2="115" stroke="rgba(255,255,255,.12)" stroke-width=".8" vector-effect="non-scaling-stroke"/>
+        <!-- year labels -->
+        <text x="30" y="125" font-family="monospace" font-size="7.5" fill="rgba(255,255,255,.3)">2020</text>
+        <text x="145" y="125" font-family="monospace" font-size="7.5" fill="rgba(255,255,255,.3)">2021</text>
+        <text x="260" y="125" font-family="monospace" font-size="7.5" fill="rgba(255,255,255,.3)">2022</text>
+        <text x="375" y="125" font-family="monospace" font-size="7.5" fill="rgba(255,255,255,.3)">2023</text>
+        <!-- threshold line -->
+        <line x1="30" y1="80" x2="490" y2="80" stroke="rgba(255,215,64,.45)" stroke-width="1" stroke-dasharray="5,3" vector-effect="non-scaling-stroke"/>
+        <text x="492" y="83" font-family="monospace" font-size="7" fill="rgba(255,215,64,.6)" text-anchor="end">threshold 82%</text>
+        <!-- P/E ratio line (the wavy signal) -->
+        <path d="M30,65 L60,60 L90,95 L105,105 L120,95 L140,75 L160,60 L185,50 L220,55 L250,65 L270,95 L285,100 L300,88 L320,72 L350,58 L380,52 L420,55 L460,60 L490,58" fill="none" stroke="#a78bfa" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
+        <!-- Signal 1 — crossing at ~index 90 (Mar 2020 COVID) -->
+        <circle cx="105" cy="105" r="5" fill="#00c853"/>
+        <circle cx="105" cy="105" r="9" fill="none" stroke="rgba(0,200,83,.4)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+        <!-- forward return arrow 1 -->
+        <line x1="105" y1="95" x2="105" y2="55" stroke="rgba(0,200,83,.4)" stroke-width=".8" stroke-dasharray="2,2" vector-effect="non-scaling-stroke"/>
+        <text x="108" y="60" font-family="monospace" font-size="7.5" fill="#00c853">+38% (12m)</text>
+        <!-- Signal 2 — crossing at ~index 270 -->
+        <circle cx="285" cy="100" r="5" fill="#69f0ae"/>
+        <circle cx="285" cy="100" r="9" fill="none" stroke="rgba(105,240,174,.4)" stroke-width="1.2" vector-effect="non-scaling-stroke"/>
+        <!-- forward return arrow 2 -->
+        <line x1="285" y1="90" x2="285" y2="62" stroke="rgba(105,240,174,.4)" stroke-width=".8" stroke-dasharray="2,2" vector-effect="non-scaling-stroke"/>
+        <text x="288" y="68" font-family="monospace" font-size="7.5" fill="#69f0ae">+19% (12m)</text>
+        <!-- cheap zone label -->
+        <text x="35" y="93" font-family="monospace" font-size="7" fill="rgba(0,200,83,.45)">cheap zone (below threshold)</text>
+        <!-- P/E label -->
+        <text x="35" y="52" font-family="monospace" font-size="7.5" fill="rgba(167,139,250,.7)">P/E ÷ ref ratio</text>
+      </svg>
+    </div>
+
+    <div class="hp-p">Each green circle is a <strong>signal date</strong> — a date when the ratio crossed your threshold. The numbers show what actually happened to the sector's price over the next 12 months from that date. The backtest table shows all of these with full detail.</div>
+
+    <div class="hp-sub-h">Setting up a backtest — step by step</div>
+    <div class="hp-card info">
+      <div class="hp-step">
+        <div class="hp-step-num">1</div>
+        <div class="hp-step-body"><strong>Pick your sector.</strong> Data loads automatically. The P/E and P/B checkboxes pre-tick based on what's appropriate for that sector — but you can change them freely.</div>
+      </div>
+      <div class="hp-step">
+        <div class="hp-step-num">2</div>
+        <div class="hp-step-body"><strong>Set the date range.</strong> Defaults to full history. Narrow it to test a specific period, e.g. <em>2018–today</em> to exclude the pre-GST era for FMCG, or <em>post-2022</em> for PSU Banks after their re-rating.</div>
+      </div>
+      <div class="hp-step">
+        <div class="hp-step-num">3</div>
+        <div class="hp-step-body"><strong>Set the threshold.</strong> This is the key input. A threshold of <strong>80%</strong> means "fire a signal on every date when the ratio was at 80% of its reference." Start with whatever <code class="hp-c">% of ref</code> the dashboard shows today — that's the most relevant comparison.</div>
+      </div>
+      <div class="hp-step">
+        <div class="hp-step-num">4</div>
+        <div class="hp-step-body"><strong>Hit Run.</strong> The results show every past signal date, the valuation at that date, and the 6-month and 1-year annualised return from that point forward.</div>
+      </div>
+    </div>
+
+    <div class="hp-sub-h">Reading the results table</div>
+    <dl class="hp-kv">
+      <dt>Weighted ref banner</dt><dd>Grey strip above the stats. Confirms the formula used (30/60/10), the ±1% trigger tolerance, and shows the weighted reference as of the end of your selected window.</dd>
+      <dt>Signals count</dt><dd>How many matching dates the engine found. Very low counts (1–3) should be treated as anecdote, not statistics.</dd>
+      <dt>Avg 6m / 1yr CAGR</dt><dd>Annualised return averaged across all signal dates, at 6-month and 1-year horizons. Compare to Nifty 50's typical annual return (~12–14%) as a mental benchmark.</dd>
+      <dt>Hit rate</dt><dd>% of signals that were in profit at that horizon. Hit rate above 70% is strong. Below 50% means more losers than winners — inspect the EPS % column to see if value traps are responsible.</dd>
+      <dt>EPS % column</dt><dd>EPS as a % of the sector's max-ever EPS at that signal date. Low values (below 50%) flag potential value traps — the sector was cheap because earnings had collapsed. High values (above 85%) mean the cheapness was price-driven, not earnings-driven — usually higher quality signals.</dd>
+    </dl>
+
+    <div class="hp-sub-h">Row shading — what the colors mean</div>
+    <div class="hp-shade-legend">
+      <div class="hp-shade-row green">
+        <div class="hp-shade-icon">🟢</div>
+        <div><strong>Green row</strong><small>Either the 6m or 1yr CAGR was above +15%. This was a strong outcome.</small></div>
+      </div>
+      <div class="hp-shade-row yellow">
+        <div class="hp-shade-icon">🟡</div>
+        <div><strong>Yellow row</strong><small>Positive returns but not exceptional — a win but modest. Still a hit.</small></div>
+      </div>
+      <div class="hp-shade-row red">
+        <div class="hp-shade-icon">🔴</div>
+        <div><strong>Red row</strong><small>Either the 6m or 1yr CAGR was negative. Check the EPS % column — low values here usually explain the loss.</small></div>
+      </div>
+    </div>
+
+    <div class="hp-sub-h">Quick-reference: what to look for</div>
+    <div class="hp-card warn">
+      <div class="hp-card-ttl">Interpreting your backtest result</div>
+      <ul class="hp-list" style="margin:0">
+        <li><strong>Strong setup:</strong> Hit rate above 70%, average 1yr CAGR clearly positive, most rows green. Proceed with conviction.</li>
+        <li><strong>Noisy setup:</strong> High average return but low hit rate — a few huge green rows masking several red ones. A small number of outlier wins. Fragile; wait for an additional catalyst.</li>
+        <li><strong>Broken setup:</strong> Mostly red rows, poor hit rate, low average return. Either the threshold is wrong for this sector, or the signals are clustering around earnings collapses. Check the EPS % column.</li>
+        <li><strong>Too few signals:</strong> 1–3 hits is not a pattern — it's a handful of data points. Don't draw strong conclusions. Widen the threshold slightly or extend the date range.</li>
+      </ul>
+    </div>
+
+    <div class="hp-sub-h">How to use the EPS % column to filter</div>
+    <div class="hp-p">Uncheck the red rows where EPS % was very low (below 50%), then re-check the summary stats. If the hit rate and average return improve significantly when you exclude low-EPS signals, that tells you: <em>this sector's cheap-valuation signals only work when earnings are healthy</em>. That's important context for acting on today's signal — check the current EPS tile before committing.</div>
+  </div>
+
+  <!-- ══ 7. LIMITS ══ -->
+  <div class="hp-sec" id="h-limits">
+    <div class="hp-sec-h">7 · Limits &amp; caveats</div>
+    <div class="hp-p">This tool is designed to sharpen decisions, not replace judgement. Here are the honest limits:</div>
+
+    <ul class="hp-list">
+      <li><strong>Valuation is not timing.</strong> A sector in the "Very Cheap" band can stay cheap — or get cheaper — for months before reversing. These signals are for patient capital with a 6–12 month horizon, not for predicting next week's move.</li>
+      <li><strong>Index composition changes over time.</strong> Nifty sectoral indices reconstitute periodically. The 10-year P/E series for Nifty IT in 2025 includes different companies than it did in 2014. Very long histories blend old and new compositions — treat them as approximate, not precise.</li>
+      <li><strong>No macro overlay.</strong> The model knows nothing about RBI rate cycles, the INR, global commodity prices, or credit cycles. A "Cheap" PSU Bank signal during a credit crisis is a different risk than a "Cheap" signal in a stable macro environment. Add your own macro read.</li>
+      <li><strong>EPS can be distorted.</strong> The EPS series uses NSE's reported TTM earnings methodology. One-off asset sales, accounting changes, or a single large provisioning quarter can make EPS look unusually high or low for a quarter or two. Cross-check with reported quarterly results if EPS looks surprising.</li>
+      <li><strong>Structural regime changes.</strong> The model puts only 10% weight on the 10-year median, so it adapts gradually to re-ratings. But if a sector undergoes a fundamental structural change — like PSU Banks after IBC/asset-quality clean-up — the new regime won't fully dominate the reference for another few years. During a transition, treat the signal as directional rather than precise.</li>
+    </ul>
+
+    <div class="hp-card tip">
+      <div class="hp-card-ttl">Best practice</div>
+      <div class="hp-p" style="margin-bottom:0">Use this as <strong>one structured input among several</strong>. The signals are most powerful when: (1) the valuation band is Very Cheap or Cheap, (2) the EPS tile shows a TURNING flag or healthy YoY growth, (3) the backtest shows a strong historical hit rate at this threshold, and (4) your own fundamental/macro view doesn't contradict the signal. All four together is a high-conviction setup.</div>
+    </div>
+
+    <div class="hp-note">India Equity · NSE sector indices · Valuations based on trailing TTM earnings &amp; book value.</div>
+  </div>
+
+</div>
+
+<!-- ══════════════ SECTOR DETAIL OVERLAY ══════════════ -->
+<div id="sector-detail" role="dialog" aria-modal="true" aria-label="Sector detail">
+  <div class="sd-header">
+    <div class="sd-color-bar" id="sd-color-bar"></div>
+    <div class="sd-title" id="sd-title">—</div>
+    <button class="sd-close" id="sd-close" onclick="closeSectorDetail()" aria-label="Close sector detail">✕</button>
+  </div>
+  <div class="sd-body" id="sd-body"></div>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   CONFIG
+════════════════════════════════════════ */
+/* ── Cloudflare Worker proxy base URL ──
+   All sector + live feed requests go through the Worker, which hides the
+   real Google Apps Script URLs, enforces a Referer check, rate-limits per
+   IP, and blocks declared AI crawlers. See Worker source in a separate
+   repo / folder; secrets (the Apps Script URLs) live in Worker Secrets
+   and are never shipped to the browser. */
+var PROXY_BASE='https://sectoral-rotation-proxy.prashant-06f.workers.dev';
+
+var SECTORS=[
+  {name:'Infra',   abbr:'INF',color:'#818cf8',url:PROXY_BASE+'/sector/Infra'},
+  {name:'Realty',  abbr:'REL',color:'#f472b6',url:PROXY_BASE+'/sector/Realty'},
+  {name:'Bank',    abbr:'BNK',color:'#60a5fa',url:PROXY_BASE+'/sector/Bank'},
+  {name:'PSU Bank',abbr:'PSU',color:'#22d3ee',url:PROXY_BASE+'/sector/'+encodeURIComponent('PSU Bank')},
+  {name:'IT',      abbr:'IT', color:'#a78bfa',url:PROXY_BASE+'/sector/IT'},
+  {name:'Auto',    abbr:'AUT',color:'#fbbf24',url:PROXY_BASE+'/sector/Auto'},
+  {name:'FMCG',    abbr:'FMC',color:'#34d399',url:PROXY_BASE+'/sector/FMCG'},
+  {name:'Energy',  abbr:'ENE',color:'#fb923c',url:PROXY_BASE+'/sector/Energy'},
+  {name:'Metals',  abbr:'MET',color:'#94a3b8',url:PROXY_BASE+'/sector/Metals'},
+  {name:'Pharma',  abbr:'PHR',color:'#2dd4bf',url:PROXY_BASE+'/sector/Pharma'}
+];
+
+/* ── Live intraday feed (updates every 20 min) ── */
+var LIVE_FEED_URL=PROXY_BASE+'/live';
+/* Maps live feed sector names → our internal sector names */
+var LIVE_NAME_MAP={
+  'NIFTY BANK':    'Bank',
+  'NIFTY AUTO':    'Auto',
+  'NIFTY IT':      'IT',
+  'NIFTY INFRA':   'Infra',
+  'NIFTY PHARMA':  'Pharma',
+  'NIFTY FMCG':    'FMCG',
+  'NIFTY PSU BANK':'PSU Bank',
+  'NIFTY REALTY':  'Realty',
+  'NIFTY METAL':   'Metals',
+  'NIFTY ENERGY':  'Energy'
+  /* NIFTY (Nifty50) is intentionally omitted — not one of our sectors */
+};
+var liveCache={};  /* keyed by our sector name: {price,pe,pb,asOf} */
+
+/* Dual = show both PE and PB */
+var DUAL_S=['Infra','Energy','Realty','Metals'];
+/* PB only */
+var PURE_PB=['Bank','PSU Bank'];
+/* All others (IT/Auto/FMCG/Pharma) are PE only */
+function cardType(n){ return DUAL_S.indexOf(n)>=0?'dual':PURE_PB.indexOf(n)>=0?'pb':'pe'; }
+
+var BAND={
+  vchp:{label:'Very Cheap',cls:'bvchp',clr:'var(--vchp-c)',bd:'var(--vchp-bd)',tl:'var(--vchp-tl)',sort:0},
+  chp: {label:'Cheap',     cls:'bchp', clr:'var(--chp-c)', bd:'var(--chp-bd)', tl:'var(--chp-tl)', sort:1},
+  neu: {label:'Neutral',   cls:'bneu', clr:'var(--neu-c)', bd:'var(--neu-bd)', tl:'var(--neu-tl)', sort:2},
+  exp: {label:'Expensive', cls:'bexp', clr:'var(--exp-c)', bd:'var(--exp-bd)', tl:'var(--exp-tl)', sort:3},
+  vexp:{label:'Very Exp',  cls:'bvexp',clr:'var(--vexp-c)',bd:'var(--vexp-bd)',tl:'var(--vexp-tl)',sort:4},
+  na:  {label:'—',         cls:'bna',  clr:'var(--na-c)',  bd:'var(--na-bd)',  tl:'var(--na-tl)',  sort:5}
+};
+/* Hex colours for dual card gradient (CSS vars don't work in inline gradient) */
+var BH={
+  vchp:{d:'#001a08',l:'#f0fff5',bd:'rgba(0,200,83,.35)'},
+  chp: {d:'#001510',l:'#f0fdf8',bd:'rgba(105,240,174,.30)'},
+  neu: {d:'#1a1500',l:'#fffbeb',bd:'rgba(255,215,64,.30)'},
+  exp: {d:'#1a0800',l:'#fff4f0',bd:'rgba(255,112,67,.32)'},
+  vexp:{d:'#1f0000',l:'#fff0f2',bd:'rgba(255,23,68,.35)'},
+  na:  {d:'#0d1120',l:'#ffffff',bd:'rgba(74,90,120,.25)'}
+};
+
+/* ════════════════════════════════════════
+   UTILS
+════════════════════════════════════════ */
+/* Normalise any date string to YYYY-MM-DD for <input type="date">.
+   Uses LOCAL date parts (not toISOString/UTC) so IST timestamps like
+   "1999-09-01T00:00:00+05:30" don't roll back a day through UTC. */
+function toInputDate(str){
+  if(!str) return '';
+  var d=new Date(str);
+  if(isNaN(d)) return '';
+  var y=d.getFullYear();
+  var m=String(d.getMonth()+1).padStart(2,'0');
+  var day=String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+day;
+}
+
+function median(a){
+  if(!a||!a.length) return NaN;
+  var s=a.slice().sort(function(x,y){return x-y;}),m=Math.floor(s.length/2);
+  return s.length%2?s[m]:(s[m-1]+s[m])/2;
+}
+function pctOfArr(a,p){
+  /* p-th percentile of sorted or unsorted array */
+  if(!a||!a.length) return NaN;
+  var s=a.slice().sort(function(x,y){return x-y;}),i=(p/100)*(s.length-1);
+  var lo=Math.floor(i),hi=Math.ceil(i);
+  return lo===hi?s[lo]:s[lo]+(i-lo)*(s[hi]-s[lo]);
+}
+function winsorise(arr){
+  /* clip at 1st and 99th percentile */
+  if(!arr||arr.length<4) return arr.slice();
+  var lo=pctOfArr(arr,1),hi=pctOfArr(arr,99);
+  return arr.map(function(v){return Math.max(lo,Math.min(hi,v));});
+}
+function pctRankOf(arr,val){
+  /* percentile rank: % of arr ≤ val */
+  if(!arr||!arr.length||isNaN(val)) return NaN;
+  return (arr.filter(function(v){return v<=val;}).length/arr.length)*100;
+}
+/* Band from percentile rank in 5yr distribution (secondary/info signal). */
+function bandOfPctile(pct){
+  if(isNaN(pct)) return 'na';
+  if(pct<=10) return 'vchp';
+  if(pct<=30) return 'chp';
+  if(pct<=70) return 'neu';
+  if(pct<=90) return 'exp';
+  return 'vexp';
+}
+/* Band from % of weighted ref (primary signal — drives card color and sort).
+   Asymmetric: Neutral is 90–105% because sectors naturally trade slightly above
+   their own median (positive drift). */
+function bandOfRefPct(pctRef){
+  if(isNaN(pctRef)) return 'na';
+  if(pctRef<=80)  return 'vchp';
+  if(pctRef<=90)  return 'chp';
+  if(pctRef<=105) return 'neu';
+  if(pctRef<=120) return 'exp';
+  return 'vexp';
+}
+/* Divergence between the two signals. Returns an object:
+     {kind: 'none'|'cheap'|'expensive', msg: string}
+   - 'cheap':     ref-% says cheap/very cheap, but percentile doesn't → "often this cheap"
+                  (i.e. the sector has often traded at these levels in the last 5y)
+   - 'expensive': ref-% says expensive/very exp, but percentile doesn't → "often this expensive"
+   - 'none':      signals agree or differ only within same direction */
+function divergence(refBand,pctBand){
+  var cheap={vchp:1,chp:1}, expensive={exp:1,vexp:1};
+  if(refBand==='na'||pctBand==='na') return {kind:'none',msg:''};
+  if(cheap[refBand] && !cheap[pctBand]) return {kind:'cheap',msg:'often this cheap'};
+  if(expensive[refBand] && !expensive[pctBand]) return {kind:'expensive',msg:'often this expensive'};
+  return {kind:'none',msg:''};
+}
+function weightedRef(m3,m5,m10){
+  /* Weighted median: 30% × 3y + 60% × 5y + 10% × 10y.
+     Low 10y weight lets the reference reflect the current regime without needing
+     a regime flag. If any window is missing, its weight is redistributed
+     proportionally across the surviving windows. */
+  var ok3=!isNaN(m3)&&m3>0,ok5=!isNaN(m5)&&m5>0,ok10=!isNaN(m10)&&m10>0;
+  if(!ok3&&!ok5&&!ok10) return NaN;
+  var n=0,d=0;
+  if(ok3){n+=.30*m3;d+=.30;} if(ok5){n+=.60*m5;d+=.60;} if(ok10){n+=.10*m10;d+=.10;}
+  return n/d;
+}
+function f(n,d){return(n==null||isNaN(n)||!isFinite(n))?'—':(+n).toFixed(d!=null?d:1);}
+function fx(x){return(x==null||isNaN(x)||!isFinite(x))?'—':x.toFixed(2)+'×';}
+function fmtDate(d){var dt=typeof d==='string'?new Date(d):d;return isNaN(dt)?d:dt.toLocaleDateString('en-IN',{month:'short',year:'numeric'});}
+function fmtCAGR(c,open){
+  if(c==null||isNaN(c)) return'<span class="cg-o">—</span>';
+  var pct=(c*100).toFixed(1),cls=c>=0?'cg-p':'cg-n';
+  return'<span class="'+cls+'">'+(c>=0?'+':'')+pct+'%'+(open?'<span class="open-badge">partial</span>':'')+'</span>';
+}
+/* ════════════════════════════════════════
+   FETCH
+════════════════════════════════════════ */
+async function fetchWithRetry(url){
+  for(var att=0;att<=3;att++){
+    var ctl=new AbortController(),tmr=setTimeout(function(){ctl.abort();},20000);
+    try{
+      var res=await fetch(url,{signal:ctl.signal,redirect:'follow'});
+      clearTimeout(tmr); if(!res.ok) throw new Error('HTTP '+res.status);
+      var txt=await res.text();
+      try{return JSON.parse(txt);}catch(e){throw new Error('Bad JSON');}
+    }catch(e){
+      clearTimeout(tmr);
+      if(att===3) throw e;
+      await new Promise(function(r){setTimeout(r,1000*Math.pow(2,att));});
+    }
+  }
+}
+
+/* ════════════════════════════════════════
+   NORMALISE
+════════════════════════════════════════ */
+function normalise(raw){
+  var rows=Array.isArray(raw)?raw:(raw&&raw.data?raw.data:(raw&&raw.rows?raw.rows:[]));
+  var hdr=null;
+  if(rows.length&&Array.isArray(rows[0])&&typeof rows[0][0]==='string'&&isNaN(rows[0][0])){
+    hdr=rows[0].map(function(h){return h.toLowerCase().trim();});rows=rows.slice(1);
+  }
+  function ci(ns){
+    if(!hdr) return -1;
+    /* 1st pass: exact match. 2nd pass: word-boundary match — split header on
+       any non-alphanumeric char (space, slash, underscore, hyphen) and require
+       the needle to equal one of the resulting tokens. This matches "P/E",
+       "pe ratio", "close_price" but NOT "priced", "pricing", or "indexed". */
+    for(var n of ns){var i=hdr.findIndex(function(h){return h===n;});if(i>=0)return i;}
+    for(var n of ns){var i=hdr.findIndex(function(h){return h.split(/[^a-z0-9]+/).indexOf(n)>=0;});if(i>=0)return i;}
+    return -1;
+  }
+  var di=ci(['date']),pi=ci(['close','price','index','value']),
+      pei=ci(['pe','p/e','price_earning']),pbi=ci(['pb','p/b','price_book']),epsi=ci(['eps','earning']);
+  return rows.map(function(row){
+    var date,price,pe,pb,eps;
+    if(Array.isArray(row)){
+      date=String(row[di>=0?di:0]||'');price=+(row[pi>=0?pi:1])||NaN;
+      pe=+(row[pei>=0?pei:2])||NaN;pb=+(row[pbi>=0?pbi:3])||NaN;eps=+(row[epsi>=0?epsi:4])||NaN;
+    }else{
+      date=String(row.date||row.Date||'');
+      price=+(row.close||row.price||row.index||row.value||NaN);
+      pe=+(row.pe||row['p/e']||NaN);pb=+(row.pb||row['p/b']||NaN);eps=+(row.eps||row.earning||NaN);
+    }
+    if((isNaN(eps)||eps===0)&&!isNaN(price)&&!isNaN(pe)&&pe!==0) eps=price/pe;
+    return{date,price,pe,pb,eps};
+  }).filter(function(r){return r.date;});
+}
+
+/* ════════════════════════════════════════
+   SLICING HELPERS
+════════════════════════════════════════ */
+function sliceYrs(data,yrs){
+  if(!data.length) return [];
+  var last=new Date(data[data.length-1].date);if(isNaN(last)) return [];
+  var cut=new Date(last);cut.setFullYear(cut.getFullYear()-yrs);
+  return data.filter(function(r){return new Date(r.date)>=cut;});
+}
+function sliceUpTo(data,endDate,yrs){
+  /* slice of `yrs` years ending at endDate, no future data */
+  var cut=new Date(endDate);cut.setFullYear(cut.getFullYear()-yrs);
+  return data.filter(function(r){var d=new Date(r.date);return d>=cut&&d<=endDate;});
+}
+function vv(a,field){
+  return a.map(function(r){return r[field];}).filter(function(v){return v&&!isNaN(v)&&isFinite(v)&&v>0;});
+}
+
+/* ════════════════════════════════════════
+   COMPUTE STATS
+   All medians computed on winsorised series.
+   Primary band: from % of weighted ref (magnitude vs rolling median).
+   Secondary band: percentile rank in 5yr distribution (info only).
+   Divergence flag fires when the two signals point to different verdicts.
+   Weighted ref = 30% × 3y + 60% × 5y + 10% × 10y.
+════════════════════════════════════════ */
+function computeStats(data,live){
+  if(!data||!data.length) return null;
+  var last=data[data.length-1];
+  var s3=sliceYrs(data,3),s5=sliceYrs(data,5),s10=sliceYrs(data,10);
+
+  /* winsorised series (5yr is the percentile reference now) */
+  var peW5=winsorise(vv(s5,'pe')),peW3=winsorise(vv(s3,'pe')),peW10=winsorise(vv(s10,'pe'));
+  var pbW5=winsorise(vv(s5,'pb')),pbW3=winsorise(vv(s3,'pb')),pbW10=winsorise(vv(s10,'pb'));
+
+  var pe3=median(peW3),pe5=median(peW5),pe10=median(peW10);
+  var pb3=median(pbW3),pb5=median(pbW5),pb10=median(pbW10);
+
+  /* weighted reference — 30% × 3y + 60% × 5y + 10% × 10y */
+  var peRef=weightedRef(pe3,pe5,pe10);
+  var pbRef=weightedRef(pb3,pb5,pb10);
+
+  /* percentile rank in 5-year winsorised history */
+  /* Use live intraday Price/PE/PB/EPS when available; fall back to last historical row.
+     EPS is derived from Price/PE in the live feed — see fetchLiveData(). */
+  var curPE   =(live&&live.pe   &&!isNaN(live.pe)   &&live.pe   >0)?live.pe   :last.pe;
+  var curPB   =(live&&live.pb   &&!isNaN(live.pb)   &&live.pb   >0)?live.pb   :last.pb;
+  var curPrice=(live&&live.price&&!isNaN(live.price)&&live.price>0)?live.price:last.price;
+  var curEPS  =(live&&live.eps  &&!isNaN(live.eps)  &&live.eps  >0)?live.eps  :last.eps;
+  var pePct=pctRankOf(peW5,curPE);
+  var pbPct=pctRankOf(pbW5,curPB);
+
+  /* current value as % of weighted reference (primary signal) */
+  var pePctRef=(!isNaN(curPE)&&!isNaN(peRef)&&peRef>0)?(curPE/peRef*100):NaN;
+  var pbPctRef=(!isNaN(curPB)&&!isNaN(pbRef)&&pbRef>0)?(curPB/pbRef*100):NaN;
+
+  /* bands: primary from ref-%, secondary from percentile rank */
+  var peBand=bandOfRefPct(pePctRef), pbBand=bandOfRefPct(pbPctRef);
+  var pePctBand=bandOfPctile(pePct), pbPctBand=bandOfPctile(pbPct);
+  var peDiv=divergence(peBand,pePctBand);
+  var pbDiv=divergence(pbBand,pbPctBand);
+
+  /* EPS: full history max */
+  var allEps=vv(data,'eps'),maxEPS=allEps.length?Math.max.apply(null,allEps):NaN;
+
+  /* ═══ EPS MOMENTUM METRICS ═══ */
+  var epsPctPeak=(!isNaN(curEPS)&&!isNaN(maxEPS)&&maxEPS>0)?(curEPS/maxEPS):NaN;
+  var eps365=epsAt(data,365);
+  var epsYoY=(!isNaN(curEPS)&&!isNaN(eps365)&&eps365>0)?(curEPS/eps365-1):NaN;
+
+  /* Last-2-quarter average EPS for TURNING short-term condition.
+     Groups all data by calendar quarter, takes the mean EPS per quarter
+     (averaging all daily rows in that quarter), then picks the two most
+     recent quarters that have at least one valid EPS reading.
+     More reliable than epsAt(data,90/180): uses the actual quarter boundary,
+     averages out intra-quarter noise, and correctly handles negative EPS. */
+  var _qB={};
+  for(var _ri=0;_ri<data.length;_ri++){
+    var _rd=new Date(data[_ri].date);
+    if(isNaN(_rd)) continue;
+    var _qk=_rd.getFullYear()*10+Math.floor(_rd.getMonth()/3)+1;
+    if(!_qB[_qk]){_qB[_qk]={sum:0,n:0};}
+    var _ev=data[_ri].eps;
+    if(_ev!=null&&!isNaN(_ev)&&isFinite(_ev)){_qB[_qk].sum+=_ev;_qB[_qk].n++;}
+  }
+  var _qKeys=Object.keys(_qB).map(Number).sort(function(a,b){return a-b;})
+              .filter(function(k){return _qB[k].n>0;});
+  var _epsQPrev=_qKeys.length>=2?_qB[_qKeys[_qKeys.length-2]].sum/_qB[_qKeys[_qKeys.length-2]].n:NaN;
+  var _epsQCur =_qKeys.length>=2?_qB[_qKeys[_qKeys.length-1]].sum/_qB[_qKeys[_qKeys.length-1]].n:NaN;
+
+  /* TURNING fires when:
+     1. Last 2 quarter averages are both positive (sector is profitable)
+     2. Current YoY is negative (still in below-normal growth territory) */
+  var epsTurning=(!isNaN(_epsQPrev)&&!isNaN(_epsQCur)
+                  &&_epsQPrev>0&&_epsQCur>0
+                  &&!isNaN(epsYoY)&&epsYoY<0);
+
+  return{
+    curPE,curPB,curEPS,curPrice,
+    pe3,pe5,pe10,peRef,pePct,pePctRef,peBand,pePctBand,peDiv,
+    pb3,pb5,pb10,pbRef,pbPct,pbPctRef,pbBand,pbPctBand,pbDiv,
+    maxEPS, epsPctPeak, epsYoY, epsTurning,
+    isLive:!!(live&&(live.pe||live.pb)), liveAsOf:live?live.asOf:null,
+    data3yr:s3
+  };
+}
+
+/* EPS value ~N days before last available date. Walks backwards until
+   finding first valid positive EPS on or before the target date. */
+function epsAt(data,daysAgo){
+  if(!data||!data.length) return NaN;
+  var last=new Date(data[data.length-1].date);
+  if(isNaN(last)) return NaN;
+  var target=new Date(last);
+  target.setDate(target.getDate()-daysAgo);
+  for(var k=data.length-1;k>=0;k--){
+    var dt=new Date(data[k].date);
+    if(isNaN(dt)) continue;
+    if(dt<=target){
+      var v=data[k].eps;
+      if(v&&!isNaN(v)&&isFinite(v)&&v>0) return v;
+    }
+  }
+  return NaN;
+}
+
+/* ════════════════════════════════════════
+   SPARKLINE  (3yr data, 3yr median reference)
+════════════════════════════════════════ */
+function sparkSVG(rows,f1,c1,f2,c2,med3,isLight){
+  var pts=rows.filter(function(r){return r[f1]&&!isNaN(r[f1])&&r[f1]>0;});
+  if(pts.length<2) return '';
+  var n=pts.length;
+  var mn=pts.reduce(function(m,r){return Math.min(m,r[f1]);},Infinity);
+  var mx=pts.reduce(function(m,r){return Math.max(m,r[f1]);}, -Infinity);
+  if(!isNaN(med3)&&isFinite(med3)){mn=Math.min(mn,med3);mx=Math.max(mx,med3);}
+  var rng=mx-mn||1,P=9;
+  function y1(v){return 100-P-((v-mn)/rng)*(100-2*P);}
+  function xn(i,n){return(i/(n-1))*100;}
+  var d='',area='';
+  for(var i=0;i<n;i++){var x=xn(i,n).toFixed(1),y=y1(pts[i][f1]).toFixed(1);d+=(i?'L':'M')+x+','+y+' ';}
+  area=d+'L100,100 L0,100 Z';
+  var mln='';
+  if(!isNaN(med3)&&isFinite(med3)){
+    var my=y1(med3).toFixed(1);
+    mln='<line x1="0" y1="'+my+'" x2="100" y2="'+my+'" stroke="'+(isLight?'rgba(0,0,0,.28)':'rgba(255,255,255,.28)')+'" stroke-width=".9" stroke-dasharray="3,2" vector-effect="non-scaling-stroke"/>';
+  }
+  var d2='';
+  if(f2&&c2){
+    var pts2=rows.filter(function(r){return r[f2]&&!isNaN(r[f2])&&r[f2]>0;});
+    if(pts2.length>=2){
+      var n2=pts2.length,mn2=Infinity,mx2=-Infinity;
+      pts2.forEach(function(r){mn2=Math.min(mn2,r[f2]);mx2=Math.max(mx2,r[f2]);});
+      var rng2=mx2-mn2||1;
+      function y2(v){return 100-P-((v-mn2)/rng2)*(100-2*P);}
+      for(var j=0;j<n2;j++){var x2=xn(j,n2).toFixed(1),yy=y2(pts2[j][f2]).toFixed(1);d2+=(j?'L':'M')+x2+','+yy+' ';}
+    }
+  }
+  return'<svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">'
+    +'<path d="'+area+'" fill="'+c1+'" opacity="'+(isLight?.07:.12)+'"/>'
+    +mln
+    +'<path d="'+d+'" fill="none" stroke="'+c1+'" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'
+    +(d2?'<path d="'+d2+'" fill="none" stroke="'+c2+'" stroke-width="1.1" opacity=".72" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>':'')
+    +'</svg>';
+}
+function chartEl(rows,f1,c1,f2,c2,med3,isLight,lbl1,lbl2){
+  var svg=sparkSVG(rows,f1,c1,f2,c2,med3,isLight);
+  if(!svg) return '';
+  return'<div class="cf-chart">'
+    +'<div class="chart-legend">'
+      +'<div class="cl-item"><div class="cl-line" style="background:'+c1+'"></div><span>'+lbl1+'</span></div>'
+      +(f2?'<div class="cl-item"><div class="cl-line" style="background:'+c2+'"></div><span>'+lbl2+'</span></div>':'')
+      +'<div class="cl-item"><div class="cl-dash"></div><span>3yr median</span></div>'
+    +'</div>'+svg+'</div>';
+}
+
+/* ════════════════════════════════════════
+   BUILD CARD HTML
+════════════════════════════════════════ */
+function bpill(band,label){
+  var b=BAND[band]||BAND.na;
+  return'<span class="bpill" style="color:'+b.clr+';border-color:'+b.bd+'">'+( label||b.label)+'</span>';
+}
+/* Small chip next to band pill: "P12 · 82%" (percentile rank · % of weighted ref) */
+function pctBadge(pct,pctRef){
+  if(isNaN(pct)) return '';
+  var parts='P'+Math.round(pct);
+  if(!isNaN(pctRef)) parts+=' · '+Math.round(pctRef)+'%';
+  return'<span style="font-family:var(--mono);font-size:.46rem;color:var(--ghost);white-space:nowrap">'+parts+'</span>';
+}
+/* Packs a band pill + its percentile badge onto a single horizontal line.
+   Used inside .pills-col so dual cards get 2 rows (one per metric) instead
+   of 4 (pill, badge, pill, badge stacked) — keeps cf-top height consistent
+   between dual and single-metric cards. */
+function pillRow(band,label,pct,pctRef){
+  return'<div class="pill-row">'+bpill(band,label)+pctBadge(pct,pctRef)+'</div>';
+}
+/* Full text for tile subcaption: "P12 · 82% of ref" */
+function pctCaption(pct,pctRef){
+  var parts=[];
+  if(!isNaN(pct)) parts.push('P'+Math.round(pct));
+  if(!isNaN(pctRef)) parts.push(Math.round(pctRef)+'% of ref');
+  return parts.join(' · ');
+}
+/* Divergence capsule — shown when primary (ref-%) and secondary (percentile) bands disagree. */
+function divCapsule(div){
+  if(!div||div.kind==='none') return '';
+  return'<span class="div-cap" title="The band says '+(div.kind==='cheap'?'cheap':'expensive')+' vs the weighted median, but the sector has been at this level often in the last 5 years">⚠ '+div.msg+'</span>';
+}
+function cbrows(field,m3,m5,m10,cur){
+  function r(lbl,med){
+    var mult=(!isNaN(cur)&&!isNaN(med)&&med>0)?cur/med:NaN;
+    return'<div class="cb-row"><span class="cb-l">'+lbl+'</span><span class="cb-m">'+f(med,2)+'</span><span class="cb-x">'+fx(mult)+'</span></div>';
+  }
+  return r('3yr',m3)+r('5yr',m5)+r('10yr',m10);
+}
+/* YoY color: red <0, amber 0-10%, green >10% */
+function yoyColor(yoy){
+  if(isNaN(yoy)) return 'var(--sub)';
+  if(yoy<0) return 'var(--exp-c)';
+  if(yoy<0.10) return 'var(--neu-c)';
+  return 'var(--chp-c)';
+}
+
+/* Front-tile EPS metrics: % of peak (small grey), YoY (colored), Turning pill */
+function epsMetricsHTML(st){
+  var html='';
+  if(!isNaN(st.epsPctPeak)){
+    html+='<div class="eps-pct">'+Math.round(st.epsPctPeak*100)+'% of peak</div>';
+  }
+  var parts=[];
+  if(!isNaN(st.epsYoY)){
+    var pct=(st.epsYoY*100).toFixed(1),sign=st.epsYoY>=0?'+':'';
+    parts.push('<span class="eps-yoy" style="color:'+yoyColor(st.epsYoY)+'">'+sign+pct+'%</span>');
+  }
+  if(st.epsTurning){
+    parts.push('<span class="eps-turn">▲ TURNING</span>');
+  }
+  if(parts.length) html+='<div class="eps-row">'+parts.join('')+'</div>';
+  return html;
+}
+
+function epsBox(st){
+  if(isNaN(st.curEPS)) return '';
+  var rows='';
+  /* Row 1: EPS vs peak */
+  if(!isNaN(st.epsPctPeak)&&!isNaN(st.maxEPS)){
+    var pctTxt=f(st.curEPS,0)+' / '+f(st.maxEPS,0)+' <span style="color:var(--sub);font-weight:500">('+Math.round(st.epsPctPeak*100)+'% of peak)</span>';
+    rows+='<div class="cb-eps-row"><span class="cb-eps-lbl">EPS vs peak</span><span class="cb-eps-val">'+pctTxt+'</span></div>';
+  }else{
+    rows+='<div class="cb-eps-row"><span class="cb-eps-lbl">EPS</span><span class="cb-eps-val">'+f(st.curEPS,0)+'</span></div>';
+  }
+  /* Row 2: YoY */
+  if(!isNaN(st.epsYoY)){
+    var pct=(st.epsYoY*100).toFixed(1),sign=st.epsYoY>=0?'+':'';
+    rows+='<div class="cb-eps-row"><span class="cb-eps-lbl">EPS YoY</span><span class="cb-eps-val" style="color:'+yoyColor(st.epsYoY)+'">'+sign+pct+'%</span></div>';
+  }
+  /* Row 3: Turning (only if active) */
+  if(st.epsTurning){
+    rows+='<div class="cb-eps-row"><span class="cb-eps-lbl">Momentum</span><span class="cb-eps-val" style="color:var(--neu-c)">▲ Turning</span></div>';
+  }
+  return'<div class="cb-eps-panel">'+rows+'</div>';
+}
+function refNote(ref,d){
+  return'<div class="cb-ref-note">Weighted ref = '+f(ref,d!=null?d:2)+'</div>';
+}
+
+function buildCard(sec,st){
+  var sc=sec.color,ct=cardType(sec.name),fullName='Nifty '+sec.name;
+  var isLight=document.documentElement.classList.contains('light');
+  var EC='#38bdf8';
+
+  function bkHead(pills){
+    return'<div class="cb-head"><div class="cb-hl"><span class="cb-name">'+fullName+'</span></div>'
+      +'<div class="cb-hr">'+pills+'<span class="cb-hint">‹ Flip</span></div></div>';
+  }
+
+  /* ══ DUAL ══ */
+  if(ct==='dual'){
+    var peB=st.peBand,pbB=st.pbBand;
+    var peBobj=BAND[peB]||BAND.na,pbBobj=BAND[pbB]||BAND.na;
+    var peHex=BH[peB]||BH.na,pbHex=BH[pbB]||BH.na;
+    var bgTop=isLight?peHex.l:peHex.d,bgBot=isLight?pbHex.l:pbHex.d;
+    var splitSt='background:linear-gradient(180deg,'+bgTop+' 50%,'+bgBot+' 50%);border:1px solid '+peHex.bd;
+    var frontChart=chartEl(st.data3yr,'pe',sc,'eps',EC,st.pe3,isLight,'3yr P/E','EPS');
+    var front='<div class="card-face dual-face" style="--acc:'+sc+'">'
+      +'<div class="dual-split" style="'+splitSt+'">'
+        +'<div class="cf">'
+          +'<div class="cf-top">'
+            +'<span class="cf-name">'+fullName+'</span>'
+            +'<div class="pills-col">'
+              +pillRow(peB,'P/E · '+peBobj.label,st.pePct,st.pePctRef)
+              +pillRow(pbB,'P/B · '+pbBobj.label,st.pbPct,st.pbPctRef)
+            +'</div>'
+          +'</div>'
+          /* Price row: holds the index price AND (when present) divergence
+             capsules inline — avoids a separate capsule row that would shift
+             tiles/chart down on only some cards. */
+          +((!isNaN(st.curPrice)||st.peDiv.kind!=='none'||st.pbDiv.kind!=='none')
+            ? '<div class="cf-price">'
+                +(!isNaN(st.curPrice)?f(st.curPrice,0):'')
+                +(st.peDiv.kind!=='none'?divCapsule({kind:st.peDiv.kind,msg:'P/E · '+st.peDiv.msg}):'')
+                +(st.pbDiv.kind!=='none'?divCapsule({kind:st.pbDiv.kind,msg:'P/B · '+st.pbDiv.msg}):'')
+              +'</div>'
+            : '')
+          +'<div class="tiles t3">'
+            +'<div class="tile" style="background:'+peBobj.tl+';border-color:'+peBobj.bd+'">'
+              +'<div class="tlbl">P / E'+'</div>'
+              +'<div class="tval" style="color:'+peBobj.clr+'">'+f(st.curPE,1)+'</div>'
+              +'<div class="tpct">'+pctCaption(st.pePct,st.pePctRef)+'</div>'
+            +'</div>'
+            +'<div class="tile" style="background:'+pbBobj.tl+';border-color:'+pbBobj.bd+'">'
+              +'<div class="tlbl">P / B'+'</div>'
+              +'<div class="tval" style="color:'+pbBobj.clr+'">'+f(st.curPB,2)+'</div>'
+              +'<div class="tpct">'+pctCaption(st.pbPct,st.pbPctRef)+'</div>'
+            +'</div>'
+            +'<div class="tile">'
+              +'<div class="tlbl">EPS'+'</div>'
+              +'<div class="tval">'+f(st.curEPS,0)+'</div>'
+              +epsMetricsHTML(st)
+            +'</div>'
+          +'</div>'
+          +frontChart
+          +'<div class="cf-foot"><button class="expand-btn" data-action="detail" data-sector="'+sec.name+'" aria-label="Expand '+fullName+' detail"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>Detail</button><span class="flip-hint">Analysis &nbsp;›</span></div>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
+    var back='<div class="card-face card-back dual-face" style="--acc:'+sc+'">'
+      +'<div class="dual-split" style="'+splitSt+'">'
+        +'<div class="cb">'+bkHead(bpill(peB,'P/E · '+peBobj.label)+bpill(pbB,'P/B · '+pbBobj.label))
+          +'<div class="cb-body">'
+            +'<div class="cb-cur"><span class="cb-cur-l">P/E · '+pctCaption(st.pePct,st.pePctRef)+'</span><span class="cb-cur-v" style="color:'+peBobj.clr+'">'+f(st.curPE,1)+'</span></div>'
+            +refNote(st.peRef,1)
+            +'<div class="cb-sec">P/E Comparison to Median</div>'+cbrows('pe',st.pe3,st.pe5,st.pe10,st.curPE)
+            +'<div class="cb-divider"></div>'
+            +'<div class="cb-cur"><span class="cb-cur-l">P/B · '+pctCaption(st.pbPct,st.pbPctRef)+'</span><span class="cb-cur-v" style="color:'+pbBobj.clr+'">'+f(st.curPB,2)+'</span></div>'
+            +refNote(st.pbRef,2)
+            +'<div class="cb-sec">P/B Comparison to Median</div>'+cbrows('pb',st.pb3,st.pb5,st.pb10,st.curPB)
+            +epsBox(st)
+          +'</div>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
+    return front+back;
+  }
+
+  /* ══ PURE PB ══ */
+  if(ct==='pb'){
+    var bnd=BAND[st.pbBand]||BAND.na;
+    var frontChart=chartEl(st.data3yr,'pb',sc,null,null,st.pb3,isLight,'3yr P/B',null);
+    var front='<div class="card-face '+bnd.cls+'" style="--acc:'+sc+'">'
+      +'<div class="cf">'
+        +'<div class="cf-top"><span class="cf-name">'+fullName+'</span>'
+          +'<div class="pills-col">'+pillRow(st.pbBand,null,st.pbPct,st.pbPctRef)+'</div>'
+        +'</div>'
+        +((!isNaN(st.curPrice)||st.pbDiv.kind!=='none')
+          ? '<div class="cf-price">'
+              +(!isNaN(st.curPrice)?f(st.curPrice,0):'')
+              +(st.pbDiv.kind!=='none'?divCapsule(st.pbDiv):'')
+            +'</div>'
+          : '')
+        +'<div class="tiles t2">'
+          +'<div class="tile" style="background:'+bnd.tl+';border-color:'+bnd.bd+'">'
+            +'<div class="tlbl">P / B'+'</div>'
+            +'<div class="tval" style="color:'+bnd.clr+'">'+f(st.curPB,2)+'</div>'
+            +'<div class="tpct">'+pctCaption(st.pbPct,st.pbPctRef)+'</div>'
+          +'</div>'
+          +'<div class="tile">'
+            +'<div class="tlbl">EPS'+'</div>'
+            +'<div class="tval">'+f(st.curEPS,0)+'</div>'
+            +epsMetricsHTML(st)
+          +'</div>'
+        +'</div>'
+        +frontChart
+        +'<div class="cf-foot"><button class="expand-btn" data-action="detail" data-sector="'+sec.name+'" aria-label="Expand '+fullName+' detail"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>Detail</button><span class="flip-hint">Analysis &nbsp;›</span></div>'
+      +'</div>'
+    +'</div>';
+    var back='<div class="card-face card-back '+bnd.cls+'" style="--acc:'+sc+'">'
+        +'<div class="cb-body">'
+          +'<div class="cb-cur"><span class="cb-cur-l">Current P/B · '+pctCaption(st.pbPct,st.pbPctRef)+'</span><span class="cb-cur-v" style="color:'+bnd.clr+'">'+f(st.curPB,2)+'</span></div>'
+          +refNote(st.pbRef,2)
+          +'<div class="cb-sec">Comparison to Median</div>'+cbrows('pb',st.pb3,st.pb5,st.pb10,st.curPB)
+        +'</div>'
+      +'</div>'
+    +'</div>';
+    return front+back;
+  }
+
+  /* ══ PE ══ */
+  var bnd=BAND[st.peBand]||BAND.na;
+  var frontChart=chartEl(st.data3yr,'pe',sc,'eps',EC,st.pe3,isLight,'3yr P/E','EPS');
+  var front='<div class="card-face '+bnd.cls+'" style="--acc:'+sc+'">'
+    +'<div class="cf">'
+      +'<div class="cf-top"><span class="cf-name">'+fullName+'</span>'
+        +'<div class="pills-col">'+pillRow(st.peBand,null,st.pePct,st.pePctRef)+'</div>'
+      +'</div>'
+      +((!isNaN(st.curPrice)||st.peDiv.kind!=='none')
+        ? '<div class="cf-price">'
+            +(!isNaN(st.curPrice)?f(st.curPrice,0):'')
+            +(st.peDiv.kind!=='none'?divCapsule(st.peDiv):'')
+          +'</div>'
+        : '')
+      +'<div class="tiles t2">'
+        +'<div class="tile" style="background:'+bnd.tl+';border-color:'+bnd.bd+'">'
+          +'<div class="tlbl">P / E'+'</div>'
+          +'<div class="tval" style="color:'+bnd.clr+'">'+f(st.curPE,1)+'</div>'
+          +'<div class="tpct">'+pctCaption(st.pePct,st.pePctRef)+'</div>'
+        +'</div>'
+        +'<div class="tile">'
+          +'<div class="tlbl">EPS'+'</div>'
+          +'<div class="tval">'+f(st.curEPS,0)+'</div>'
+          +epsMetricsHTML(st)
+        +'</div>'
+      +'</div>'
+      +frontChart
+      +'<div class="cf-foot"><button class="expand-btn" data-action="detail" data-sector="'+sec.name+'" aria-label="Expand '+fullName+' detail"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>Detail</button><span class="flip-hint">Analysis &nbsp;›</span></div>'
+    +'</div>'
+  +'</div>';
+  var back='<div class="card-face card-back '+bnd.cls+'" style="--acc:'+sc+'">'
+    +'<div class="cb">'+bkHead(bpill(st.peBand))
+      +'<div class="cb-body">'
+        +'<div class="cb-cur"><span class="cb-cur-l">Current P/E · '+pctCaption(st.pePct,st.pePctRef)+'</span><span class="cb-cur-v" style="color:'+bnd.clr+'">'+f(st.curPE,1)+'</span></div>'
+        +refNote(st.peRef,1)
+        +'<div class="cb-sec">Comparison to Median</div>'+cbrows('pe',st.pe3,st.pe5,st.pe10,st.curPE)
+        +epsBox(st)
+      +'</div>'
+    +'</div>'
+  +'</div>';
+  return front+back;
+}
+
+/* ════════════════════════════════════════
+   DASHBOARD STATE + RENDER + LOAD
+════════════════════════════════════════ */
+var loadedCount=0,failedCount=0,statCache={},dataCache={};
+
+function sortVal(sec,st){
+  var ct=cardType(sec.name);
+  if(ct==='dual') return (st.pePct+st.pbPct)/2;  /* lower = cheaper */
+  if(ct==='pb')   return st.pbPct;
+  return st.pePct;
+}
+
+function sortCards(){
+  var g=document.getElementById('grid');
+  g.classList.add('fading');
+  setTimeout(function(){
+    var cards=Array.from(g.querySelectorAll('.s-card'));
+    cards.sort(function(a,b){return(+a.dataset.sort||50)-(+b.dataset.sort||50);});
+    cards.forEach(function(c){g.appendChild(c);});
+    void g.offsetHeight;g.classList.remove('fading');
+    cards.forEach(function(c,i){c.style.animation='none';void c.offsetWidth;c.style.animation='';c.style.animationDelay=(i*.05)+'s';});
+  },360);
+}
+
+function renderCard(sec,st){
+  var el=document.getElementById('c-'+sec.name);if(!el) return;
+  statCache[sec.name]=st;
+  el.dataset.sort=sortVal(sec,st).toFixed(1);
+  el.dataset.rendered='1';
+  /* Keyboard accessibility: real content is flippable, so expose as a button
+     with tabindex. Error/skeleton states strip these attributes. The flip
+     click+keydown handlers live on #grid as delegated listeners (see initGridEvents). */
+  el.setAttribute('role','button');
+  el.setAttribute('tabindex','0');
+  el.setAttribute('aria-label','Nifty '+sec.name+' — press Enter to flip');
+  el.innerHTML='<div class="card-inner">'+buildCard(sec,st)+'</div>';
+}
+function showErr(sec,msg){
+  var el=document.getElementById('c-'+sec.name);if(!el) return;
+  /* Error state isn't flippable — clear any interactive attributes set by renderCard */
+  el.removeAttribute('role');el.removeAttribute('tabindex');el.dataset.rendered='';
+  el.innerHTML='<div class="card-face bna" style="--acc:'+sec.color+'"><div class="card-err"><span>⚠ Nifty '+sec.name+'<br><span style="opacity:.7;font-size:.56rem">'+msg+'</span></span><button class="retry-btn" data-action="retry" data-sector="'+sec.name+'">↻ Retry</button></div></div>';
+}
+function skelHTML(sec){
+  return'<div class="card-inner"><div class="card-face bna" style="--acc:'+sec.color+'"><div class="skel-wrap">'
+    +'<div style="display:flex;justify-content:space-between;gap:9px"><div class="sk" style="height:19px;width:52%"></div><div class="sk" style="height:19px;width:22%;border-radius:12px"></div></div>'
+    +'<div class="sk" style="height:52px;border-radius:8px;margin-top:8px"></div>'
+    +'<div class="sk" style="height:110px;border-radius:8px;margin-top:7px"></div>'
+    +'<div class="sk" style="height:7px;width:26%;margin-top:8px;margin-left:auto"></div>'
+    +'</div></div></div>';
+}
+function setStatus(msg,cls){
+  var c=document.getElementById('status-chip');
+  c.textContent=msg;c.className=cls||'';
+  if(cls==='done'){
+    var upd=document.getElementById('h-updated');
+    if(upd){
+      upd.textContent='Updated '+new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+      upd.classList.add('visible');
+    }
+    var pill=document.getElementById('theme-pill-btn');
+    if(pill) pill.setAttribute('aria-pressed',document.documentElement.classList.contains('light')?'true':'false');
+  }
+}
+
+/* ════════════════════════════════════════
+   LIVE FEED — fetch, parse, populate liveCache
+   Called once at startup and on every reloadAll().
+   Does not block sector card rendering — sectors load in parallel.
+════════════════════════════════════════ */
+async function fetchLiveData(){
+  try{
+    var res=await fetch(LIVE_FEED_URL,{redirect:'follow'});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    /* Google Apps Script may return text that needs manual JSON.parse */
+    var txt=await res.text();
+    var raw;
+    try{ raw=JSON.parse(txt); }
+    catch(e){ throw new Error('Non-JSON response. First 200 chars: '+txt.slice(0,200)); }
+    console.log('[live] raw response:',raw);
+
+    /* Accept a wide range of wrapper shapes */
+    var rows=Array.isArray(raw)?raw
+            :(raw&&raw.data?raw.data
+            :(raw&&raw.rows?raw.rows
+            :(raw&&raw.values?raw.values
+            :(raw&&raw.result?raw.result:[]))));
+    if(!Array.isArray(rows)||!rows.length){
+      throw new Error('No rows in response. Keys: '+Object.keys(raw||{}).join(','));
+    }
+    console.log('[live] row count:',rows.length,'first row:',rows[0]);
+
+    /* Skip header rows: first cell is a string matching index/sector */
+    rows=rows.filter(function(r){
+      var first=Array.isArray(r)?r[0]:(r.Index||r.index||r.Sector||r.sector||r.symbol||'')+'';
+      return first&&!/^(index|sector|name|symbol)$/i.test(String(first).trim());
+    });
+
+    var asOf=new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+    var loaded=0, unmapped=[];
+    rows.forEach(function(r){
+      var name,price,pe,pb,eps=NaN;
+      if(Array.isArray(r)){
+        name=String(r[0]||'').trim().toUpperCase().replace(/\s+/g,' ');
+        price=parseFloat(r[1]); pe=parseFloat(r[2]); pb=parseFloat(r[3]);
+        /* EPS is in column 4 — use directly, no derivation needed */
+        var directEps=parseFloat(r[4]);
+        if(!isNaN(directEps)&&directEps>0) eps=directEps;
+      }else{
+        name=String(r.Index||r.index||r.Sector||r.sector||r.symbol||r.Symbol||'').trim().toUpperCase().replace(/\s+/g,' ');
+        price=parseFloat(r['Index Price']||r.price||r.Price||r.close||r.Close||r.ltp||r.LTP);
+        pe   =parseFloat(r.PE||r.pe||r['P/E']||r.peRatio);
+        pb   =parseFloat(r.PB||r.pb||r['P/B']||r.pbRatio);
+      }
+      var mapped=LIVE_NAME_MAP[name];
+      if(!mapped){ unmapped.push(name); return; }
+      /* If EPS wasn't read directly from column 4, derive from price/PE */
+      if(isNaN(eps)&&!isNaN(price)&&price>0&&!isNaN(pe)&&pe>0) eps=price/pe;
+      liveCache[mapped]={
+        price:isNaN(price)?NaN:price,
+        pe   :isNaN(pe)   ?NaN:pe,
+        pb   :isNaN(pb)   ?NaN:pb,
+        eps  :eps,
+        asOf :asOf
+      };
+      loaded++;
+    });
+
+    console.log('[live] parsed:',loaded,'sectors. cache:',liveCache);
+    if(unmapped.length) console.log('[live] unmapped names:',unmapped);
+
+    if(loaded>0){
+      var chip=document.getElementById('live-chip');
+      if(chip){chip.textContent='LIVE '+asOf;chip.classList.add('visible');}
+      /* Re-render any sectors that already loaded before live data arrived */
+      Object.keys(dataCache).forEach(function(name){
+        if(!liveCache[name]) return;
+        var sec=SECTORS.find(function(s){return s.name===name;});
+        if(!sec) return;
+        var newSt=computeStats(dataCache[name],liveCache[name]);
+        if(newSt) renderCard(sec,newSt);
+      });
+    }
+  }catch(e){
+    console.warn('[live] feed unavailable:',e.message);
+  }
+}
+
+async function loadSector(sec){
+  try{
+    var raw=await fetchWithRetry(sec.url);
+    var data=normalise(raw);dataCache[sec.name]=data;
+    var st=computeStats(data,liveCache[sec.name]||null);loadedCount++;
+    if(st) renderCard(sec,st); else showErr(sec,'No usable data');
+  }catch(e){failedCount++;showErr(sec,e.message);}
+  var done=loadedCount+failedCount,tot=SECTORS.length;
+  if(done<tot){setStatus('⏳ '+done+' / '+tot);}
+  else{setStatus('✓ '+loadedCount+'/'+tot+' · '+new Date().toLocaleTimeString(),'done');sortCards();}
+}
+async function loadAllStaggered(){
+  for(var i=0;i<SECTORS.length;i++){
+    loadSector(SECTORS[i]);
+    if(i<SECTORS.length-1) await new Promise(function(r){setTimeout(r,300);});
+  }
+}
+function reloadAll(){
+  loadedCount=0;failedCount=0;statCache={};dataCache={};liveCache={};
+  var chip=document.getElementById('live-chip');
+  if(chip) chip.classList.remove('visible');
+  setStatus('⏳ Connecting…');initPlaceholders();
+  (async function(){
+    await fetchLiveData().catch(function(){});
+    loadAllStaggered();
+  })();
+}
+function retrySector(name){
+  var s=SECTORS.find(function(x){return x.name===name;});if(!s) return;
+  if(failedCount>0) failedCount--;
+  var el=document.getElementById('c-'+s.name);if(el) el.innerHTML=skelHTML(s);
+  loadSector(s);
+}
+function initPlaceholders(){
+  var g=document.getElementById('grid');g.innerHTML='';
+  SECTORS.forEach(function(s,i){
+    var el=document.createElement('div');
+    el.className='s-card';el.id='c-'+s.name;el.dataset.sort='50';el.style.animationDelay=(i*.06)+'s';
+    el.innerHTML=skelHTML(s);g.appendChild(el);
+  });
+}
+
+/* ──────────────────────────────────────────
+   Delegated event handlers on #grid.
+   One click + one keydown listener handles all cards, replacing per-card
+   onclick assignments and inline onclick= strings inside card HTML.
+   This also means sector names no longer flow through inline JS strings,
+   removing the escaping hazard around quotes/apostrophes.
+   Runs once at init (after #grid exists).
+────────────────────────────────────────── */
+function initGridEvents(){
+  var grid=document.getElementById('grid');if(!grid) return;
+
+  /* Click: either an action button (Detail / Retry) or a flip on the card body. */
+  grid.addEventListener('click',function(e){
+    var actionEl=e.target.closest('[data-action]');
+    if(actionEl){
+      var action=actionEl.dataset.action, name=actionEl.dataset.sector;
+      e.stopPropagation();
+      if(action==='detail') openSectorDetail(name);
+      else if(action==='retry') retrySector(name);
+      return;
+    }
+    var card=e.target.closest('.s-card');
+    if(!card||card.dataset.rendered!=='1') return;  /* skeleton/error: ignore */
+    var inner=card.querySelector('.card-inner');
+    if(inner) inner.classList.toggle('flipped');
+  });
+
+  /* Keyboard flip: Enter or Space when focus is on the card itself.
+     Space would otherwise scroll the page, so we preventDefault. If focus
+     is on an inner <button>, let the browser's native Enter/Space handling
+     activate that button (its click event will bubble up and be handled above). */
+  grid.addEventListener('keydown',function(e){
+    if(e.key!=='Enter'&&e.key!==' ') return;
+    var card=e.target.closest('.s-card');
+    if(!card||e.target!==card) return;
+    if(card.dataset.rendered!=='1') return;
+    e.preventDefault();
+    var inner=card.querySelector('.card-inner');
+    if(inner) inner.classList.toggle('flipped');
+  });
+}
+
+/* ════════════════════════════════════════
+   ░░ BACKTEST ░░
+   Rolling median: strictly data[0..i] at each date t (zero look-ahead).
+   Both PE+PB selected: signal fires only when BOTH metrics are simultaneously
+   below their thresholds — specifically on the date the second metric crosses
+   below, completing the pair. Requires having seen both states previously.
+   Single metric: classic downward crossing trigger.
+   CAGR 6m: (P+6m/Pbuy)^2 − 1 | 1yr: P+1yr/Pbuy − 1 | open: annualised partial.
+════════════════════════════════════════ */
+var btData=null,btResults=null;
+
+function btSlideLbl(f,v){
+  document.getElementById('bt-lbl-'+f).textContent=v+'%';
+  document.getElementById('bt-note-'+f).textContent=v+'%';
+}
+function btUpdateMetrics(){
+  var pe=document.getElementById('bt-cb-pe').checked;
+  var pb=document.getElementById('bt-cb-pb').checked;
+
+  /* Enforce "at least one metric selected" — if user unchecks the last remaining
+     metric, re-check the other one so a backtest can always be run. */
+  if(!pe&&!pb){
+    document.getElementById('bt-cb-pe').checked=true;
+    pe=true;
+  }
+
+  /* Hide only the slider row + note when its metric is unchecked.
+     Checkbox stays visible and clickable at all times. */
+  document.getElementById('bt-sl-pe-wrap').classList.toggle('hidden',!pe);
+  document.getElementById('bt-sl-pb-wrap').classList.toggle('hidden',!pb);
+}
+
+async function btOnSectorChange(){
+  var name=document.getElementById('bt-sector').value;if(!name) return;
+  var ct=cardType(name);  /* 'dual' | 'pe' | 'pb' — used only for defaults */
+
+  var peCb=document.getElementById('bt-cb-pe'), pbCb=document.getElementById('bt-cb-pb');
+  var peBlock=document.getElementById('bt-pe-block'), pbBlock=document.getElementById('bt-pb-block');
+
+  /* Checkboxes are always enabled — user can backtest any sector on PE, PB, or both.
+     Remove any leftover disabled state from prior sector selections. */
+  peCb.disabled=false;
+  pbCb.disabled=false;
+  peBlock.classList.remove('bt-disabled');
+  pbBlock.classList.remove('bt-disabled');
+
+  /* Default selections: pre-check whichever metric(s) the sector natively uses.
+     User is free to change this — either check an "unsupported" metric or uncheck
+     the default. The "no data" hint appears later if they pick one with no data. */
+  peCb.checked=(ct==='dual'||ct==='pe');
+  pbCb.checked=(ct==='dual'||ct==='pb');
+  /* Clear any stale no-data hints from a prior sector */
+  setNoDataHint('pe',false);
+  setNoDataHint('pb',false);
+
+  btUpdateMetrics();
+  document.getElementById('bt-run-btn').disabled=true;
+  document.getElementById('bt-load-chip').textContent='⏳ Loading…';
+  if(dataCache[name]){
+    btData=dataCache[name];
+  }else{
+    try{
+      var sec=SECTORS.find(function(s){return s.name===name;});
+      btData=normalise(await fetchWithRetry(sec.url));dataCache[name]=btData;
+    }catch(e){document.getElementById('bt-load-chip').textContent='⚠ '+e.message;return;}
+  }
+  document.getElementById('bt-load-chip').textContent='';
+
+  /* After data loads: check which metrics have any usable values.
+     Show a "no data" hint next to a metric if its column is empty — user can
+     still tick it, but they'll know why the backtest will return 0 signals. */
+  var hasPE=vv(btData,'pe').length>0;
+  var hasPB=vv(btData,'pb').length>0;
+  setNoDataHint('pe',!hasPE);
+  setNoDataHint('pb',!hasPB);
+
+  /* date range — normalize to YYYY-MM-DD via toInputDate() */
+  var dates=btData.map(function(r){return r.date;}).filter(Boolean)
+    .map(toInputDate).filter(Boolean).sort();
+  var minD=dates[0],maxD=dates[dates.length-1];
+  var si=document.getElementById('bt-start'),ei=document.getElementById('bt-end');
+  si.min=minD;si.max=maxD;si.value=minD;
+  ei.min=minD;ei.max=maxD;ei.value=maxD;
+  /* slider defaults: current value / weighted ref */
+  function defPct(fld){
+    var last=btData[btData.length-1],cur=last[fld];
+    if(!cur||isNaN(cur)||cur<=0) return 90;
+    var s3v=sliceYrs(btData,3),s5v=sliceYrs(btData,5),s10v=sliceYrs(btData,10);
+    var ref=weightedRef(median(winsorise(vv(s3v,fld))),median(winsorise(vv(s5v,fld))),median(winsorise(vv(s10v,fld))));
+    var p=(!isNaN(ref)&&ref>0)?Math.round((cur/ref)*100):90;
+    return Math.max(50,Math.min(150,p));
+  }
+  var peP=defPct('pe'),pbP=defPct('pb');
+  document.getElementById('bt-sl-pe').value=peP;btSlideLbl('pe',peP);
+  document.getElementById('bt-sl-pb').value=pbP;btSlideLbl('pb',pbP);
+  document.getElementById('bt-run-btn').disabled=false;
+  document.getElementById('bt-results-card').style.display='none';
+}
+
+/* Show or hide a small "no data" hint next to a metric checkbox */
+function setNoDataHint(fld,show){
+  var id='bt-nodata-'+fld;
+  var existing=document.getElementById(id);
+  if(show){
+    if(!existing){
+      var lbl=document.querySelector('#bt-cb-'+fld).parentElement;
+      if(lbl){
+        var span=document.createElement('span');
+        span.id=id;
+        span.className='bt-nodata-hint';
+        span.textContent='no data';
+        lbl.appendChild(span);
+      }
+    }
+  } else {
+    if(existing) existing.remove();
+  }
+}
+
+/* Cached DOM refs for backtest panel — queried once, reused on every run */
+var _btEl={};
+function btEl(id){
+  if(!_btEl[id]) _btEl[id]=document.getElementById(id);
+  return _btEl[id];
+}
+
+/* Date validation — returns an error string or null if valid */
+function btValidateDates(startVal,endVal,dataMinDate,dataMaxDate){
+  if(!startVal||!endVal) return 'Please select both start and end dates.';
+  var s=new Date(startVal),e=new Date(endVal);
+  if(isNaN(s)||isNaN(e)) return 'Invalid date format.';
+  if(s>=e) return 'Start date must be before end date.';
+  var dMin=new Date(dataMinDate),dMax=new Date(dataMaxDate);
+  if(s<dMin) return 'Start date is before the earliest available data ('+fmtDate(dataMinDate)+').';
+  if(e>dMax) return 'End date is after the latest available data ('+fmtDate(dataMaxDate)+').';
+  var minWindowMs=90*86400000;
+  if(e-s<minWindowMs) return 'Window must be at least 90 days to produce useful signals.';
+  return null;
+}
+
+function btRun(){
+  if(!btData) return;
+  /* Validate dates before doing any work */
+  var startVal=btEl('bt-start').value, endVal=btEl('bt-end').value;
+  var dates=btData.map(function(r){return r.date;}).filter(Boolean)
+    .map(toInputDate).filter(Boolean).sort();
+  var err=btValidateDates(startVal,endVal,dates[0],dates[dates.length-1]);
+  if(err){
+    var tdiv=btEl('bt-table-div');
+    btEl('bt-results-card').style.display='';
+    if(tdiv) tdiv.innerHTML='<div class="no-signals" style="color:var(--exp-c)">⚠ '+err+'</div>';
+    btEl('bt-summary-div').innerHTML='';
+    btEl('bt-ref-info').innerHTML='';
+    return;
+  }
+  btEl('bt-run-btn').disabled=true;
+  btEl('bt-spinner').classList.add('visible');
+  btEl('bt-results-card').style.display='none';
+  setTimeout(function(){
+    try {
+      _btCompute();
+    } catch(e) {
+      console.error('Backtest error:',e);
+      var tdiv=btEl('bt-table-div');
+      if(tdiv) tdiv.innerHTML='<div class="no-signals" style="color:var(--exp-c)">Backtest failed: '+(e.message||e)+'</div>';
+      btEl('bt-results-card').style.display='';
+    }
+    btEl('bt-spinner').classList.remove('visible');
+    btEl('bt-run-btn').disabled=false;
+  },40);
+}
+
+function _btCompute(){
+  var usePE=document.getElementById('bt-cb-pe').checked;
+  var usePB=document.getElementById('bt-cb-pb').checked;
+  if(!usePE&&!usePB){btResults=null;return;}
+  var thrPE=+document.getElementById('bt-sl-pe').value/100;
+  var thrPB=+document.getElementById('bt-sl-pb').value/100;
+  var startDate=new Date(document.getElementById('bt-start').value);
+  var endDate=new Date(document.getElementById('bt-end').value);endDate.setHours(23,59,59);
+  var COOLDOWN=180*86400000;
+  var data=btData;
+  var res=[];
+  var lastBuy=null;
+  var bothMode=usePE&&usePB;
+  /*
+   * Weighted reference per date: 30% × 3y + 60% × 5y + 10% × 10y.
+   * Same formula the dashboard uses — backtest and dashboard are aligned.
+   *
+   * SIGNAL TRIGGER (both modes):
+   *   Fires when ratio (= current / weightedRef) is at the user threshold,
+   *   with a ±1% tolerance band. e.g. threshold 80% → fires on dates where
+   *   79% ≤ ratio ≤ 81%. 6-month cooldown between signals.
+   *
+   * BOTH MODE requires BOTH PE and PB ratios to be within their respective
+   * ±1% bands simultaneously.
+   */
+  /* caches for end-of-window summary */
+  var endRefInfo={peRef:NaN,pbRef:NaN};
+  /* sliding windows as [start, end) index ranges into data[].
+     Advancing the pointer is O(1) vs Array.shift() which is O(n). */
+  var h3s=0,h5s=0,h10s=0;
+  /* Process every Nth row to skip daily noise. Valuation signals move slowly;
+     a 5-day stride still catches every meaningful touch-of-threshold but costs 5× less. */
+  var STRIDE=5;
+
+  function fwdReturn(buyIdx,months){
+    const bd=new Date(data[buyIdx].date), bp=data[buyIdx].price;
+    if(!bp||bp<=0) return{cagr:null,open:true};
+    const tgt=new Date(bd);tgt.setMonth(tgt.getMonth()+months);
+    for(let k=buyIdx+1;k<data.length;k++){
+      const sp=data[k].price;
+      if(new Date(data[k].date)>=tgt&&sp>0) return{cagr:Math.pow(sp/bp,12/months)-1,open:false};
+    }
+    for(let m=data.length-1;m>buyIdx;m--){
+      const lp=data[m].price;
+      if(lp>0){const el=(new Date(data[m].date)-bd)/(365.25*86400000);if(el>0.05) return{cagr:Math.pow(lp/bp,1/el)-1,open:true};}
+    }
+    return{cagr:null,open:true};
+  }
+
+  /* pre-compute date timestamps once — avoids thousands of Date parses in the loop */
+  const ts=new Array(data.length);
+  for(let ii=0;ii<data.length;ii++){ts[ii]=new Date(data[ii].date).getTime();}
+  const startMs=startDate.getTime(), endMs=endDate.getTime();
+  const MS_YR=365.25*86400000;
+  /* Trigger tolerance: fire when ratio is within ±TOL of user threshold.
+     e.g. threshold 80%, TOL 1% → fire when 79% ≤ ratio ≤ 81%. */
+  const TOL=0.01;
+
+  /* running max EPS — tracked point-in-time across the whole series so each
+     signal records its maxEPSToDate without look-ahead. */
+  let maxEpsSoFar=NaN;
+
+  for(let i=0;i<data.length;i++){
+    const row=data[i], tMs=ts[i];
+
+    /* maintain point-in-time max EPS (include every row, not just in-range) */
+    const ev=row.eps;
+    if(ev&&!isNaN(ev)&&isFinite(ev)&&ev>0){
+      if(isNaN(maxEpsSoFar)||ev>maxEpsSoFar) maxEpsSoFar=ev;
+    }
+
+    /* advance window start-pointers (O(1) amortised over the whole loop) */
+    const c3Ms=tMs-3*MS_YR, c5Ms=tMs-5*MS_YR, c10Ms=tMs-10*MS_YR;
+    while(h3s<=i && ts[h3s]<c3Ms) h3s++;
+    while(h5s<=i && ts[h5s]<c5Ms) h5s++;
+    while(h10s<=i && ts[h10s]<c10Ms) h10s++;
+
+    /* only emit signals for dates inside the requested backtest range */
+    if(tMs<startMs||tMs>endMs) continue;
+    const price=row.price;if(!price||isNaN(price)||price<=0) continue;
+
+    /* stride gate: only run expensive median + signal logic every Nth row,
+       plus always on the final row so the end-of-window banner is current. */
+    const isLastRow=(i===data.length-1);
+    if((i % STRIDE)!==0 && !isLastRow) continue;
+
+    /* weighted reference — 30% × 3y + 60% × 5y + 10% × 10y.
+       Winsorisation skipped inside the backtest inner loop for speed; median
+       is already robust to individual outliers. */
+    let peRef=NaN, pbRef=NaN;
+    if(usePE){
+      const h3sl=data.slice(h3s,i+1), h5sl=data.slice(h5s,i+1), h10sl=data.slice(h10s,i+1);
+      const pe3=median(vv(h3sl,'pe')),pe5=median(vv(h5sl,'pe')),pe10=median(vv(h10sl,'pe'));
+      peRef=weightedRef(pe3,pe5,pe10);
+    }
+    if(usePB){
+      const h3slb=data.slice(h3s,i+1), h5slb=data.slice(h5s,i+1), h10slb=data.slice(h10s,i+1);
+      const pb3=median(vv(h3slb,'pb')),pb5=median(vv(h5slb,'pb')),pb10=median(vv(h10slb,'pb'));
+      pbRef=weightedRef(pb3,pb5,pb10);
+    }
+
+    /* remember the last valid ref for the end-of-window summary */
+    if(!isNaN(peRef)) endRefInfo.peRef=peRef;
+    if(!isNaN(pbRef)) endRefInfo.pbRef=pbRef;
+
+    /* current EPS as % of point-in-time max EPS */
+    const curEps=row.eps;
+    const epsPctMaxToDate=(curEps&&!isNaN(curEps)&&!isNaN(maxEpsSoFar)&&maxEpsSoFar>0)
+      ? (curEps/maxEpsSoFar)*100 : NaN;
+
+    if(bothMode){
+      const curPE=row.pe, curPB=row.pb;
+      const peOk=curPE&&!isNaN(curPE)&&curPE>0;
+      const pbOk=curPB&&!isNaN(curPB)&&curPB>0;
+      if(!peOk&&!pbOk) continue;
+      if(isNaN(peRef)||peRef<=0||isNaN(pbRef)||pbRef<=0) continue;
+
+      /* "at threshold" = ratio within ±TOL of user threshold */
+      const peRatio=curPE/peRef, pbRatio=curPB/pbRef;
+      const peAtThr=Math.abs(peRatio-thrPE)<=TOL;
+      const pbAtThr=Math.abs(pbRatio-thrPB)<=TOL;
+
+      if(peAtThr&&pbAtThr){
+        if(!lastBuy||(tMs-lastBuy)>=COOLDOWN){
+          lastBuy=tMs;
+          res.push({
+            date:row.date,field:'both',
+            val:curPE,val2:curPB,
+            med:peRef,med2:pbRef,
+            pct:peRatio*100,
+            pct2:pbRatio*100,
+            epsPctMax:epsPctMaxToDate,
+            price:price,
+            r6m:fwdReturn(i,6),r1yr:fwdReturn(i,12)
+          });
+        }
+      }
+
+    } else {
+      const sField=usePE?'pe':'pb';
+      const sThr=usePE?thrPE:thrPB;
+      const cur=row[sField];if(!cur||isNaN(cur)||cur<=0) continue;
+      const sRef=usePE?peRef:pbRef;
+      if(isNaN(sRef)||sRef<=0) continue;
+      const sRatio=cur/sRef;
+
+      /* "at threshold" = ratio within ±TOL of user threshold */
+      if(Math.abs(sRatio-sThr)<=TOL){
+        if(!lastBuy||(tMs-lastBuy)>=COOLDOWN){
+          lastBuy=tMs;
+          res.push({
+            date:row.date,field:sField,val:cur,med:sRef,
+            pct:sRatio*100,
+            epsPctMax:epsPctMaxToDate,
+            price:price,
+            r6m:fwdReturn(i,6),r1yr:fwdReturn(i,12)
+          });
+        }
+      }
+    }
+  }
+
+  res.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
+  btResults={trades:res,usePE:usePE,usePB:usePB,both:bothMode,endRef:endRefInfo,thrPE:thrPE,thrPB:thrPB};
+  document.getElementById('bt-results-card').style.display='';
+  btShow();
+}
+
+/* ── RENDER RESULTS ── */
+function btShow(){
+  if(!btResults) return;
+  var trades=btResults.trades||[];
+  btRenderRefInfo();
+  btRenderSummary(trades);
+  btRenderTable(trades);
+}
+
+function btRenderRefInfo(){
+  var er=btResults.endRef, parts=[];
+  var thrPE=btResults.thrPE, thrPB=btResults.thrPB;
+  parts.push('<span class="bt-ref-item"><strong>Weighted ref</strong> · 30% 3yr + 60% 5yr + 10% 10yr</span>');
+  parts.push('<span class="bt-ref-item"><strong>Trigger</strong> · ratio within ±1% of threshold · 6m cooldown</span>');
+  if(btResults.usePE&&!isNaN(er.peRef)){
+    parts.push('<span class="bt-ref-item">P/E ref at end <strong>'+f(er.peRef,1)+'</strong> · threshold '+Math.round(thrPE*100)+'%</span>');
+  }
+  if(btResults.usePB&&!isNaN(er.pbRef)){
+    parts.push('<span class="bt-ref-item">P/B ref at end <strong>'+f(er.pbRef,2)+'</strong> · threshold '+Math.round(thrPB*100)+'%</span>');
+  }
+  document.getElementById('bt-ref-info').innerHTML=parts.join('');
+}
+
+function btActiveTrades(){
+  var cbs=document.querySelectorAll('.trade-cb-inp');
+  var trades=(btResults&&btResults.trades)||[];
+  var sel=[];
+  cbs.forEach(function(cb,i){if(i<trades.length&&cb.checked) sel.push(trades[i]);});
+  return sel;
+}
+
+function btRenderSummary(trades){
+  var sel=arguments.length>1?arguments[1]:trades; /* allow override for live recalc */
+  var c6=sel.filter(function(t){return!t.r6m.open&&t.r6m.cagr!==null;});
+  var c1=sel.filter(function(t){return!t.r1yr.open&&t.r1yr.cagr!==null;});
+  var a6=c6.length?c6.reduce(function(s,t){return s+t.r6m.cagr;},0)/c6.length:null;
+  var a1=c1.length?c1.reduce(function(s,t){return s+t.r1yr.cagr;},0)/c1.length:null;
+  var h6=c6.length?c6.filter(function(t){return t.r6m.cagr>0;}).length/c6.length:null;
+  var h1=c1.length?c1.filter(function(t){return t.r1yr.cagr>0;}).length/c1.length:null;
+  function sv(c){if(c===null) return'<span class="bt-stat-val">—</span>';var cls=c>=.05?'pos':c>=-.05?'neu':'neg';return'<span class="bt-stat-val '+cls+'">'+(c>=0?'+':'')+(c*100).toFixed(1)+'%</span>';}
+  function hv(h,n){if(h===null) return'<span class="bt-stat-val">—</span>';var cls=h>=.8?'pos':h>=.6?'neu':'neg';return'<span class="bt-stat-val '+cls+'">'+Math.round(h*100)+'%</span><div class="bt-stat-sub">'+n+' closed</div>';}
+  document.getElementById('bt-summary-div').innerHTML='<div class="bt-summary">'
+    +'<div class="bt-stat"><div class="bt-stat-lbl">Signals</div><span class="bt-stat-val">'+sel.length+' / '+trades.length+'</span></div>'
+    +'<div class="bt-stat"><div class="bt-stat-lbl">Avg 6m CAGR</div>'+sv(a6)+'</div>'
+    +'<div class="bt-stat"><div class="bt-stat-lbl">6m Hit Rate</div>'+hv(h6,c6.length)+'</div>'
+    +'<div class="bt-stat"><div class="bt-stat-lbl">Avg 1yr CAGR</div>'+sv(a1)+'</div>'
+    +'<div class="bt-stat"><div class="bt-stat-lbl">1yr Hit Rate</div>'+hv(h1,c1.length)+'</div>'
+    +'</div>';
+}
+
+function btRecalcStats(){
+  var sel=btActiveTrades();
+  btRenderSummary((btResults&&btResults.trades)||[],sel);
+}
+
+function btToggleAll(checked){
+  document.querySelectorAll('.trade-cb-inp').forEach(function(cb){cb.checked=checked;});
+  btRecalcStats();
+}
+
+function btRenderTable(trades){
+  if(!trades.length){
+    /* Explain WHY: if one of the selected metrics has no data, say so explicitly
+       rather than asking the user to fiddle with thresholds that won't help. */
+    var usePE=btResults&&btResults.usePE, usePB=btResults&&btResults.usePB;
+    var hasPE=btData?vv(btData,'pe').length>0:true;
+    var hasPB=btData?vv(btData,'pb').length>0:true;
+    var missing=[];
+    if(usePE&&!hasPE) missing.push('P/E');
+    if(usePB&&!hasPB) missing.push('P/B');
+    var msg;
+    if(missing.length){
+      msg='No '+missing.join(' or ')+' data available for this sector.<br>'
+        +'Uncheck '+missing.join(' / ')+' above, or pick a different sector.';
+    } else {
+      msg='No signals in this window.<br>Adjust thresholds or date range.';
+    }
+    document.getElementById('bt-table-div').innerHTML='<div class="no-signals">'+msg+'</div>';
+    return;
+  }
+  var isBoth=btResults&&btResults.both;
+  function trigBadge(f){
+    if(f==='pe') return'<span class="trig-pe">PE</span>';
+    if(f==='pb') return'<span class="trig-pb">PB</span>';
+    return'<span class="trig-both">PE + PB</span>';
+  }
+  /* Row-level shading based on realised CAGR.
+     Priority: red (either CAGR < 0) > green (either CAGR > 15%) > yellow (any closed data).
+     Open trades (cagr===null) don't affect classification — treated as no signal. */
+  function rowShade(tr){
+    var c6=(tr.r6m.open||tr.r6m.cagr===null)?null:tr.r6m.cagr;
+    var c1=(tr.r1yr.open||tr.r1yr.cagr===null)?null:tr.r1yr.cagr;
+    if(c6===null&&c1===null) return '';
+    if((c6!==null&&c6<0)||(c1!==null&&c1<0)) return 'bt-row-red';
+    if((c6!==null&&c6>0.15)||(c1!==null&&c1>0.15)) return 'bt-row-green';
+    return 'bt-row-yellow';
+  }
+  var rows=trades.map(function(tr){
+    var valCell,medCell,pctCell;
+    if(isBoth){
+      valCell='<span style="color:var(--vchp-c)">PE '+f(tr.val,1)+'</span> / <span style="color:var(--chp-c)">PB '+f(tr.val2,2)+'</span>';
+      medCell='<span style="color:var(--vchp-c)">'+f(tr.med,1)+'</span> / <span style="color:var(--chp-c)">'+f(tr.med2,2)+'</span>';
+      pctCell=(isNaN(tr.pct)?'—':tr.pct.toFixed(1)+'%')+' / '+(isNaN(tr.pct2)?'—':tr.pct2.toFixed(1)+'%');
+    }else{
+      valCell='<span class="vc">'+f(tr.val,2)+'</span>';
+      medCell=f(tr.med,2);
+      pctCell=isNaN(tr.pct)?'—':tr.pct.toFixed(1)+'%';
+    }
+    var epsCell=isNaN(tr.epsPctMax)?'—':Math.round(tr.epsPctMax)+'%';
+    var cls=rowShade(tr);
+    return'<tr'+(cls?' class="'+cls+'"':'')+'>'
+      +'<td><input type="checkbox" class="trade-cb-inp" checked onchange="btRecalcStats()"></td>'
+      +'<td>'+fmtDate(tr.date)+'</td>'
+      +'<td style="text-align:center">'+trigBadge(tr.field)+'</td>'
+      +'<td class="vc">'+valCell+'</td>'
+      +'<td>'+medCell+'</td>'
+      +'<td style="color:var(--txt)">'+pctCell+'</td>'
+      +'<td>'+epsCell+'</td>'
+      +'<td>'+fmtCAGR(tr.r6m.cagr,tr.r6m.open)+'</td>'
+      +'<td>'+fmtCAGR(tr.r1yr.cagr,tr.r1yr.open)+'</td>'
+    +'</tr>';
+  }).join('');
+  var valHdr=isBoth?'PE · PB at Buy':'Value at Buy';
+  var medHdr=isBoth?'PE · PB Ref':'Weighted Ref';
+  var pctHdr=isBoth?'PE% · PB%':'% of Ref';
+  document.getElementById('bt-table-div').innerHTML='<div class="bt-tbl-wrap"><table class="bt-tbl">'
+    +'<thead><tr>'
+    +'<th><input type="checkbox" class="sel-all-cb" checked onchange="btToggleAll(this.checked)"></th>'
+    +'<th style="text-align:left">Date</th>'
+    +'<th>Trigger</th>'
+    +'<th>'+valHdr+'</th>'
+    +'<th>'+medHdr+'</th>'
+    +'<th>'+pctHdr+'</th>'
+    +'<th title="EPS as % of max EPS up to that date">EPS %</th>'
+    +'<th>6m CAGR</th>'
+    +'<th>1yr CAGR</th>'
+    +'</tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'</table></div>';
+}
+
+/* ════════════════════════════════════════
+   SECTOR DETAIL OVERLAY
+════════════════════════════════════════ */
+
+/* Build quarterly mean table from last 5 years of data — always shows all 4 columns */
+function buildQuarterlyTable(data){
+  const s5=sliceYrs(data,5);
+  if(!s5.length) return '<div class="no-signals">No data available.</div>';
+
+  /* Group rows into quarters, collecting price too */
+  const quarters={};
+  s5.forEach(function(row){
+    const d=new Date(row.date);
+    if(isNaN(d)) return;
+    const yr=d.getFullYear(), q=Math.floor(d.getMonth()/3)+1;
+    const key=yr+'Q'+q;
+    if(!quarters[key]) quarters[key]={label:'Q'+q+' '+yr,price:[],pe:[],pb:[],eps:[]};
+    if(row.price&&!isNaN(row.price)&&row.price>0) quarters[key].price.push(row.price);
+    if(row.pe   &&!isNaN(row.pe)   &&row.pe>0)    quarters[key].pe.push(row.pe);
+    if(row.pb   &&!isNaN(row.pb)   &&row.pb>0)    quarters[key].pb.push(row.pb);
+    if(row.eps  &&!isNaN(row.eps)  &&row.eps>0)   quarters[key].eps.push(row.eps);
+  });
+
+  const keys=Object.keys(quarters).sort().reverse();
+  if(!keys.length) return '<div class="no-signals">Insufficient quarterly data.</div>';
+
+  const avg=function(arr){ return arr.length?arr.reduce(function(s,v){return s+v;},0)/arr.length:NaN; };
+
+  /* Compute per-column averages for hi/lo colouring */
+  const priceAvgs=keys.map(function(k){return avg(quarters[k].price);}).filter(function(v){return !isNaN(v);});
+  const peAvgs   =keys.map(function(k){return avg(quarters[k].pe);   }).filter(function(v){return !isNaN(v);});
+  const pbAvgs   =keys.map(function(k){return avg(quarters[k].pb);   }).filter(function(v){return !isNaN(v);});
+  const epsAvgs  =keys.map(function(k){return avg(quarters[k].eps);  }).filter(function(v){return !isNaN(v);});
+
+  const priceLo=Math.min.apply(null,priceAvgs), priceHi=Math.max.apply(null,priceAvgs);
+  const peLo   =Math.min.apply(null,peAvgs),    peHi   =Math.max.apply(null,peAvgs);
+  const pbLo   =Math.min.apply(null,pbAvgs),    pbHi   =Math.max.apply(null,pbAvgs);
+  const epsLo  =Math.min.apply(null,epsAvgs),   epsHi  =Math.max.apply(null,epsAvgs);
+
+  /* invert=true → high value = bad (PE/PB), invert=false → high value = good (Price/EPS) */
+  function cls(v,lo,hi,invert){
+    if(isNaN(v)||lo===hi) return '';
+    if(v===lo) return invert?'qt-hi':'qt-lo';
+    if(v===hi) return invert?'qt-lo':'qt-hi';
+    return '';
+  }
+  function fmt(v,dp){ return isNaN(v)?'—':(+v).toFixed(dp); }
+
+  const thead='<tr>'
+    +'<th>Quarter</th>'
+    +'<th>Price</th>'
+    +'<th>P/E</th>'
+    +'<th>P/B</th>'
+    +'<th>EPS</th>'
+    +'</tr>';
+
+  const rows=keys.map(function(k){
+    const q=quarters[k];
+    const price=avg(q.price), pe=avg(q.pe), pb=avg(q.pb), eps=avg(q.eps);
+    return '<tr>'
+      +'<td>'+q.label+'</td>'
+      +'<td class="'+cls(price,priceLo,priceHi,false)+'">'+fmt(price,0)+'</td>'
+      +'<td class="'+cls(pe,peLo,peHi,true)+'">'+fmt(pe,1)+'</td>'
+      +'<td class="'+cls(pb,pbLo,pbHi,true)+'">'+fmt(pb,2)+'</td>'
+      +'<td class="'+cls(eps,epsLo,epsHi,false)+'">'+fmt(eps,0)+'</td>'
+      +'</tr>';
+  }).join('');
+
+  return '<table class="sd-qtbl"><thead>'+thead+'</thead><tbody>'+rows+'</tbody></table>';
+}
+
+/* Build the full detail page HTML */
+/* ════════════════════════════════════════
+   EPS GROWTH CHARTS — sector detail overlay
+   Annual YoY: last 10 years  |  QoQ: last 4 quarters
+════════════════════════════════════════ */
+function buildEpsGrowthCharts(data, secColor){
+  if(!data||!data.length) return '';
+  var isLight=document.documentElement.classList.contains('light');
+
+  /* Get EPS value approximately N days before the last data point.
+     Mirrors the global epsAt() but self-contained so no external deps. */
+  function epsBack(daysAgo){
+    var last=new Date(data[data.length-1].date);
+    if(isNaN(last)) return NaN;
+    var target=new Date(last.getTime()-daysAgo*86400000);
+    for(var k=data.length-1;k>=0;k--){
+      var dt=new Date(data[k].date);
+      if(isNaN(dt)) continue;
+      if(dt<=target){
+        var v=data[k].eps;
+        if(v&&!isNaN(v)&&isFinite(v)&&v>0) return v;
+      }
+    }
+    return NaN;
+  }
+
+  var lastDate=new Date(data[data.length-1].date);
+
+  /* ── Annual YoY: up to 10 years ── */
+  var yoyBars=[];
+  for(var yr=1;yr<=10;yr++){
+    var epsEnd=epsBack((yr-1)*365);
+    var epsStart=epsBack(yr*365);
+    if(!isNaN(epsEnd)&&!isNaN(epsStart)&&epsStart>0){
+      var labelYear=lastDate.getFullYear()-(yr-1);
+      yoyBars.unshift({label:String(labelYear),val:epsEnd/epsStart-1});
+    }
+  }
+
+  /* ── Quarterly QoQ: last ~2 years, 4 QoQ values ── */
+  var qBuckets={};
+  var cutoff=new Date(lastDate.getTime()-730*86400000);
+  for(var ri=0;ri<data.length;ri++){
+    var r=data[ri];
+    var rd=new Date(r.date);
+    if(isNaN(rd)||rd<cutoff) continue;
+    var qyr=rd.getFullYear(),qq=Math.floor(rd.getMonth()/3)+1;
+    var qk=qyr*10+qq;
+    if(!qBuckets[qk]) qBuckets[qk]={sort:qk,label:'Q'+qq+' \''+String(qyr).slice(2),sum:0,n:0};
+    if(r.eps&&!isNaN(r.eps)&&r.eps>0){qBuckets[qk].sum+=r.eps;qBuckets[qk].n++;}
+  }
+  var qKeys=Object.keys(qBuckets).map(Number).sort(function(a,b){return a-b;});
+  var qAvgs=qKeys.map(function(k){
+    var b=qBuckets[k];
+    return{label:b.label,avg:b.n?b.sum/b.n:NaN};
+  }).filter(function(q){return!isNaN(q.avg);});
+  var qoqBars=[];
+  for(var qi=Math.max(1,qAvgs.length-4);qi<qAvgs.length;qi++){
+    var prev=qAvgs[qi-1].avg,cur2=qAvgs[qi].avg;
+    if(!isNaN(prev)&&prev>0) qoqBars.push({label:qAvgs[qi].label,val:cur2/prev-1});
+  }
+
+  /* ── SVG bar chart ── */
+  function buildChart(bars,title,sub){
+    if(!bars.length) return '<div class="sd-eps-chart-wrap">'
+      +'<div class="sd-eps-chart-head">'+title+'<span class="sd-eps-chart-sub">'+sub+'</span></div>'
+      +'<div class="sd-eps-no-data">Insufficient data</div></div>';
+
+    var W=480,H=130,PL=42,PR=12,PT=14,PB=32;
+    var CW=W-PL-PR,CH=H-PT-PB;
+    var maxAbs=0;
+    for(var bi=0;bi<bars.length;bi++){var av=Math.abs(bars[bi].val);if(av>maxAbs)maxAbs=av;}
+    if(maxAbs<0.001) maxAbs=0.1;
+    var scale=Math.ceil(maxAbs*10)/10; /* round up to nearest 10% */
+    var ppu=CH/2/scale;
+    var zY=PT+CH/2;
+    var gap=CW/bars.length;
+    var bw=Math.max(6,Math.floor(gap*0.58));
+
+    var posC=isLight?'rgba(5,150,105,.75)':'rgba(0,200,83,.72)';
+    var negC=isLight?'rgba(194,65,12,.75)':'rgba(255,82,82,.72)';
+    var axC=isLight?'rgba(0,0,0,.13)':'rgba(255,255,255,.11)';
+    var lblC=isLight?'rgba(0,0,0,.40)':'rgba(255,255,255,.36)';
+    var valC=isLight?'rgba(0,0,0,.68)':'rgba(255,255,255,.72)';
+    var zC=isLight?'rgba(0,0,0,.22)':'rgba(255,255,255,.22)';
+
+    var svg='';
+    /* axis */
+    svg+='<line x1="'+PL+'" y1="'+PT+'" x2="'+PL+'" y2="'+(PT+CH)+'" stroke="'+axC+'" stroke-width="0.8" vector-effect="non-scaling-stroke"/>';
+    svg+='<line x1="'+PL+'" y1="'+zY+'" x2="'+(W-PR)+'" y2="'+zY+'" stroke="'+zC+'" stroke-width="1" vector-effect="non-scaling-stroke"/>';
+    /* y labels */
+    var yl=[{pct:scale,y:PT},{pct:0,y:zY},{pct:-scale,y:PT+CH}];
+    for(var yi=0;yi<yl.length;yi++){
+      var sign2=yl[yi].pct>0?'+':yl[yi].pct<0?'-':'';
+      var abs2=Math.abs(yl[yi].pct*100).toFixed(0);
+      svg+='<text x="'+(PL-5)+'" y="'+(yl[yi].y+3.5)+'" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="8.5" fill="'+lblC+'">'+sign2+abs2+'%</text>';
+    }
+    /* bars + labels + values */
+    for(var bi2=0;bi2<bars.length;bi2++){
+      var b=bars[bi2];
+      var cx=PL+gap*bi2+gap/2;
+      var px=Math.max(Math.round(Math.abs(b.val)*ppu),2);
+      var pos=b.val>=0;
+      var rx=Math.round(cx-bw/2);
+      var ry=pos?Math.round(zY-px):Math.round(zY);
+      svg+='<rect x="'+rx+'" y="'+ry+'" width="'+bw+'" height="'+px+'" rx="2" fill="'+(pos?posC:negC)+'"/>';
+      /* value */
+      var vy=pos?(ry-4):(ry+px+10);
+      var vsign=b.val>=0?'+':'';
+      svg+='<text x="'+Math.round(cx)+'" y="'+vy+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="600" fill="'+valC+'">'+vsign+(b.val*100).toFixed(1)+'%</text>';
+      /* x label */
+      svg+='<text x="'+Math.round(cx)+'" y="'+(H-PB+13)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.5" fill="'+lblC+'">'+b.label+'</text>';
+    }
+    return '<div class="sd-eps-chart-wrap">'
+      +'<div class="sd-eps-chart-head">'+title+'<span class="sd-eps-chart-sub">'+sub+'</span></div>'
+      +'<div class="sd-eps-chart-body">'
+      +'<svg class="sd-eps-chart-svg" viewBox="0 0 '+W+' '+H+'" style="width:'+W+'px;height:'+H+'px">'
+      +svg+'</svg></div></div>';
+  }
+
+  return buildChart(yoyBars,'EPS YoY Growth','Annual · last 10 years')
+        +buildChart(qoqBars,'EPS QoQ Growth','Last 4 quarters');
+}
+
+function buildSectorDetailHTML(sec, st, data){
+  const ct=cardType(sec.name);
+  const bndObj=(ct==='pb'?BAND[st.pbBand]:BAND[st.peBand])||BAND.na;
+  const showPE=(ct==='pe'||ct==='dual');
+  const showPB=(ct==='pb'||ct==='dual');
+
+  /* ── Current snapshot stats ── */
+  let statCards='';
+  if(!isNaN(st.curPrice)){
+    statCards+='<div class="sd-stat"><div class="sd-stat-lbl">Price'+'</div>'
+      +'<div class="sd-stat-val">'+f(st.curPrice,0)+'</div>'
+      +(st.isLive&&st.liveAsOf?'<div class="sd-stat-sub">Live · '+st.liveAsOf+'</div>':'<div class="sd-stat-sub">Last close</div>')
+    +'</div>';
+  }
+  if(showPE&&!isNaN(st.curPE)){
+    statCards+='<div class="sd-stat"><div class="sd-stat-lbl">P / E</div><div class="sd-stat-val" style="color:'+BAND[st.peBand].clr+'">'+f(st.curPE,1)+'</div><div class="sd-stat-sub">'+BAND[st.peBand].label+'</div></div>';
+  }
+  if(showPB&&!isNaN(st.curPB)){
+    statCards+='<div class="sd-stat"><div class="sd-stat-lbl">P / B</div><div class="sd-stat-val" style="color:'+BAND[st.pbBand].clr+'">'+f(st.curPB,2)+'</div><div class="sd-stat-sub">'+BAND[st.pbBand].label+'</div></div>';
+  }
+  if(!isNaN(st.curEPS)){
+    statCards+='<div class="sd-stat"><div class="sd-stat-lbl">EPS</div><div class="sd-stat-val">'+f(st.curEPS,0)+'</div>'
+      +(!isNaN(st.epsYoY)?'<div class="sd-stat-sub" style="color:'+yoyColor(st.epsYoY)+'">'+(st.epsYoY>=0?'+':'')+(st.epsYoY*100).toFixed(1)+'% YoY</div>':'')
+    +'</div>';
+  }
+  if(!isNaN(st.maxEPS)){
+    statCards+='<div class="sd-stat"><div class="sd-stat-lbl">Max EPS (all-time)</div><div class="sd-stat-val">'+f(st.maxEPS,0)+'</div>'
+      +(!isNaN(st.epsPctPeak)?'<div class="sd-stat-sub">'+Math.round(st.epsPctPeak*100)+'% of peak</div>':'')
+    +'</div>';
+  }
+
+  /* ── Median comparison rows (with bar) ── */
+  function medBlock(label, cur, m3, m5, m10, ref, dp){
+    if(isNaN(cur)||isNaN(ref)||ref<=0) return '';
+    const allMeds=[m3,m5,m10,cur].filter(function(v){return !isNaN(v)&&v>0;});
+    const maxMed=Math.max.apply(null,allMeds);
+    function bar(v){ return isNaN(v)?'':'<div class="sd-med-bar-wrap"><div class="sd-med-bar" style="width:'+Math.round((v/maxMed)*100)+'%;background:'+sec.color+'44"></div></div>'; }
+    function mult(v){ return (isNaN(v)||isNaN(cur)||v<=0)?'—':(cur/v).toFixed(2)+'×'; }
+    return '<div class="sd-med-block">'
+      +'<div class="sd-med-head">'+label+' Medians<span class="sd-med-ref">Weighted ref: '+f(ref,dp)+'</span></div>'
+      +'<div class="sd-med-row"><span class="sd-med-lbl">3-Year</span>'+bar(m3)+'<span class="sd-med-num">'+f(m3,dp)+'</span><span class="sd-med-mult">'+mult(m3)+'</span></div>'
+      +'<div class="sd-med-row"><span class="sd-med-lbl">5-Year</span>'+bar(m5)+'<span class="sd-med-num">'+f(m5,dp)+'</span><span class="sd-med-mult">'+mult(m5)+'</span></div>'
+      +'<div class="sd-med-row"><span class="sd-med-lbl">10-Year</span>'+bar(m10)+'<span class="sd-med-num">'+f(m10,dp)+'</span><span class="sd-med-mult">'+mult(m10)+'</span></div>'
+      +'<div class="sd-med-row" style="background:'+bndObj.tl+'"><span class="sd-med-lbl" style="color:var(--txt);font-weight:700">Current</span>'+bar(cur)+'<span class="sd-med-num" style="color:'+bndObj.clr+'">'+f(cur,dp)+'</span><span class="sd-med-mult">1.00×</span></div>'
+      +'</div>';
+  }
+
+  const peMedBlock=showPE?medBlock('P/E',st.curPE,st.pe3,st.pe5,st.pe10,st.peRef,1):'';
+  const pbMedBlock=showPB?medBlock('P/B',st.curPB,st.pb3,st.pb5,st.pb10,st.pbRef,2):'';
+
+  /* ── Quarterly table ── */
+  const qtbl=buildQuarterlyTable(data);
+
+  const epsGrowthCharts=buildEpsGrowthCharts(data,sec.color);
+
+  return '<div class="sd-section-title">Current Snapshot</div>'
+    +'<div class="sd-stats-grid">'+statCards+'</div>'
+    +(peMedBlock||pbMedBlock?'<div class="sd-section-title">Historical Medians</div>'+peMedBlock+pbMedBlock:'')
+    +(epsGrowthCharts?'<div class="sd-section-title">EPS Growth</div>'+epsGrowthCharts:'')
+    +'<div class="sd-section-title">Quarterly Averages · Last 5 Years <span style="font-weight:400;color:var(--ghost);letter-spacing:0;text-transform:none">(scroll)</span></div>'
+    +'<div class="sd-qtbl-wrap"><div class="sd-qtbl-scroll">'+qtbl+'</div></div>';
+}
+
+function openSectorDetail(name){
+  const sec=SECTORS.find(function(s){return s.name===name;});
+  const st=statCache[name];
+  const data=dataCache[name];
+  if(!sec||!st) return;
+
+  const overlay=document.getElementById('sector-detail');
+  document.getElementById('sd-title').textContent='Nifty '+sec.name;
+  document.getElementById('sd-color-bar').style.background=sec.color;
+  document.getElementById('sd-body').innerHTML=buildSectorDetailHTML(sec,st,data||[]);
+  overlay.classList.add('open');
+  document.body.style.overflow='hidden'; /* prevent background scroll */
+  document.getElementById('sd-close').focus();
+}
+
+function closeSectorDetail(){
+  document.getElementById('sector-detail').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+/* Close on Escape key */
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape') closeSectorDetail();
+});
+
+
+function showPage(p){
+  document.getElementById('page-dashboard').style.display=p==='dashboard'?'':'none';
+  document.getElementById('page-bt').style.display=p==='backtest'?'':'none';
+  document.getElementById('page-help').style.display=p==='help'?'':'none';
+  ['dash','bt','help'].forEach(function(id){
+    var tab=document.getElementById('tab-'+id);
+    var active=(id==='dash'&&p==='dashboard')||(id==='bt'&&p==='backtest')||(id==='help'&&p==='help');
+    tab.classList.toggle('active',active);
+    tab.setAttribute('aria-selected',active?'true':'false');
+  });
+  if(p==='help') window.scrollTo({top:0,behavior:'instant'});
+}
+function toggleTheme(){
+  var light=document.documentElement.classList.toggle('light');
+  document.getElementById('theme-pip').textContent=light?'☀️':'🌙';
+  var pill=document.getElementById('theme-pill-btn');
+  if(pill) pill.setAttribute('aria-pressed',light?'true':'false');
+  localStorage.setItem('theme',light?'light':'dark');
+  SECTORS.forEach(function(s){
+    var el=document.getElementById('c-'+s.name);
+    if(!el||!el.dataset.rendered) return;
+    var flipped=el.querySelector('.card-inner')&&el.querySelector('.card-inner').classList.contains('flipped');
+    renderCard(s,statCache[s.name]);
+    if(flipped){var ci=el.querySelector('.card-inner');if(ci)ci.classList.add('flipped');}
+  });
+}
+
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+(function(){
+  /* Light is default; only go dark if user explicitly chose it */
+  var _t=localStorage.getItem('theme');
+  if(_t!=='dark'){
+    document.documentElement.classList.add('light');
+    var p=document.getElementById('theme-pip');if(p) p.textContent='☀️';
+    var _pb=document.getElementById('theme-pill-btn');
+    if(_pb) _pb.setAttribute('aria-pressed','true');
+  }
+})();
+initPlaceholders();
+initGridEvents();
+/* Await live feed first so liveCache is populated before any sector
+   fetches complete — avoids race where computeStats runs without live data. */
+(async function(){
+  await fetchLiveData().catch(function(){});
+  loadAllStaggered();
+})();
+</script>
+</body>
+</html>
