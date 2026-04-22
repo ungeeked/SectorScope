@@ -647,6 +647,38 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
           </div>
         </div>
         <div class="bt-field">
+          <div class="bt-lbl">Signal Cooldown</div>
+          <select class="bt-select" id="bt-cooldown">
+            <optgroup label="Days">
+              <option value="1">1 day</option>
+              <option value="2">2 days</option>
+              <option value="3">3 days</option>
+              <option value="4">4 days</option>
+              <option value="5">5 days</option>
+              <option value="6">6 days</option>
+            </optgroup>
+            <optgroup label="Weeks">
+              <option value="7">1 week</option>
+              <option value="14">2 weeks</option>
+            </optgroup>
+            <optgroup label="Months">
+              <option value="30">1 month</option>
+              <option value="60">2 months</option>
+              <option value="90">3 months</option>
+              <option value="120">4 months</option>
+              <option value="150">5 months</option>
+              <option value="180" selected>6 months</option>
+              <option value="210">7 months</option>
+              <option value="240">8 months</option>
+              <option value="270">9 months</option>
+              <option value="300">10 months</option>
+              <option value="330">11 months</option>
+              <option value="360">12 months</option>
+            </optgroup>
+          </select>
+          <div class="bt-slider-note">Minimum gap between consecutive signal dates</div>
+        </div>
+        <div class="bt-field">
           <div class="bt-lbl">Metrics &amp; Thresholds</div>
           <div class="bt-metric-row">
             <!-- PE -->
@@ -679,7 +711,7 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
             </div>
           </div>
         </div>
-        <div class="bt-field" style="justify-content:flex-end">
+        <div class="bt-field" style="justify-content:flex-end;grid-column:1/-1">
           <div class="bt-run-row">
             <div class="bt-spinner" id="bt-spinner"><div class="spin-ring"></div><span>Computing…</span></div>
             <button class="bt-run" id="bt-run-btn" onclick="btRun()" disabled>▶ Run Backtest</button>
@@ -1330,13 +1362,29 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
       </div>
       <div class="hp-step">
         <div class="hp-step-num">4</div>
+        <div class="hp-step-body"><strong>Pick a cooldown.</strong> The minimum gap between consecutive signal dates. Defaults to <strong>6 months</strong>. Without a cooldown, a single multi-week dip below threshold would fire dozens of near-duplicate signals and inflate your sample with correlated trades. See the "Choosing a cooldown" card below for when to change it.</div>
+      </div>
+      <div class="hp-step">
+        <div class="hp-step-num">5</div>
         <div class="hp-step-body"><strong>Hit Run.</strong> The results show every past signal date, the valuation at that date, and the 6-month and 1-year annualised return from that point forward.</div>
       </div>
     </div>
 
+    <div class="hp-card tip">
+      <div class="hp-card-ttl">Choosing a cooldown</div>
+      <div class="hp-p">Cooldown trades <strong>sample size</strong> against <strong>sample independence</strong>. A sector can spend weeks or months hovering near your threshold — treating every one of those days as a separate "signal" isn't really 30 independent bets, it's one bet measured 30 times.</div>
+      <ul class="hp-list" style="margin:0">
+        <li><strong>Long (3–12 months) · default for investing.</strong> Each signal is a genuinely distinct episode of cheapness. The hit rate and average CAGR you see are close to what a real buyer holding for 6–12 months would have experienced. This is the right setting for the "should I buy this sector today?" question.</li>
+        <li><strong>Medium (2–8 weeks) · balanced.</strong> Useful when the backtest window is short and a 6-month cooldown leaves you with only 2–3 signals. You trade some independence for enough data points to draw any conclusion at all.</li>
+        <li><strong>Short (1–14 days) · diagnostic only.</strong> Shows you every single day the ratio touched your threshold. Hit rates from this setting overstate reliability because consecutive daily signals share almost identical forward returns. Use it to inspect <em>when</em> the sector was cheap, not to judge whether cheap-signals work.</li>
+      </ul>
+    </div>
+
+    <div class="hp-p">Rule of thumb: your cooldown should be at least as long as your intended holding period. If you plan to hold a sector for 6 months after buying, a cooldown shorter than that will count overlapping trades as separate signals.</div>
+
     <div class="hp-sub-h">Reading the results table</div>
     <dl class="hp-kv">
-      <dt>Weighted ref banner</dt><dd>Grey strip above the stats. Confirms the formula used (30/60/10), the ±1% trigger tolerance, and shows the weighted reference as of the end of your selected window.</dd>
+      <dt>Weighted ref banner</dt><dd>Grey strip above the stats. Confirms the formula used (30/60/10), the ±1% trigger tolerance, the cooldown you picked, and shows the weighted reference as of the end of your selected window.</dd>
       <dt>Signals count</dt><dd>How many matching dates the engine found. Very low counts (1–3) should be treated as anecdote, not statistics.</dd>
       <dt>Avg 6m / 1yr CAGR</dt><dd>Annualised return averaged across all signal dates, at 6-month and 1-year horizons. Compare to Nifty 50's typical annual return (~12–14%) as a mental benchmark.</dd>
       <dt>Hit rate</dt><dd>% of signals that were in profit at that horizon. Hit rate above 70% is strong. Below 50% means more losers than winners — inspect the EPS % column to see if value traps are responsible.</dd>
@@ -2464,7 +2512,12 @@ function _btCompute(){
   var thrPB=+document.getElementById('bt-sl-pb').value/100;
   var startDate=new Date(document.getElementById('bt-start').value);
   var endDate=new Date(document.getElementById('bt-end').value);endDate.setHours(23,59,59);
-  var COOLDOWN=180*86400000;
+  /* Cooldown: user-selectable from dropdown (1-6 days, 1-2 weeks, 1-12 months).
+     Stored in days; converted to ms for the date-diff comparison. */
+  var cdEl=document.getElementById('bt-cooldown');
+  var cdDays=cdEl?parseInt(cdEl.value,10):180;
+  if(isNaN(cdDays)||cdDays<1) cdDays=180;
+  var COOLDOWN=cdDays*86400000;
   var data=btData;
   var res=[];
   var lastBuy=null;
@@ -2476,7 +2529,8 @@ function _btCompute(){
    * SIGNAL TRIGGER (both modes):
    *   Fires when ratio (= current / weightedRef) is at the user threshold,
    *   with a ±1% tolerance band. e.g. threshold 80% → fires on dates where
-   *   79% ≤ ratio ≤ 81%. 6-month cooldown between signals.
+   *   79% ≤ ratio ≤ 81%. Cooldown between signals is user-selectable
+   *   (see the "Signal Cooldown" dropdown) — defaults to 6 months.
    *
    * BOTH MODE requires BOTH PE and PB ratios to be within their respective
    * ±1% bands simultaneously.
@@ -2619,7 +2673,7 @@ function _btCompute(){
   }
 
   res.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
-  btResults={trades:res,usePE:usePE,usePB:usePB,both:bothMode,endRef:endRefInfo,thrPE:thrPE,thrPB:thrPB};
+  btResults={trades:res,usePE:usePE,usePB:usePB,both:bothMode,endRef:endRefInfo,thrPE:thrPE,thrPB:thrPB,cooldownDays:cdDays};
   document.getElementById('bt-results-card').style.display='';
   btShow();
 }
@@ -2636,8 +2690,16 @@ function btShow(){
 function btRenderRefInfo(){
   var er=btResults.endRef, parts=[];
   var thrPE=btResults.thrPE, thrPB=btResults.thrPB;
+  /* Format cooldown in whichever unit it was selected as: days / weeks / months.
+     30-day months match the rest of the code (e.g. 180 = 6 months). */
+  function fmtCd(d){
+    if(d>=30&&d%30===0){var m=d/30;return m+(m===1?' month':' months');}
+    if(d>=7 &&d%7 ===0){var w=d/7; return w+(w===1?' week' :' weeks');}
+    return d+(d===1?' day':' days');
+  }
+  var cdLbl=fmtCd(btResults.cooldownDays||180);
   parts.push('<span class="bt-ref-item"><strong>Weighted ref</strong> · 30% 3yr + 60% 5yr + 10% 10yr</span>');
-  parts.push('<span class="bt-ref-item"><strong>Trigger</strong> · ratio within ±1% of threshold · 6m cooldown</span>');
+  parts.push('<span class="bt-ref-item"><strong>Trigger</strong> · ratio within ±1% of threshold · '+cdLbl+' cooldown</span>');
   if(btResults.usePE&&!isNaN(er.peRef)){
     parts.push('<span class="bt-ref-item">P/E ref at end <strong>'+f(er.peRef,1)+'</strong> · threshold '+Math.round(thrPE*100)+'%</span>');
   }
