@@ -2,6 +2,8 @@
 
 A visual dashboard for spotting under- and over-valued Indian sectors, using P/E and P/B against weighted historical medians.
 
+https://github.com/user-attachments/assets/adc90bf2-1958-48ba-b235-b3d66da0a597
+
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Deploy: GitHub Pages](https://img.shields.io/badge/deploy-GitHub%20Pages-blue)](https://ungeeked.github.io/sectorscope/)
 [![No build step](https://img.shields.io/badge/build-none-brightgreen)](#quick-start)
