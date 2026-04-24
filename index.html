@@ -128,7 +128,10 @@ html.light .s-card:hover .card-face{box-shadow:0 6px 24px rgba(0,0,0,.10)}
 .eps-pct{font-family:var(--mono);font-size:.5rem;color:var(--sub);letter-spacing:.3px;margin-top:2px;line-height:1.1}
 .eps-row{display:flex;align-items:center;gap:4px;margin-top:3px;flex-wrap:wrap}
 .eps-yoy{font-family:var(--mono);font-size:.6rem;font-weight:700;letter-spacing:.2px;line-height:1}
-.eps-turn{display:inline-flex;align-items:center;font-family:var(--mono);font-size:.46rem;font-weight:700;color:var(--neu-c);background:var(--neu-tl);border:1px solid var(--neu-bd);border-radius:8px;padding:1px 5px;letter-spacing:.3px;line-height:1.2}
+.eps-pill{display:inline-flex;align-items:center;font-family:var(--mono);font-size:.46rem;font-weight:700;border-radius:8px;padding:1px 5px;letter-spacing:.3px;line-height:1.2;border:1px solid transparent}
+.eps-pill.rising {color:var(--vchp-c);background:var(--vchp-tl);border-color:var(--vchp-bd)}
+.eps-pill.falling{color:var(--exp-c); background:var(--exp-tl); border-color:var(--exp-bd)}
+.eps-pill.mixed  {color:var(--neu-c); background:var(--neu-tl); border-color:var(--neu-bd)}
 .tpct{font-family:var(--mono);font-size:.5rem;color:var(--ghost);margin-top:2px}
 /* chart */
 .cf-chart{flex:1;margin-top:9px;min-height:0;border-radius:8px;border:1px solid var(--bdr2);background:rgba(0,0,0,.18);overflow:hidden;position:relative}
@@ -1024,7 +1027,7 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
                   <rect x="210" y="22"   width="38" height="25.5" rx="2" fill="rgba(0,200,83,.72)"/>
                 </g>
                 <g font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(255,255,255,.36)" text-anchor="middle">
-                  <text x="79"  y="98">Q2 '24</text><text x="129" y="98">Q3 '24</text><text x="179" y="98">Q4 '24</text><text x="229" y="98">Q1 '25</text>
+                  <text x="79"  y="98">Q1 FY25</text><text x="129" y="98">Q2 FY25</text><text x="179" y="98">Q3 FY25</text><text x="229" y="98">Q4 FY25</text>
                 </g>
               </svg>
             </div>
@@ -1051,13 +1054,13 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
                 <th>Quarter</th><th>Price</th><th>P/E</th><th>P/B</th><th>EPS</th>
               </tr></thead>
               <tbody>
-                <tr><td>Q1 2025</td><td>22,840</td><td class="qt-hi">24.5</td><td>3.12</td><td>312</td></tr>
-                <tr><td>Q4 2024</td><td>24,100</td><td>26.8</td><td>3.35</td><td>299</td></tr>
-                <tr><td>Q3 2024</td><td class="qt-hi">25,600</td><td>28.1</td><td class="qt-lo">3.58</td><td>287</td></tr>
-                <tr><td>Q2 2024</td><td>23,900</td><td>27.4</td><td>3.41</td><td>275</td></tr>
-                <tr><td>Q1 2024</td><td>21,200</td><td>27.0</td><td>3.22</td><td>265</td></tr>
+                <tr><td>Q4 FY25</td><td>22,840</td><td class="qt-hi">24.5</td><td>3.12</td><td>312</td></tr>
+                <tr><td>Q3 FY25</td><td>24,100</td><td>26.8</td><td>3.35</td><td>299</td></tr>
+                <tr><td>Q2 FY25</td><td class="qt-hi">25,600</td><td>28.1</td><td class="qt-lo">3.58</td><td>287</td></tr>
+                <tr><td>Q1 FY25</td><td>23,900</td><td>27.4</td><td>3.41</td><td>275</td></tr>
+                <tr><td>Q4 FY24</td><td>21,200</td><td>27.0</td><td>3.22</td><td>265</td></tr>
                 <tr><td>…</td><td>…</td><td>…</td><td>…</td><td>…</td></tr>
-                <tr><td>Q1 2020</td><td class="qt-lo">11,400</td><td class="qt-lo">18.2</td><td>2.20</td><td class="qt-lo">198</td></tr>
+                <tr><td>Q4 FY20</td><td class="qt-lo">11,400</td><td class="qt-lo">18.2</td><td>2.20</td><td class="qt-lo">198</td></tr>
               </tbody>
             </table>
           </div>
@@ -1193,7 +1196,10 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
     <dl class="hp-kv">
       <dt>% of peak</dt><dd>Current EPS divided by the sector's all-time high EPS. <em>87% of peak</em> means earnings are 13% below their historical best, with room to recover. Above 100% = earnings at a new high.</dd>
       <dt>YoY growth</dt><dd>Current EPS vs EPS one year ago. Color-coded: <span style="color:var(--exp-c);font-weight:700">red</span> below 0%, <span style="color:var(--neu-c);font-weight:700">amber</span> 0–10%, <span style="color:var(--chp-c);font-weight:700">green</span> above 10%.</dd>
-      <dt>▲ TURNING</dt><dd>An amber pill that appears when EPS is rising over two consecutive ~90-day windows — i.e. today &gt; 90 days ago &gt; 180 days ago. This is an early-cycle inflection signal, often firing <em>before</em> YoY goes positive.</dd>
+      <dt>▲ LOW · RISING</dt><dd>Green pill. Fires when (a) EPS is currently "low" — median EPS across the last three quarters is ≤ 80% of the winsorised all-time peak AND latest EPS is ≤ 90% of peak — AND (b) the two most recent QoQ median-growth readings are both positive. Meaning: earnings are at a depressed base and actively recovering. The strongest signal for pairing with a Cheap or Very Cheap valuation band.</dd>
+      <dt>▼ LOW · FALLING</dt><dd>Red pill. Same "low" gate as above, but both QoQ growth readings are negative — earnings are low <em>and still falling</em>. A classic falling-knife warning: the cheapness on the valuation card is being driven by collapsing earnings, and the sector will look even cheaper as E drops further. Do not act on a cheap card with this pill showing.</dd>
+      <dt>◆ LOW · MIXED</dt><dd>Amber pill. Gate passes (EPS is low), but the two QoQ growth readings disagree — one positive, one negative. No clear direction yet. Wait for the next quarterly data point before drawing a conclusion.</dd>
+      <dt>(no pill)</dt><dd>Either EPS isn't "low" versus its winsorised peak (gate fails), or there's insufficient quarterly history to compute the signal. Absence of a pill means <em>use the valuation band and YoY number on their own</em>, not that the earnings picture is bad.</dd>
     </dl>
 
     <div class="hp-sub-h">Three scenarios — what to look for</div>
@@ -1205,8 +1211,8 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
         <div class="hp-scen-row"><span class="hp-scen-lbl">Valuation band</span><span class="hp-scen-val g">Very Cheap</span></div>
         <div class="hp-scen-row"><span class="hp-scen-lbl">% of peak EPS</span><span class="hp-scen-val">68%</span></div>
         <div class="hp-scen-row"><span class="hp-scen-lbl">YoY growth</span><span class="hp-scen-val r">−6%</span></div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">Turning flag</span><span class="hp-scen-val g">▲ TURNING</span></div>
-        <div class="hp-scen-verdict"><strong>Early-cycle turnaround</strong>Earnings are still negative year-over-year — but they've stopped falling and are inflecting. Sector is cheap. This is the highest-conviction setup. Classic Metals / PSU Bank early-cycle entry.</div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">EPS pill</span><span class="hp-scen-val g">▲ LOW · RISING</span></div>
+        <div class="hp-scen-verdict"><strong>Early-cycle turnaround</strong>Earnings are well below peak and the last two quarterly-growth readings have flipped positive. YoY is still red because the year-ago base was higher — but the damage has stopped and recovery is underway. Sector is also cheap on valuation. Highest-conviction setup. Classic Metals / PSU Bank early-cycle entry.</div>
       </div>
 
       <!-- Watch out -->
@@ -1215,8 +1221,8 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
         <div class="hp-scen-row"><span class="hp-scen-lbl">Valuation band</span><span class="hp-scen-val a">Cheap</span></div>
         <div class="hp-scen-row"><span class="hp-scen-lbl">% of peak EPS</span><span class="hp-scen-val">94%</span></div>
         <div class="hp-scen-row"><span class="hp-scen-lbl">YoY growth</span><span class="hp-scen-val g">+12%</span></div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">Turning flag</span><span class="hp-scen-val" style="color:var(--sub)">—</span></div>
-        <div class="hp-scen-verdict"><strong>Confirmed recovery, less upside</strong>Earnings are healthy and growing. Sector is cheap — but since recovery is already confirmed, the market has partially priced it. Still a good setup, just less asymmetric than the one above.</div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">EPS pill</span><span class="hp-scen-val" style="color:var(--sub)">— (gate fails, EPS near peak)</span></div>
+        <div class="hp-scen-verdict"><strong>Confirmed recovery, less upside</strong>Earnings are near all-time peak and growing. Sector is cheap on multiples — but because earnings are already strong, the "low base to recover from" catalyst is gone. Still a valid setup, just more symmetrical. Absence of a pill here means things are fine, not bad.</div>
       </div>
 
       <!-- Value trap -->
@@ -1225,14 +1231,14 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
         <div class="hp-scen-row"><span class="hp-scen-lbl">Valuation band</span><span class="hp-scen-val g">Very Cheap</span></div>
         <div class="hp-scen-row"><span class="hp-scen-lbl">% of peak EPS</span><span class="hp-scen-val">41%</span></div>
         <div class="hp-scen-row"><span class="hp-scen-lbl">YoY growth</span><span class="hp-scen-val r">−28%</span></div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">Turning flag</span><span class="hp-scen-val" style="color:var(--sub)">—</span></div>
-        <div class="hp-scen-verdict"><strong>Cheap for a reason — wait</strong>Earnings are collapsing. P/E looks low because E is falling fast. The sector will appear cheap <em>and get cheaper</em> as long as earnings deteriorate. Do not act until either TURNING fires or YoY stabilises.</div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">EPS pill</span><span class="hp-scen-val r">▼ LOW · FALLING</span></div>
+        <div class="hp-scen-verdict"><strong>Falling knife — do not catch</strong>Earnings are low and still dropping. P/E looks low because E is contracting faster than P. The sector will keep looking cheap as long as E keeps falling. The red pill is an explicit warning: do not act on the valuation signal until the pill flips to MIXED or RISING, or YoY stabilises.</div>
       </div>
     </div>
 
     <div class="hp-card tip">
       <div class="hp-card-ttl">The most powerful combination</div>
-      <div class="hp-p" style="margin-bottom:0"><strong>Cheap/Very Cheap band + TURNING flag + YoY still negative.</strong> This fires at the exact inflection point, before the crowd notices. It works best on cyclicals: Metals, Auto, PSU Bank, Realty. For defensive sectors (FMCG, Pharma, IT), the turning signal matters less — earnings are steadier there and the valuation band alone is more reliable.</div>
+      <div class="hp-p" style="margin-bottom:0"><strong>Cheap/Very Cheap band + ▲ LOW · RISING pill + YoY still negative.</strong> This is the early-cycle inflection: valuation is in the bottom tier, EPS is depressed vs its own winsorised peak, two consecutive quarters of positive median-growth confirm a turn, and YoY hasn't caught up yet so the broader market's rear-view comparison still looks ugly. Works best on cyclicals: Metals, Auto, PSU Bank, Realty. On defensive sectors (FMCG, Pharma, IT), the pill often stays absent because EPS rarely drops far below peak — there the valuation band alone is the primary signal.</div>
     </div>
   </div>
 
@@ -1437,7 +1443,7 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
 
     <div class="hp-card tip">
       <div class="hp-card-ttl">Best practice</div>
-      <div class="hp-p" style="margin-bottom:0">Use this as <strong>one structured input among several</strong>. The signals are most powerful when: (1) the valuation band is Very Cheap or Cheap, (2) the EPS tile shows a TURNING flag or healthy YoY growth, (3) the backtest shows a strong historical hit rate at this threshold, and (4) your own fundamental/macro view doesn't contradict the signal. All four together is a high-conviction setup.</div>
+      <div class="hp-p" style="margin-bottom:0">Use this as <strong>one structured input among several</strong>. The signals are most powerful when: (1) the valuation band is Very Cheap or Cheap, (2) the EPS pill shows ▲ LOW · RISING (or no pill with healthy YoY growth), (3) the backtest shows a strong historical hit rate at this threshold, and (4) your own fundamental/macro view doesn't contradict the signal. All four together is a high-conviction setup. A ▼ LOW · FALLING pill is a hard veto on points 1 and 2 — do not act regardless of how the others look.</div>
     </div>
 
     <div class="hp-note">India Equity · NSE sector indices · Valuations based on trailing TTM earnings &amp; book value.</div>
@@ -1609,6 +1615,14 @@ function weightedRef(m3,m5,m10){
 function f(n,d){return(n==null||isNaN(n)||!isFinite(n))?'—':(+n).toFixed(d!=null?d:1);}
 function fx(x){return(x==null||isNaN(x)||!isFinite(x))?'—':x.toFixed(2)+'×';}
 function fmtDate(d){var dt=typeof d==='string'?new Date(d):d;return isNaN(dt)?d:dt.toLocaleDateString('en-IN',{month:'short',year:'numeric'});}
+/* Indian fiscal-quarter label: FY runs Apr-Mar.
+   Apr-Jun = Q1, Jul-Sep = Q2, Oct-Dec = Q3, Jan-Mar = Q4.
+   FY year is the year in which the FY ends (e.g. Apr 2024 → "Q1 FY25"). */
+function fiscalQLabel(calYear,calMonth){
+  var fq=Math.floor(((calMonth-3+12)%12)/3)+1;
+  var fy=calMonth>=3?calYear+1:calYear;
+  return 'Q'+fq+' FY'+String(fy).slice(-2);
+}
 function fmtCAGR(c,open){
   if(c==null||isNaN(c)) return'<span class="cg-o">—</span>';
   var pct=(c*100).toFixed(1),cls=c>=0?'cg-p':'cg-n';
@@ -1739,38 +1753,89 @@ function computeStats(data,live){
   var eps365=epsAt(data,365);
   var epsYoY=(!isNaN(curEPS)&&!isNaN(eps365)&&eps365>0)?(curEPS/eps365-1):NaN;
 
-  /* Last-2-quarter average EPS for TURNING short-term condition.
-     Groups all data by calendar quarter, takes the mean EPS per quarter
-     (averaging all daily rows in that quarter), then picks the two most
-     recent quarters that have at least one valid EPS reading.
-     More reliable than epsAt(data,90/180): uses the actual quarter boundary,
-     averages out intra-quarter noise, and correctly handles negative EPS. */
-  var _qB={};
-  for(var _ri=0;_ri<data.length;_ri++){
-    var _rd=new Date(data[_ri].date);
-    if(isNaN(_rd)) continue;
-    var _qk=_rd.getFullYear()*10+Math.floor(_rd.getMonth()/3)+1;
-    if(!_qB[_qk]){_qB[_qk]={sum:0,n:0};}
-    var _ev=data[_ri].eps;
-    if(_ev!=null&&!isNaN(_ev)&&isFinite(_ev)){_qB[_qk].sum+=_ev;_qB[_qk].n++;}
-  }
-  var _qKeys=Object.keys(_qB).map(Number).sort(function(a,b){return a-b;})
-              .filter(function(k){return _qB[k].n>0;});
-  var _epsQPrev=_qKeys.length>=2?_qB[_qKeys[_qKeys.length-2]].sum/_qB[_qKeys[_qKeys.length-2]].n:NaN;
-  var _epsQCur =_qKeys.length>=2?_qB[_qKeys[_qKeys.length-1]].sum/_qB[_qKeys[_qKeys.length-1]].n:NaN;
+  /* ═══ EPS PILL LOGIC ═══
+     Replaces the old TURNING pill. Purpose: classify "cheap" cards as
+     buy-worthy (earnings rising from a low base) vs value-trap (earnings
+     still falling from a low base).
 
-  /* TURNING fires when:
-     1. Last 2 quarter averages are both positive (sector is profitable)
-     2. Current YoY is negative (still in below-normal growth territory) */
-  var epsTurning=(!isNaN(_epsQPrev)&&!isNaN(_epsQCur)
-                  &&_epsQPrev>0&&_epsQCur>0
-                  &&!isNaN(epsYoY)&&epsYoY<0);
+     Step 1 — GATE: is EPS currently "low"?
+       • epsMax = max of winsorised (1st-99th pct clipped) EPS series.
+       • gateMedian: median of daily EPS pooled across 3 quarters
+         (current partial + last complete + second-last complete) ≤ 80% × epsMax.
+       • gateCurrent: latest EPS ≤ 90% × epsMax.
+       • Gate passes only if BOTH are true.
+
+     Step 2 — DIRECTION (only computed if gate passes): two QoQ growth reads.
+       • growth1 = median(pool of partial+last complete) / median(2nd-last complete) − 1
+       • growth2 = median(2nd-last complete) / median(3rd-last complete) − 1
+
+     Final state:
+       • gate + both growths > 0   → 'rising'   (green pill)
+       • gate + both growths < 0   → 'falling'  (red pill)
+       • gate + mixed signs        → 'mixed'    (amber pill)
+       • gate fails or growths NaN → 'none'     (no pill) */
+  var epsPillState='none';
+  (function computeEpsPill(){
+    /* Collect all positive EPS values for winsorised max */
+    var allEpsPos=[];
+    for(var i=0;i<data.length;i++){
+      var e=data[i].eps;
+      if(e!=null&&!isNaN(e)&&e>0) allEpsPos.push(e);
+    }
+    if(allEpsPos.length<4) return; /* need enough history to winsorise */
+    var epsMaxW=Math.max.apply(null,winsorise(allEpsPos));
+    if(!(epsMaxW>0)) return;
+
+    /* Group daily EPS by calendar quarter (same key formula used elsewhere).
+       Keep per-quarter arrays of daily EPS readings (positive only — EPS is
+       non-negative at index level; filter matches chart/table for consistency). */
+    var qBuckets={};
+    for(var j=0;j<data.length;j++){
+      var rd=new Date(data[j].date);
+      if(isNaN(rd)) continue;
+      var qk=rd.getFullYear()*10+Math.floor(rd.getMonth()/3)+1;
+      var ev=data[j].eps;
+      if(ev!=null&&!isNaN(ev)&&ev>0){
+        if(!qBuckets[qk]) qBuckets[qk]=[];
+        qBuckets[qk].push(ev);
+      }
+    }
+    var qKeys=Object.keys(qBuckets).map(Number).sort(function(a,b){return a-b;});
+    if(qKeys.length<4) return; /* need partial + 3 complete quarters */
+
+    /* Last 4 quarter-arrays by recency (most recent is "partial", rest are "complete" in that order) */
+    var qPartial  =qBuckets[qKeys[qKeys.length-1]];
+    var qLast     =qBuckets[qKeys[qKeys.length-2]];
+    var qSecLast  =qBuckets[qKeys[qKeys.length-3]];
+    var qThirdLast=qBuckets[qKeys[qKeys.length-4]];
+
+    /* Gate medians */
+    var poolGate  =qPartial.concat(qLast).concat(qSecLast);
+    var poolRecent=qPartial.concat(qLast);
+    var medGate   =median(poolGate);
+    var medRecent =median(poolRecent);
+    var medSecLast=median(qSecLast);
+    var medThirdLast=median(qThirdLast);
+    if(isNaN(medGate)||isNaN(medRecent)||isNaN(medSecLast)||isNaN(medThirdLast)) return;
+    if(!(medSecLast>0)||!(medThirdLast>0)) return;
+
+    var gateMedian =medGate<=0.80*epsMaxW;
+    var gateCurrent=!isNaN(curEPS)&&curEPS<=0.90*epsMaxW;
+    if(!gateMedian||!gateCurrent) return;
+
+    /* Direction */
+    var growth1=medRecent/medSecLast-1;
+    var growth2=medSecLast/medThirdLast-1;
+    if(growth1>0&&growth2>0) epsPillState='rising';
+    else if(growth1<0&&growth2<0) epsPillState='falling';
+    else epsPillState='mixed';
+  })();
 
   return{
     curPE,curPB,curEPS,curPrice,
     pe3,pe5,pe10,peRef,pePct,pePctRef,peBand,pePctBand,peDiv,
     pb3,pb5,pb10,pbRef,pbPct,pbPctRef,pbBand,pbPctBand,pbDiv,
-    maxEPS, epsPctPeak, epsYoY, epsTurning,
+    maxEPS, epsPctPeak, epsYoY, epsPillState,
     isLive:!!(live&&(live.pe||live.pb)), liveAsOf:live?live.asOf:null,
     data3yr:s3
   };
@@ -1893,7 +1958,7 @@ function yoyColor(yoy){
   return 'var(--chp-c)';
 }
 
-/* Front-tile EPS metrics: % of peak (small grey), YoY (colored), Turning pill */
+/* Front-tile EPS metrics: % of peak (small grey), YoY (colored), EPS-low pill */
 function epsMetricsHTML(st){
   var html='';
   if(!isNaN(st.epsPctPeak)){
@@ -1904,8 +1969,14 @@ function epsMetricsHTML(st){
     var pct=(st.epsYoY*100).toFixed(1),sign=st.epsYoY>=0?'+':'';
     parts.push('<span class="eps-yoy" style="color:'+yoyColor(st.epsYoY)+'">'+sign+pct+'%</span>');
   }
-  if(st.epsTurning){
-    parts.push('<span class="eps-turn">▲ TURNING</span>');
+  /* Three-state pill: fires only when EPS is low vs winsorised peak.
+     Direction of the last two QoQ medians decides colour + glyph. */
+  if(st.epsPillState==='rising'){
+    parts.push('<span class="eps-pill rising">▲ LOW · RISING</span>');
+  }else if(st.epsPillState==='falling'){
+    parts.push('<span class="eps-pill falling">▼ LOW · FALLING</span>');
+  }else if(st.epsPillState==='mixed'){
+    parts.push('<span class="eps-pill mixed">◆ LOW · MIXED</span>');
   }
   if(parts.length) html+='<div class="eps-row">'+parts.join('')+'</div>';
   return html;
@@ -1926,9 +1997,13 @@ function epsBox(st){
     var pct=(st.epsYoY*100).toFixed(1),sign=st.epsYoY>=0?'+':'';
     rows+='<div class="cb-eps-row"><span class="cb-eps-lbl">EPS YoY</span><span class="cb-eps-val" style="color:'+yoyColor(st.epsYoY)+'">'+sign+pct+'%</span></div>';
   }
-  /* Row 3: Turning (only if active) */
-  if(st.epsTurning){
-    rows+='<div class="cb-eps-row"><span class="cb-eps-lbl">Momentum</span><span class="cb-eps-val" style="color:var(--neu-c)">▲ Turning</span></div>';
+  /* Row 3: EPS-low pill (only when gate fires) */
+  if(st.epsPillState==='rising'){
+    rows+='<div class="cb-eps-row"><span class="cb-eps-lbl">Momentum</span><span class="cb-eps-val" style="color:var(--vchp-c)">▲ EPS low and rising</span></div>';
+  }else if(st.epsPillState==='falling'){
+    rows+='<div class="cb-eps-row"><span class="cb-eps-lbl">Momentum</span><span class="cb-eps-val" style="color:var(--exp-c)">▼ EPS low and falling</span></div>';
+  }else if(st.epsPillState==='mixed'){
+    rows+='<div class="cb-eps-row"><span class="cb-eps-lbl">Momentum</span><span class="cb-eps-val" style="color:var(--neu-c)">◆ EPS low · inconsistent growth</span></div>';
   }
   return'<div class="cb-eps-panel">'+rows+'</div>';
 }
@@ -2842,8 +2917,8 @@ function buildQuarterlyTable(data){
     const d=new Date(row.date);
     if(isNaN(d)) return;
     const yr=d.getFullYear(), q=Math.floor(d.getMonth()/3)+1;
-    const key=yr+'Q'+q;
-    if(!quarters[key]) quarters[key]={label:'Q'+q+' '+yr,price:[],pe:[],pb:[],eps:[]};
+    const key=yr+'Q'+q;   /* sort key stays calendar-based (internal, never displayed) */
+    if(!quarters[key]) quarters[key]={label:fiscalQLabel(yr,d.getMonth()),price:[],pe:[],pb:[],eps:[]};
     if(row.price&&!isNaN(row.price)&&row.price>0) quarters[key].price.push(row.price);
     if(row.pe   &&!isNaN(row.pe)   &&row.pe>0)    quarters[key].pe.push(row.pe);
     if(row.pb   &&!isNaN(row.pb)   &&row.pb>0)    quarters[key].pb.push(row.pb);
@@ -2946,7 +3021,7 @@ function buildEpsGrowthCharts(data, secColor){
     if(isNaN(rd)||rd<cutoff) continue;
     var qyr=rd.getFullYear(),qq=Math.floor(rd.getMonth()/3)+1;
     var qk=qyr*10+qq;
-    if(!qBuckets[qk]) qBuckets[qk]={sort:qk,label:'Q'+qq+' \''+String(qyr).slice(2),sum:0,n:0};
+    if(!qBuckets[qk]) qBuckets[qk]={sort:qk,label:fiscalQLabel(qyr,rd.getMonth()),sum:0,n:0};
     if(r.eps&&!isNaN(r.eps)&&r.eps>0){qBuckets[qk].sum+=r.eps;qBuckets[qk].n++;}
   }
   var qKeys=Object.keys(qBuckets).map(Number).sort(function(a,b){return a-b;});
@@ -3160,8 +3235,5 @@ initGridEvents();
   loadAllStaggered();
 })();
 </script>
-<!-- Cloudflare Web Analytics -->
-<script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "54b7012add694a9f98e8e37d89605df2"}'></script>
-<!-- End Cloudflare Web Analytics -->
 </body>
 </html>

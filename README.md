@@ -34,10 +34,10 @@ It doesn't pick stocks. It ranks 10 NSE sectoral indices (Bank, PSU Bank, IT, Au
 - **Valuation bands** — Very Cheap / Cheap / Neutral / Expensive / Very Expensive, derived from each sector's current value as a percentage of its own weighted historical median (30% × 3yr + 60% × 5yr + 10% × 10yr).
 - **Per-sector metric selection** — P/E-only (IT, Auto, FMCG, Pharma), P/B-only (Bank, PSU Bank), or both (Infra, Realty, Energy, Metals) — chosen automatically based on which lens is most reliable for that sector.
 - **Two signals per card** — percentile rank inside the 5-year distribution (how unusual is today?) alongside % of weighted reference (how far from the anchor?). A divergence capsule appears when the two disagree.
-- **EPS momentum** — year-on-year growth, % of all-time peak, and a "turning" flag when trailing quarterly EPS recovers from a negative YoY.
+- **EPS momentum** — year-on-year growth, % of all-time peak, and a tri-state pill that classifies low-EPS cards by direction: ▲ rising (green, earnings recovering from a low base), ▼ falling (red, a falling-knife warning), or ◆ mixed (amber). The red pill is the key addition over a pure "cheap = buy" heuristic — it flags the exact cases where a cheap valuation is being driven by collapsing earnings rather than priced-in fear.
 - **Sparkline per card** — 3 years of P/E or P/B daily values with the 3-year median as a dashed reference line.
-- **Detail overlay** — per sector: current snapshot, historical medians with bar visualisation, annual + quarterly EPS growth charts, and a last-5-years quarterly averages table.
-- **Backtest page** — for any sector and any date range, find every historical instance where the sector hit a specific valuation threshold, and show the forward 6-month and 1-year CAGR that followed.
+- **Detail overlay** — per sector: current snapshot, historical medians with bar visualisation, annual + quarterly EPS growth charts (quarters labelled as Indian fiscal quarters, e.g. Q1 FY25 = Apr–Jun 2024), and a last-5-years quarterly averages table.
+- **Backtest page** — for any sector and any date range, find every historical instance where the sector hit a specific valuation threshold, with a configurable signal cooldown (1 day to 12 months) to control how closely-spaced signals get deduplicated, and show the forward 6-month and 1-year CAGR that followed.
 - **Live intraday feed** — prices and P/E refresh every 20 minutes during market hours; overlays onto the historical data automatically.
 - **Dark / light themes** — theme preference persisted across sessions.
 - **Keyboard accessible** — Tab to focus a card, Enter/Space to flip, Esc to close overlays.
