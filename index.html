@@ -1750,8 +1750,16 @@ function computeStats(data,live){
 
   /* ═══ EPS MOMENTUM METRICS ═══ */
   var epsPctPeak=(!isNaN(curEPS)&&!isNaN(maxEPS)&&maxEPS>0)?(curEPS/maxEPS):NaN;
-  var eps365=epsAt(data,365);
-  var epsYoY=(!isNaN(curEPS)&&!isNaN(eps365)&&eps365>0)?(curEPS/eps365-1):NaN;
+  /* Smoothed YoY:
+       • Current endpoint = trailing 7-day avg of historical EPS, blended
+         with live EPS if the live feed has a valid value.
+       • 1-year-ago endpoint = avg over ±7 days around the target date.
+     This reduces single-day noise on either end and silently tolerates
+     short data gaps (up to ~7 days) around the 365-day mark. */
+  var liveEpsVal=(live&&live.eps&&!isNaN(live.eps)&&live.eps>0)?live.eps:null;
+  var curEPSAvg=epsTrailingAvg(data,liveEpsVal,7);
+  var eps365Avg=epsWindowAvg(data,365,7);
+  var epsYoY=(!isNaN(curEPSAvg)&&!isNaN(eps365Avg)&&eps365Avg>0)?(curEPSAvg/eps365Avg-1):NaN;
 
   /* ═══ EPS PILL LOGIC ═══
      Replaces the old TURNING pill. Purpose: classify "cheap" cards as
@@ -1844,6 +1852,9 @@ function computeStats(data,live){
 /* EPS value ~N days before last available date. Walks backwards until
    finding first valid positive EPS on or before the target date. */
 function epsAt(data,daysAgo){
+  /* Single-point EPS lookup: most recent valid reading on-or-before
+     (last-daysAgo). Kept for any external reference — internal YoY
+     calls now use the smoothed helpers below. */
   if(!data||!data.length) return NaN;
   var last=new Date(data[data.length-1].date);
   if(isNaN(last)) return NaN;
@@ -1858,6 +1869,52 @@ function epsAt(data,daysAgo){
     }
   }
   return NaN;
+}
+
+/* Trailing-N-day EPS average: mean of valid positive EPS readings in the
+   last `days` of historical data. If live EPS is supplied (pass live.eps
+   when it's valid; null/undefined/0 otherwise), it's folded in as an extra
+   data point so the current endpoint reflects intraday movement. */
+function epsTrailingAvg(data,liveEps,days){
+  if(!data||!data.length) return NaN;
+  var last=new Date(data[data.length-1].date);
+  if(isNaN(last)) return NaN;
+  var cutoffMs=last.getTime()-days*86400000;
+  var sum=0,n=0;
+  for(var k=data.length-1;k>=0;k--){
+    var dt=new Date(data[k].date);
+    if(isNaN(dt)) continue;
+    if(dt.getTime()<cutoffMs) break;
+    var v=data[k].eps;
+    if(v!=null&&!isNaN(v)&&isFinite(v)&&v>0){sum+=v;n++;}
+  }
+  if(liveEps!=null&&!isNaN(liveEps)&&liveEps>0){sum+=liveEps;n++;}
+  return n?sum/n:NaN;
+}
+
+/* Windowed EPS average: mean of valid positive EPS readings within
+   ±halfWindow days of the target date (target = last − daysAgo).
+   Used to smooth the "1 year ago" endpoint in YoY calculations —
+   silently bridges short data gaps and suppresses single-day noise. */
+function epsWindowAvg(data,daysAgo,halfWindow){
+  if(!data||!data.length) return NaN;
+  var last=new Date(data[data.length-1].date);
+  if(isNaN(last)) return NaN;
+  var target=new Date(last);
+  target.setDate(target.getDate()-daysAgo);
+  var loMs=target.getTime()-halfWindow*86400000;
+  var hiMs=target.getTime()+halfWindow*86400000;
+  var sum=0,n=0;
+  for(var k=0;k<data.length;k++){
+    var dt=new Date(data[k].date);
+    if(isNaN(dt)) continue;
+    var ms=dt.getTime();
+    if(ms<loMs) continue;
+    if(ms>hiMs) break;
+    var v=data[k].eps;
+    if(v!=null&&!isNaN(v)&&isFinite(v)&&v>0){sum+=v;n++;}
+  }
+  return n?sum/n:NaN;
 }
 
 /* ════════════════════════════════════════
@@ -2982,21 +3039,28 @@ function buildEpsGrowthCharts(data, secColor){
   if(!data||!data.length) return '';
   var isLight=document.documentElement.classList.contains('light');
 
-  /* Get EPS value approximately N days before the last data point.
-     Mirrors the global epsAt() but self-contained so no external deps. */
+  /* Windowed EPS average for annual YoY bars — mirrors the global
+     epsWindowAvg() so chart bars and the tile YoY use consistent
+     smoothing. ±7-day window suppresses single-day noise and tolerates
+     short data gaps at the target date. */
   function epsBack(daysAgo){
     var last=new Date(data[data.length-1].date);
     if(isNaN(last)) return NaN;
-    var target=new Date(last.getTime()-daysAgo*86400000);
-    for(var k=data.length-1;k>=0;k--){
+    var target=new Date(last);
+    target.setDate(target.getDate()-daysAgo);
+    var loMs=target.getTime()-7*86400000;
+    var hiMs=target.getTime()+7*86400000;
+    var sum=0,n=0;
+    for(var k=0;k<data.length;k++){
       var dt=new Date(data[k].date);
       if(isNaN(dt)) continue;
-      if(dt<=target){
-        var v=data[k].eps;
-        if(v&&!isNaN(v)&&isFinite(v)&&v>0) return v;
-      }
+      var ms=dt.getTime();
+      if(ms<loMs) continue;
+      if(ms>hiMs) break;
+      var v=data[k].eps;
+      if(v!=null&&!isNaN(v)&&isFinite(v)&&v>0){sum+=v;n++;}
     }
-    return NaN;
+    return n?sum/n:NaN;
   }
 
   var lastDate=new Date(data[data.length-1].date);
