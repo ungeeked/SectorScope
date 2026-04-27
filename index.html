@@ -6,6 +6,7 @@
 <title>SectorScope</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
 :root{
   --bg:#080b12;--bg2:#0d1120;--bg3:#131929;--sur:#1a2035;
@@ -63,6 +64,23 @@ html.light #status-chip.done{color:#15803d;border-color:rgba(21,128,61,.3);backg
 @media(max-width:600px){#status-chip{font-size:.48rem;padding:2px 7px}}
 .icon-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;color:var(--sub);font-size:.9rem;cursor:pointer;transition:all .18s;flex-shrink:0}
 .icon-btn:hover{background:var(--sur);color:var(--txt)}
+/* ── AUTH ── */
+.auth-btn{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg3);color:var(--txt);font-family:var(--body);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap;flex-shrink:0}
+.auth-btn:hover{background:var(--sur);border-color:rgba(99,102,241,.4)}
+.auth-btn svg{flex-shrink:0}
+.user-pill{display:none;align-items:center;gap:6px;padding:3px 10px 3px 3px;border-radius:20px;border:1px solid var(--bdr);background:var(--bg3);cursor:pointer;transition:all .18s;position:relative;flex-shrink:0}
+.user-pill:hover{background:var(--sur)}
+.user-pill.visible{display:flex}
+.user-avatar{width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.user-avatar-placeholder{width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;color:#fff;flex-shrink:0}
+.user-name{font-family:var(--mono);font-size:.52rem;color:var(--txt);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.user-menu{position:absolute;top:calc(100% + 6px);right:0;background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;padding:6px;min-width:160px;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.3);display:none}
+.user-menu.open{display:block}
+.user-menu-email{font-family:var(--mono);font-size:.52rem;color:var(--ghost);padding:4px 8px 8px;border-bottom:1px solid var(--bdr);margin-bottom:4px;word-break:break-all}
+.user-menu-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;font-family:var(--body);font-size:.78rem;color:var(--txt);cursor:pointer;transition:background .15s}
+.user-menu-item:hover{background:var(--sur)}
+.user-menu-item.danger{color:#f87171}
+.user-menu-item.danger:hover{background:rgba(248,113,113,.08)}
 .theme-pill{width:50px;height:26px;background:var(--bg3);border:1px solid var(--bdr);border-radius:26px;cursor:pointer;position:relative;transition:background .3s;flex-shrink:0;padding:0}
 .theme-pip{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--sub);display:flex;align-items:center;justify-content:center;font-size:.62rem;transition:transform .32s cubic-bezier(.34,1.56,.64,1),background .3s}
 html.light .theme-pip{transform:translateX(22px);background:#f59e0b}
@@ -605,6 +623,23 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
   <div class="h-right">
     <div id="status-chip" role="status" aria-live="polite">⏳ Connecting…</div>
     <div id="live-chip" title="Live intraday data · refreshes every 2 min">LIVE</div>
+    <!-- Auth -->
+    <button class="auth-btn" id="auth-signin-btn" onclick="authSignIn()">
+      <svg width="14" height="14" viewBox="0 0 48 48"><path fill="#4285F4" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#34A853" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.6 26.8 36.5 24 36.5c-5.2 0-9.6-3.1-11.3-7.5l-6.6 4.9C9.6 39.6 16.3 44 24 44z"/><path fill="#EA4335" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.2 5.2C41.3 36.3 44 30.6 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
+      Sign in
+    </button>
+    <div class="user-pill" id="user-pill" onclick="toggleUserMenu()">
+      <div class="user-avatar-placeholder" id="user-avatar-placeholder"></div>
+      <img class="user-avatar" id="user-avatar" src="" alt="" style="display:none"/>
+      <span class="user-name" id="user-name"></span>
+      <div class="user-menu" id="user-menu">
+        <div class="user-menu-email" id="user-menu-email"></div>
+        <div class="user-menu-item" onclick="authSignOut()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Sign out
+        </div>
+      </div>
+    </div>
     <button class="theme-pill" id="theme-pill-btn" onclick="toggleTheme()" aria-label="Toggle light/dark theme" aria-pressed="false">
       <div class="theme-pip" id="theme-pip">🌙</div>
     </button>
@@ -3300,6 +3335,139 @@ initGridEvents();
 /* Auto-refresh live data every 2 minutes.
    Worker caches NSE response for 60s, so users are at most ~3 min behind. */
 setInterval(function(){ fetchLiveData().catch(function(){}); }, 2 * 60 * 1000);
+
+/* ════════════════════════════════════════
+   GOOGLE AUTH
+════════════════════════════════════════ */
+var GOOGLE_CLIENT_ID='575713517295-uo4blh9i4sqg1l6n37fv664v8uv8u0ed.apps.googleusercontent.com';
+var currentUser=null; /* { email, name, picture, token } */
+
+function authInit(){
+  if(typeof google==='undefined') return;
+  google.accounts.id.initialize({
+    client_id: GOOGLE_CLIENT_ID,
+    callback: authHandleCredential,
+    auto_select: true,           /* silently signs in returning users */
+    cancel_on_tap_outside: true,
+  });
+  /* Show One Tap prompt for returning users */
+  google.accounts.id.prompt();
+}
+
+function authHandleCredential(response){
+  /* Decode the JWT returned by Google — no server needed for reading claims */
+  var parts=response.credential.split('.');
+  var payload=JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+  currentUser={
+    email  : payload.email,
+    name   : payload.given_name||payload.name||payload.email.split('@')[0],
+    picture: payload.picture||'',
+    token  : response.credential,
+  };
+  authRender();
+  localStorage.setItem('ss_user', JSON.stringify({
+    email  : currentUser.email,
+    name   : currentUser.name,
+    picture: currentUser.picture,
+  }));
+}
+
+function authRender(){
+  var signInBtn=document.getElementById('auth-signin-btn');
+  var pill=document.getElementById('user-pill');
+  var nameEl=document.getElementById('user-name');
+  var emailEl=document.getElementById('user-menu-email');
+  var avatarImg=document.getElementById('user-avatar');
+  var avatarPh=document.getElementById('user-avatar-placeholder');
+  if(!currentUser){
+    signInBtn.style.display='';
+    pill.classList.remove('visible');
+    return;
+  }
+  signInBtn.style.display='none';
+  nameEl.textContent=currentUser.name;
+  emailEl.textContent=currentUser.email;
+  if(currentUser.picture){
+    avatarImg.src=currentUser.picture;
+    avatarImg.style.display='';
+    avatarPh.style.display='none';
+  } else {
+    avatarPh.textContent=currentUser.name.charAt(0).toUpperCase();
+    avatarPh.style.display='';
+    avatarImg.style.display='none';
+  }
+  pill.classList.add('visible');
+}
+
+function authSignIn(){
+  if(typeof google==='undefined') return;
+  google.accounts.id.prompt(function(notification){
+    /* If One Tap is suppressed (e.g. user dismissed it before), fall back
+       to the popup flow */
+    if(notification.isNotDisplayed()||notification.isSkippedMoment()){
+      google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope    : 'email profile',
+        callback : function(resp){
+          /* Token client doesn't return an ID token — use userinfo endpoint */
+          fetch('https://www.googleapis.com/oauth2/v3/userinfo',{
+            headers:{'Authorization':'Bearer '+resp.access_token}
+          }).then(function(r){return r.json();}).then(function(info){
+            currentUser={
+              email  : info.email,
+              name   : info.given_name||info.name||info.email.split('@')[0],
+              picture: info.picture||'',
+              token  : resp.access_token,
+            };
+            authRender();
+            localStorage.setItem('ss_user',JSON.stringify({
+              email  : currentUser.email,
+              name   : currentUser.name,
+              picture: currentUser.picture,
+            }));
+          });
+        },
+      }).requestAccessToken();
+    }
+  });
+}
+
+function authSignOut(){
+  currentUser=null;
+  localStorage.removeItem('ss_user');
+  if(typeof google!=='undefined') google.accounts.id.disableAutoSelect();
+  authRender();
+  closeUserMenu();
+}
+
+function toggleUserMenu(){
+  var menu=document.getElementById('user-menu');
+  menu.classList.toggle('open');
+}
+function closeUserMenu(){
+  var menu=document.getElementById('user-menu');
+  if(menu) menu.classList.remove('open');
+}
+
+/* Close menu when clicking outside */
+document.addEventListener('click',function(e){
+  if(!e.target.closest('#user-pill')) closeUserMenu();
+});
+
+/* Restore session from localStorage on page load (shows name/avatar
+   immediately while One Tap silently re-validates in the background) */
+(function restoreSession(){
+  var saved=localStorage.getItem('ss_user');
+  if(!saved) return;
+  try{
+    var u=JSON.parse(saved);
+    currentUser={email:u.email,name:u.name,picture:u.picture||'',token:null};
+    authRender();
+  }catch(e){}
+})();
+
+/* Init Google after GSI script loads */
+window.addEventListener('load',function(){ authInit(); });
 </script>
 </body>
 </html>
