@@ -595,8 +595,7 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
 <header>
   <div class="h-brand">
     <div class="h-title">SectorScope</div>
-    <div class="h-sub">India Equity · NSE</div>
-    <div class="h-updated" id="h-updated" aria-live="polite"></div>
+    <div class="h-sub">Sectoral Analysis made easy</div>
   </div>
   <nav class="page-tabs" role="tablist" aria-label="Page navigation">
     <button class="ptab active" id="tab-dash" role="tab" aria-selected="true" onclick="showPage('dashboard')">Dashboard</button>
@@ -605,7 +604,7 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
   </nav>
   <div class="h-right">
     <div id="status-chip" role="status" aria-live="polite">⏳ Connecting…</div>
-    <div id="live-chip" title="Live intraday data · refreshes every 20 min">LIVE</div>
+    <div id="live-chip" title="Live intraday data · refreshes every 2 min">LIVE</div>
     <button class="theme-pill" id="theme-pill-btn" onclick="toggleTheme()" aria-label="Toggle light/dark theme" aria-pressed="false">
       <div class="theme-pip" id="theme-pip">🌙</div>
     </button>
@@ -3298,6 +3297,9 @@ initGridEvents();
   await fetchLiveData().catch(function(){});
   loadAllStaggered();
 })();
+/* Auto-refresh live data every 2 minutes.
+   Worker caches NSE response for 60s, so users are at most ~3 min behind. */
+setInterval(function(){ fetchLiveData().catch(function(){}); }, 2 * 60 * 1000);
 </script>
 </body>
 </html>
