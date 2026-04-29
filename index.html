@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "54b7012add694a9f98e8e37d89605df2"}'></script><!-- End Cloudflare Web Analytics -->
 <style>
 :root{
   --bg:#080b12;--bg2:#0d1120;--bg3:#131929;--sur:#1a2035;
@@ -62,6 +64,8 @@ html.light #live-chip{color:#15803d;border-color:rgba(21,128,61,.3);background:r
 #live-chip.visible{display:inline-block}
 html.light #status-chip.done{color:#15803d;border-color:rgba(21,128,61,.3);background:rgba(21,128,61,.06)}
 @media(max-width:600px){#status-chip{font-size:.48rem;padding:2px 7px}}
+@media(max-width:680px){#live-chip.visible{display:none!important}.h-right{margin-left:auto}}
+@media(max-width:480px){#status-chip{display:none}.user-name{max-width:64px}}
 .icon-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;color:var(--sub);font-size:.9rem;cursor:pointer;transition:all .18s;flex-shrink:0}
 .icon-btn:hover{background:var(--sur);color:var(--txt)}
 /* ── AUTH ── */
@@ -79,8 +83,12 @@ html.light #status-chip.done{color:#15803d;border-color:rgba(21,128,61,.3);backg
 .user-menu-email{font-family:var(--mono);font-size:.52rem;color:var(--ghost);padding:4px 8px 8px;border-bottom:1px solid var(--bdr);margin-bottom:4px;word-break:break-all}
 .user-menu-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;font-family:var(--body);font-size:.78rem;color:var(--txt);cursor:pointer;transition:background .15s}
 .user-menu-item:hover{background:var(--sur)}
-.user-menu-item.danger{color:#f87171}
-.user-menu-item.danger:hover{background:rgba(248,113,113,.08)}
+.user-menu-item.upgrade-item{color:#a5b4fc}
+.user-menu-item.upgrade-item:hover{background:rgba(99,102,241,.12)}
+.user-menu-item.cancel-item{color:var(--ghost);font-size:.74rem}
+.user-menu-item.cancel-item:hover{color:#f87171;background:rgba(248,113,113,.07)}
+.plus-badge{font-family:var(--mono);font-size:.44rem;font-weight:700;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:2px 5px;border-radius:4px;margin-left:4px;vertical-align:middle;letter-spacing:.3px}
+.user-sub-status{font-family:var(--mono);font-size:.48rem;color:var(--ghost);padding:2px 8px 6px;}
 .theme-pill{width:50px;height:26px;background:var(--bg3);border:1px solid var(--bdr);border-radius:26px;cursor:pointer;position:relative;transition:background .3s;flex-shrink:0;padding:0}
 .theme-pip{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--sub);display:flex;align-items:center;justify-content:center;font-size:.62rem;transition:transform .32s cubic-bezier(.34,1.56,.64,1),background .3s}
 html.light .theme-pip{transform:translateX(22px);background:#f59e0b}
@@ -189,6 +197,189 @@ html.light .cb-eps-panel{background:rgba(56,189,248,.06)}
 .card-face.dual-face{border:none;background:transparent}
 .dual-split{position:absolute;inset:0;border-radius:15px;overflow:hidden;border:1px solid}
 
+/* ── ALERT BACK ── */
+.ab{height:100%;display:flex;flex-direction:column}
+.ab-head{padding:9px 13px 7px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr);flex-shrink:0;cursor:pointer}
+.ab-head:hover .cb-hint{color:var(--sub)}
+.ab-hl{display:flex;align-items:center;gap:6px}
+.ab-bell{font-size:.82rem;line-height:1}
+.ab-name{font-family:var(--cond);font-size:.92rem;font-weight:800;color:var(--txt)}
+.ab-cur-snap{padding:5px 13px;font-family:var(--mono);font-size:.52rem;color:var(--sub);border-bottom:1px solid var(--bdr);flex-shrink:0;letter-spacing:.2px}
+.ab-body{flex:1;overflow-y:auto;padding:8px 13px 10px;display:flex;flex-direction:column;gap:8px}
+/* states */
+.ab-gate{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:10px;text-align:center;padding:10px}
+.ab-gate-icon{font-size:1.6rem}
+.ab-gate-ttl{font-family:var(--cond);font-size:1rem;font-weight:700;color:var(--txt)}
+.ab-gate-sub{font-family:var(--body);font-size:.74rem;color:var(--sub);line-height:1.5}
+.ab-gate-btn{margin-top:4px;padding:7px 18px;border-radius:9px;border:none;font-family:var(--body);font-size:.78rem;font-weight:700;cursor:pointer;transition:opacity .18s}
+.ab-gate-btn:hover{opacity:.85}
+.ab-gate-btn.signin{background:linear-gradient(135deg,#4285f4,#34a853);color:#fff}
+.ab-gate-btn.upgrade{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff}
+/* metric checkboxes */
+.ab-metric-row{display:flex;gap:10px;flex-wrap:wrap}
+.ab-metric-cb{display:flex;align-items:center;gap:5px;cursor:pointer;font-family:var(--mono);font-size:.58rem;font-weight:600;color:var(--txt);padding:4px 8px;border-radius:7px;border:1px solid var(--bdr);background:var(--bg3);transition:all .15s;user-select:none}
+.ab-metric-cb input{width:13px;height:13px;accent-color:#6366f1;cursor:pointer;flex-shrink:0}
+.ab-metric-cb:has(input:checked){border-color:rgba(99,102,241,.5);background:rgba(99,102,241,.08)}
+/* form */
+.ab-field{display:flex;flex-direction:column;gap:4px}
+.ab-field-lbl{font-family:var(--mono);font-size:.52rem;color:var(--sub);letter-spacing:.3px}
+.ab-field-lbl strong{color:var(--txt)}
+.ab-slider-row{display:flex;align-items:center;gap:7px}
+.ab-slider{flex:1;-webkit-appearance:none;appearance:none;height:4px;border-radius:2px;background:var(--sur);outline:none;cursor:pointer;accent-color:#6366f1}
+.ab-slider::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:#6366f1;cursor:pointer;box-shadow:0 0 4px rgba(99,102,241,.4)}
+.ab-slider-val{font-family:var(--mono);font-size:.78rem;font-weight:700;color:#a5b4fc;min-width:36px;text-align:right}
+.ab-field-wrap{display:flex;flex-direction:column;gap:6px}
+.ab-field-wrap.hidden{display:none}
+/* trigger toggle */
+.ab-trig-row{display:flex;gap:5px}
+.ab-trig{flex:1;padding:5px 4px;border-radius:7px;border:1px solid var(--bdr);background:transparent;font-family:var(--mono);font-size:.52rem;font-weight:600;color:var(--sub);cursor:pointer;transition:all .15s;text-align:center}
+.ab-trig.active{background:var(--sur);color:var(--txt);border-color:rgba(99,102,241,.4)}
+.ab-op-row{display:flex;flex-direction:column;gap:4px}
+.ab-op-row.hidden{display:none}
+/* set button */
+.ab-set-btn{width:100%;padding:8px;border-radius:9px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:var(--body);font-size:.8rem;font-weight:700;cursor:pointer;transition:opacity .18s;margin-top:2px}
+.ab-set-btn:hover{opacity:.88}
+.ab-set-btn:disabled{opacity:.4;cursor:not-allowed}
+/* existing alert */
+.ab-existing{padding:8px 10px;border-radius:8px;border:1px solid rgba(99,102,241,.3);background:rgba(99,102,241,.06);display:flex;flex-direction:column;gap:4px}
+.ab-existing-lbl{font-family:var(--mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.8px;color:#a5b4fc}
+.ab-existing-val{font-family:var(--mono);font-size:.68rem;color:var(--txt);font-weight:600}
+.ab-existing-del{font-family:var(--mono);font-size:.5rem;color:#f87171;cursor:pointer;text-decoration:underline;align-self:flex-end;margin-top:2px}
+/* feedback */
+.ab-feedback{font-family:var(--mono);font-size:.58rem;text-align:center;padding:4px;border-radius:6px}
+.ab-feedback.ok{color:var(--vchp-c);background:var(--vchp-tl)}
+.ab-feedback.err{color:var(--exp-c);background:var(--exp-tl)}
+
+/* ── MY ALERTS OVERLAY ── */
+#my-alerts-overlay{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;background:var(--bg);transform:translateY(100%);transition:transform .42s cubic-bezier(.4,.2,.2,1);visibility:hidden}
+#my-alerts-overlay.open{transform:translateY(0);visibility:visible}
+html.light #my-alerts-overlay{background:var(--bg)}
+
+/* ── PLUS PANE ── */
+#plus-pane{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;background:var(--bg);transform:translateY(100%);transition:transform .42s cubic-bezier(.4,.2,.2,1);visibility:hidden}
+#plus-pane.open{transform:translateY(0);visibility:visible}
+.pp-header{position:sticky;top:0;z-index:10;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(8,11,18,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);flex-shrink:0}
+html.light .pp-header{background:rgba(238,241,248,.96)}
+.pp-title{font-family:var(--cond);font-size:1.4rem;font-weight:800;letter-spacing:-.2px;color:var(--txt);display:flex;align-items:center;gap:8px}
+.pp-plus-badge{font-family:var(--mono);font-size:.48rem;font-weight:700;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:3px 7px;border-radius:5px;letter-spacing:.5px}
+.pp-body{flex:1;overflow-y:auto;padding:0 22px 60px;max-width:820px;margin:0 auto;width:100%}
+@media(max-width:680px){.pp-body{padding:0 12px 48px}}
+/* hero */
+.pp-hero{text-align:center;padding:52px 0 44px;position:relative;overflow:hidden}
+.pp-hero-eyebrow{font-family:var(--mono);font-size:.56rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#6366f1;margin-bottom:14px}
+.pp-hero-title{font-family:var(--ttl);font-size:clamp(2.8rem,8vw,5rem);letter-spacing:3px;line-height:.95;margin-bottom:16px}
+.pp-hero-title .pp-word{background:linear-gradient(135deg,#6366f1,#a78bfa,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.pp-hero-sub{font-family:var(--body);font-size:.95rem;color:var(--sub);line-height:1.65;max-width:500px;margin:0 auto 28px}
+.pp-price-pill{display:inline-flex;align-items:center;gap:7px;padding:7px 18px;border-radius:50px;border:1px solid rgba(99,102,241,.3);background:rgba(99,102,241,.07);font-family:var(--mono);font-size:.68rem;color:#a5b4fc;margin-bottom:28px}
+.pp-price-pill strong{font-size:.88rem;color:#c4b5fd}
+/* particles */
+.pp-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.pp-particle{position:absolute;border-radius:50%;animation:ppFloat linear infinite;opacity:0}
+@keyframes ppFloat{0%{opacity:0;transform:translateY(0)}10%{opacity:.35}90%{opacity:.08}100%{opacity:0;transform:translateY(-100px)}}
+/* cta */
+.pp-cta-row{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
+.pp-btn-primary{padding:12px 30px;border-radius:11px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:var(--body);font-size:.88rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.2px}
+.pp-btn-primary:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(99,102,241,.4)}
+.pp-btn-secondary{padding:10px 20px;border-radius:10px;border:1px solid var(--bdr);background:transparent;color:var(--sub);font-family:var(--body);font-size:.84rem;font-weight:600;cursor:pointer;transition:all .18s}
+.pp-btn-secondary:hover{color:var(--txt);border-color:var(--sub)}
+/* features */
+.pp-divider{border:none;border-top:1px solid var(--bdr);margin:0 0 52px}
+.pp-feature{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:center;margin-bottom:64px;opacity:0;transform:translateY(24px);transition:opacity .5s ease,transform .5s ease}
+.pp-feature.visible{opacity:1;transform:none}
+.pp-feature.rev{direction:rtl}
+.pp-feature.rev>*{direction:ltr}
+@media(max-width:680px){.pp-feature,.pp-feature.rev{grid-template-columns:1fr;direction:ltr}.pp-feature.rev>*{direction:ltr}}
+.pp-feat-num{font-family:var(--mono);font-size:.5rem;font-weight:700;letter-spacing:2px;color:#6366f1;text-transform:uppercase;margin-bottom:6px}
+.pp-feat-title{font-family:var(--cond);font-size:1.55rem;font-weight:800;color:var(--txt);line-height:1.15;margin-bottom:8px}
+.pp-feat-desc{font-family:var(--body);font-size:.83rem;color:var(--sub);line-height:1.7;margin-bottom:10px}
+.pp-bullets{list-style:none;padding:0;display:flex;flex-direction:column;gap:5px}
+.pp-bullets li{display:flex;align-items:flex-start;gap:7px;font-family:var(--body);font-size:.8rem;color:var(--sub)}
+.pp-bullets li::before{content:'✓';color:var(--vchp-c);font-weight:700;flex-shrink:0;margin-top:1px}
+.pp-bullets li strong{color:var(--txt)}
+/* mockup shell */
+.pp-mock{border-radius:14px;border:1px solid var(--bdr);background:var(--bg2);overflow:hidden;box-shadow:0 16px 50px rgba(0,0,0,.45)}
+.pp-mock-bar{padding:7px 11px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:5px}
+.pp-dot{width:7px;height:7px;border-radius:50%}
+.pp-mock-body{padding:14px}
+/* alert mockup internals */
+.ppm-sector-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ppm-sector{font-family:var(--cond);font-size:.95rem;font-weight:800;color:var(--txt)}
+.ppm-band{font-family:var(--mono);font-size:.5rem;font-weight:700;padding:2px 7px;border-radius:10px;background:rgba(0,200,83,.1);border:1px solid rgba(0,200,83,.3);color:var(--vchp-c)}
+.ppm-track{height:4px;background:var(--bg3);border-radius:2px;position:relative;margin:6px 0 4px}
+.ppm-fill{height:100%;width:78%;background:linear-gradient(90deg,#6366f1,#8b5cf6);border-radius:2px}
+.ppm-thumb{width:11px;height:11px;border-radius:50%;background:#fff;border:2px solid #6366f1;position:absolute;top:-3.5px;left:calc(78% - 5.5px);box-shadow:0 0 8px rgba(99,102,241,.6)}
+.ppm-ticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.43rem;color:var(--ghost)}
+.ppm-notif{background:var(--bg3);border:1px solid rgba(99,102,241,.25);border-radius:9px;padding:9px 11px;display:flex;align-items:flex-start;gap:8px;margin-top:12px;animation:ppNotif 2.8s ease-in-out infinite}
+@keyframes ppNotif{0%,100%{opacity:.55;transform:translateY(3px)}50%{opacity:1;transform:translateY(0)}}
+.ppm-notif-ttl{font-family:var(--cond);font-size:.78rem;font-weight:700;color:var(--txt);margin-bottom:2px}
+.ppm-notif-body{font-family:var(--mono);font-size:.5rem;color:var(--sub);line-height:1.5}
+/* AI mockup internals */
+.ppm-ai-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.ppm-ai-title{font-family:var(--cond);font-size:.88rem;font-weight:800;color:var(--txt);display:flex;align-items:center;gap:5px}
+.ppm-ai-pwrd{font-family:var(--mono);font-size:.43rem;color:var(--ghost);display:flex;align-items:center;gap:3px}
+.ppm-line{height:7px;border-radius:3px;background:var(--bg3);margin-bottom:6px;position:relative;overflow:hidden}
+.ppm-line::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(99,102,241,.15),transparent);animation:ppShimmer 1.8s ease-in-out infinite}
+@keyframes ppShimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.ppm-verdict{background:rgba(99,102,241,.07);border:1px solid rgba(99,102,241,.18);border-radius:7px;padding:7px 9px;font-family:var(--mono);font-size:.55rem;color:#a5b4fc;line-height:1.5;margin-top:10px}
+.ppm-verdict strong{color:var(--txt)}
+/* backtest mockup internals */
+.ppm-tbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.56rem}
+.ppm-tbl th{padding:5px 7px;text-align:right;font-size:.44rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ghost);border-bottom:1px solid var(--bdr)}
+.ppm-tbl th:first-child{text-align:left}
+.ppm-tbl th.grp{text-align:center;color:#a5b4fc;border-bottom:none;font-size:.48rem;border-left:1px solid var(--bdr)}
+.ppm-tbl td{padding:5px 7px;text-align:right;border-bottom:1px solid var(--bdr2);color:var(--sub)}
+.ppm-tbl td:first-child{text-align:left;color:var(--txt);font-weight:500}
+.ppm-tbl td.sep{border-left:1px solid var(--bdr)}
+.ppm-tbl td.alpha-p{font-weight:700;color:var(--vchp-c)}
+.ppm-tbl td.alpha-n{font-weight:700;color:var(--vexp-c)}
+.ppm-tbl td.hl{background:rgba(99,102,241,.05)}
+.ppm-tbl tr.rg{background:rgba(0,200,83,.04)}
+.ppm-tbl tr.rr{background:rgba(255,23,68,.04)}
+/* pricing card */
+.pp-pricing{text-align:center;margin-bottom:52px;opacity:0;transform:translateY(20px);transition:opacity .5s ease,transform .5s ease}
+.pp-pricing.visible{opacity:1;transform:none}
+.pp-pricing-card{display:inline-block;background:var(--bg2);border:1px solid rgba(99,102,241,.28);border-radius:18px;padding:32px 44px;position:relative;box-shadow:0 0 70px rgba(99,102,241,.07)}
+.pp-pricing-card::before{content:'';position:absolute;inset:-1px;border-radius:18px;background:linear-gradient(135deg,rgba(99,102,241,.18),rgba(139,92,246,.08),transparent 60%);pointer-events:none;z-index:-1}
+.pp-price-amt{font-family:var(--ttl);font-size:3.8rem;letter-spacing:2px;background:linear-gradient(135deg,#a5b4fc,#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.pp-price-per{font-family:var(--mono);font-size:.6rem;color:var(--ghost);letter-spacing:1px;margin:4px 0 22px}
+.pp-price-feats{list-style:none;text-align:left;display:flex;flex-direction:column;gap:9px;margin-bottom:24px}
+.pp-price-feats li{display:flex;align-items:center;gap:9px;font-family:var(--body);font-size:.83rem;color:var(--sub)}
+.pp-price-feats li::before{content:'✦';color:#6366f1;font-size:.58rem;flex-shrink:0}
+.pp-price-feats li strong{color:var(--txt)}
+@media(max-width:500px){.pp-pricing-card{padding:24px 20px}}
+/* member view */
+.pp-member-hero{text-align:center;padding:52px 0 40px}
+.pp-member-glow{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#6366f1,#8b5cf6);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:2.1rem;box-shadow:0 0 50px rgba(99,102,241,.4),0 0 100px rgba(99,102,241,.15);animation:ppMemberPulse 3s ease-in-out infinite}
+@keyframes ppMemberPulse{0%,100%{box-shadow:0 0 50px rgba(99,102,241,.4),0 0 100px rgba(99,102,241,.15)}50%{box-shadow:0 0 70px rgba(99,102,241,.6),0 0 140px rgba(99,102,241,.22)}}
+.pp-member-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:20px;background:linear-gradient(135deg,#6366f1,#8b5cf6);font-family:var(--mono);font-size:.6rem;font-weight:700;letter-spacing:1px;color:#fff;margin-bottom:10px}
+.pp-member-title{font-family:var(--ttl);font-size:clamp(2rem,5vw,3.2rem);letter-spacing:2px;margin-bottom:8px}
+.pp-member-sub{font-family:var(--body);font-size:.86rem;color:var(--sub)}
+/* manage */
+.pp-manage{background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;padding:24px;margin-bottom:40px}
+.pp-manage-title{font-family:var(--cond);font-size:1.05rem;font-weight:800;color:var(--txt);margin-bottom:5px}
+.pp-manage-sub{font-family:var(--body);font-size:.8rem;color:var(--sub);margin-bottom:18px;line-height:1.6}
+.pp-manage-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.pp-manage-info{font-family:var(--mono);font-size:.56rem;color:var(--ghost);line-height:1.7}
+.pp-manage-info strong{color:var(--sub)}
+.pp-btn-danger{padding:9px 20px;border-radius:9px;border:1px solid rgba(255,23,68,.2);background:transparent;color:#f87171;font-family:var(--body);font-size:.8rem;font-weight:600;cursor:pointer;transition:all .18s}
+.pp-btn-danger:hover{background:rgba(255,23,68,.07);border-color:rgba(255,23,68,.35)}
+.ma-header{position:sticky;top:0;z-index:10;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(8,11,18,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);flex-shrink:0;transition:background .3s}
+html.light .ma-header{background:rgba(238,241,248,.96)}
+.ma-title{font-family:var(--cond);font-size:1.4rem;font-weight:800;letter-spacing:-.2px;color:var(--txt)}
+.ma-body{flex:1;overflow-y:auto;padding:20px 22px 48px;max-width:700px;margin:0 auto;width:100%}
+@media(max-width:680px){.ma-body{padding:14px 12px 40px}}
+.ma-empty{text-align:center;padding:48px 20px;font-family:var(--mono);font-size:.72rem;color:var(--ghost)}
+.ma-loading{text-align:center;padding:48px 20px;font-family:var(--mono);font-size:.68rem;color:var(--ghost)}
+.ma-list{display:flex;flex-direction:column;gap:10px}
+.ma-item{background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px}
+.ma-item-color{width:4px;height:36px;border-radius:2px;flex-shrink:0}
+.ma-item-info{flex:1;min-width:0}
+.ma-item-sector{font-family:var(--cond);font-size:1rem;font-weight:700;color:var(--txt);margin-bottom:3px}
+.ma-item-detail{font-family:var(--mono);font-size:.58rem;color:var(--sub)}
+.ma-item-trig{font-family:var(--mono);font-size:.5rem;padding:2px 7px;border-radius:10px;border:1px solid var(--bdr);color:var(--ghost);white-space:nowrap;flex-shrink:0}
+.ma-item-del{padding:5px 12px;border-radius:8px;border:1px solid rgba(248,113,113,.35);background:rgba(248,113,113,.07);color:#f87171;font-family:var(--mono);font-size:.56rem;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap;flex-shrink:0}
+.ma-item-del:hover{background:rgba(248,113,113,.15)}
+
 /* ── SKELETON + ERROR ── */
 .skel-wrap{padding:13px 14px;height:100%;display:flex;flex-direction:column;gap:8px}
 .sk{border-radius:6px;background:linear-gradient(90deg,rgba(255,255,255,.03) 0%,rgba(255,255,255,.07) 50%,rgba(255,255,255,.03) 100%);background-size:400% 100%;animation:sh 1.9s linear infinite}
@@ -253,8 +444,13 @@ html.light .sk{background:linear-gradient(90deg,rgba(0,0,0,.04) 0%,rgba(0,0,0,.0
 .bt-stat-sub{font-family:var(--mono);font-size:.48rem;color:var(--ghost);margin-top:1px}
 .bt-tbl-wrap{padding:0 18px 14px;overflow-x:auto}
 .bt-tbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.68rem}
-.bt-tbl thead th{padding:8px 8px 6px;text-align:right;font-size:.54rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ghost);border-bottom:1px solid var(--bdr);white-space:nowrap}
-.bt-tbl thead th:first-child,.bt-tbl thead th:nth-child(2){text-align:left}
+.bt-tbl thead th{padding:8px 8px 6px;text-align:right;font-size:.54rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--ghost);border-bottom:1px solid var(--bdr);white-space:nowrap;vertical-align:bottom}
+.bt-tbl thead tr:first-child th:first-child{text-align:center}
+.bt-tbl thead tr:first-child th:nth-child(2){text-align:left}
+.bt-tbl .th-group{text-align:center;border-bottom:none;padding-bottom:2px;border-left:1px solid var(--bdr);letter-spacing:.3px;color:var(--sub)}
+.bt-tbl .th-sub{border-top:1px solid rgba(255,255,255,.06);padding-top:5px}
+.bt-tbl .th-sub-sep{border-left:1px solid var(--bdr)}
+html.light .bt-tbl .th-sub{border-top:1px solid rgba(0,0,0,.08)}
 .bt-tbl tbody tr{border-bottom:1px solid var(--bdr2);transition:background .12s}
 .bt-tbl tbody tr:last-child{border-bottom:none}
 /* Row shading by realised CAGR outcome */
@@ -270,6 +466,8 @@ html.light .bt-tbl tbody tr:hover{background:rgba(0,0,0,.022)}
 .bt-tbl td:nth-child(2){text-align:left;color:var(--txt);font-weight:500}
 .bt-tbl td.vc{color:var(--txt);font-weight:600}
 .bt-tbl td:first-child{text-align:center}
+.bt-tbl td.td-sep{border-left:1px solid var(--bdr)}
+.bt-plus-gate{cursor:pointer;font-size:.7rem;opacity:.5;transition:opacity .15s}.bt-plus-gate:hover{opacity:1}
 .cg-p{color:var(--vchp-c);font-weight:700}.cg-n{color:var(--vexp-c);font-weight:700}.cg-o{color:var(--sub);font-style:italic}
 .open-badge{font-size:.49rem;background:rgba(148,163,184,.12);color:var(--ghost);border-radius:3px;padding:1px 4px;margin-left:2px;vertical-align:middle}
 .no-signals{padding:28px 18px;text-align:center;font-family:var(--mono);font-size:.7rem;color:var(--ghost)}
@@ -335,8 +533,8 @@ html.light .bt-tbl tbody tr:hover{background:rgba(0,0,0,.022)}
 .s-card:hover .expand-btn{color:var(--sub)}
 
 /* ── SECTOR DETAIL OVERLAY ── */
-#sector-detail{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;background:var(--bg);transform:translateY(100%);transition:transform .42s cubic-bezier(.4,.2,.2,1);will-change:transform}
-#sector-detail.open{transform:translateY(0)}
+#sector-detail{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;background:var(--bg);transform:translateY(100%);transition:transform .42s cubic-bezier(.4,.2,.2,1);visibility:hidden}
+#sector-detail.open{transform:translateY(0);visibility:visible}
 .sd-header{position:sticky;top:0;z-index:10;padding:10px 22px;display:flex;align-items:center;gap:12px;background:rgba(8,11,18,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);flex-shrink:0;transition:background .3s}
 html.light .sd-header{background:rgba(238,241,248,.96)}
 .sd-color-bar{width:4px;height:28px;border-radius:2px;flex-shrink:0}
@@ -345,6 +543,38 @@ html.light .sd-header{background:rgba(238,241,248,.96)}
 .sd-close:hover{background:var(--sur);color:var(--txt)}
 .sd-body{flex:1;overflow-y:auto;padding:20px 22px 48px}
 @media(max-width:680px){.sd-body{padding:14px 12px 40px}.sd-header{padding:10px 14px}}
+/* ── AI SUMMARY ── */
+.ai-summary-wrap{margin-bottom:20px;border-radius:12px;border:1px solid var(--bdr);background:var(--bg2);overflow:hidden}
+.ai-summary-head{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 9px;border-bottom:1px solid var(--bdr);flex-wrap:wrap;gap:6px}
+.ai-summary-title{display:flex;align-items:center;gap:7px;font-family:var(--cond);font-size:.95rem;font-weight:800;color:var(--txt);min-width:0;flex:1}
+.ai-summary-title .plus-tag{font-family:var(--mono);font-size:.44rem;font-weight:700;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:2px 5px;border-radius:4px;letter-spacing:.3px}
+.ai-summary-cached{font-family:var(--mono);font-size:.48rem;color:var(--ghost)}
+.ai-summary-body{padding:14px 16px;font-family:var(--body);font-size:.82rem;line-height:1.75;color:var(--txt)}
+.ai-summary-body p{margin:0 0 10px}
+.ai-summary-body p:last-child{margin:0}
+.ai-verdict{margin-top:12px;padding:10px 14px;border-radius:8px;background:var(--bg3);border-left:3px solid #6366f1;font-family:var(--mono);font-size:.72rem;color:var(--txt);font-weight:600}
+.ai-loading{padding:14px 16px;font-family:var(--mono);font-size:.65rem;color:var(--ghost);display:flex;align-items:center;gap:8px}
+.ai-loading::before{content:'';width:12px;height:12px;border-radius:50%;border:2px solid var(--bdr);border-top-color:#6366f1;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-gate{padding:14px 16px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.ai-gate-icon{font-size:1.4rem}
+.ai-gate-txt{font-family:var(--body);font-size:.78rem;color:var(--sub)}
+.ai-gate-btn{padding:6px 16px;border-radius:8px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:var(--body);font-size:.74rem;font-weight:700;cursor:pointer;transition:opacity .18s}
+.ai-gate-btn:hover{opacity:.85}
+.ai-error{padding:14px 16px;font-family:var(--mono);font-size:.62rem;color:var(--ghost)}
+.ai-powered{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.48rem;color:var(--ghost);font-weight:500;letter-spacing:.2px}
+.ai-powered svg{width:13px;height:13px;flex-shrink:0}
+.ai-summary-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.ai-summary-remaining{font-family:var(--mono);font-size:.48rem;color:var(--ghost)}
+.ai-regenerate-wrap{padding:10px 16px 12px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end}
+.ai-regenerate-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:7px;border:1px solid var(--bdr);background:transparent;color:var(--sub);font-family:var(--body);font-size:.72rem;font-weight:600;cursor:pointer;transition:background .15s,color .15s}
+.ai-regenerate-btn:hover{background:var(--bg3);color:var(--txt)}
+.ai-generate-wrap{padding:18px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
+.ai-generate-hint{font-family:var(--body);font-size:.76rem;color:var(--sub)}
+.ai-generate-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 20px;border-radius:9px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:var(--body);font-size:.78rem;font-weight:700;cursor:pointer;transition:opacity .18s}
+.ai-generate-btn:hover{opacity:.85}
+.ai-generate-btn svg{width:13px;height:13px}
+.ai-disclaimer{padding:8px 16px 10px;border-top:1px solid var(--bdr);font-family:var(--body);font-size:.65rem;color:var(--ghost);line-height:1.55;text-align:center}
 
 /* stat grid inside detail */
 .sd-section-title{font-family:var(--mono);font-size:.52rem;text-transform:uppercase;letter-spacing:1.2px;color:var(--ghost);padding:4px 0 8px;border-bottom:1px solid var(--bdr);margin-bottom:12px}
@@ -634,6 +864,19 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
       <span class="user-name" id="user-name"></span>
       <div class="user-menu" id="user-menu">
         <div class="user-menu-email" id="user-menu-email"></div>
+        <div class="user-sub-status" id="user-sub-status"></div>
+        <div class="user-menu-item upgrade-item" id="menu-upgrade-btn" onclick="openPlusPane();closeUserMenu()" style="display:none">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          SectorScope Plus
+        </div>
+        <div class="user-menu-item cancel-item" id="menu-cancel-btn" onclick="openPlusPane();closeUserMenu()" style="display:none">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          SectorScope Plus
+        </div>
+        <div class="user-menu-item" onclick="openMyAlerts();closeUserMenu()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          My Alerts
+        </div>
         <div class="user-menu-item" onclick="authSignOut()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Sign out
@@ -781,7 +1024,8 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
       <a href="#h-eps">4 · EPS metrics</a>
       <a href="#h-chart">5 · Sparkline chart</a>
       <a href="#h-backtest">6 · Backtest page</a>
-      <a href="#h-limits">7 · Limits &amp; caveats</a>
+      <a href="#h-plus">7 · SectorScope Plus</a>
+      <a href="#h-limits">8 · Limits &amp; caveats</a>
     </div>
   </div>
 
@@ -1424,11 +1668,16 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
 
     <div class="hp-sub-h">Reading the results table</div>
     <dl class="hp-kv">
-      <dt>Weighted ref banner</dt><dd>Grey strip above the stats. Confirms the formula used (30/60/10), the ±1% trigger tolerance, the cooldown you picked, and shows the weighted reference as of the end of your selected window.</dd>
+      <dt>Date</dt><dd>The exact calendar date the signal fired — shown in full (day · month · year).</dd>
+      <dt>Price at Buy</dt><dd>The index level of the sector on the signal date. Useful as a reference point when comparing to current levels.</dd>
+      <dt>Value at Buy</dt><dd>The P/E or P/B ratio on the signal date. For dual-metric sectors this shows both PE and PB side by side.</dd>
+      <dt>Weighted Ref</dt><dd>The weighted historical reference on that date — computed from data available up to that point only (no look-ahead). Confirms what the signal was comparing against.</dd>
+      <dt>EPS %</dt><dd>EPS as a % of the sector's max-ever EPS at that signal date. Low values (below 50%) flag potential value traps — the sector was cheap because earnings had collapsed. High values (above 85%) mean the cheapness was price-driven, not earnings-driven — usually higher quality signals.</dd>
+      <dt>Outcome · 6M</dt><dd>Three sub-columns for the 6-month forward window: <strong>Price at Sell</strong> (index level ~6 months later), <strong>CAGR</strong> (annualised return), and <strong>vs Nifty 50</strong> (sector CAGR minus Nifty 50 CAGR over the same period — positive means the sector beat the index). The vs Nifty 50 column requires <strong>SectorScope Plus</strong>.</dd>
+      <dt>Outcome · 1Yr</dt><dd>Same three sub-columns for the 1-year forward window.</dd>
       <dt>Signals count</dt><dd>How many matching dates the engine found. Very low counts (1–3) should be treated as anecdote, not statistics.</dd>
-      <dt>Avg 6m / 1yr CAGR</dt><dd>Annualised return averaged across all signal dates, at 6-month and 1-year horizons. Compare to Nifty 50's typical annual return (~12–14%) as a mental benchmark.</dd>
+      <dt>Avg 6m / 1yr CAGR</dt><dd>Annualised return averaged across all signal dates. The vs Nifty 50 column lets you see whether these returns were genuinely alpha or just riding the broader market.</dd>
       <dt>Hit rate</dt><dd>% of signals that were in profit at that horizon. Hit rate above 70% is strong. Below 50% means more losers than winners — inspect the EPS % column to see if value traps are responsible.</dd>
-      <dt>EPS % column</dt><dd>EPS as a % of the sector's max-ever EPS at that signal date. Low values (below 50%) flag potential value traps — the sector was cheap because earnings had collapsed. High values (above 85%) mean the cheapness was price-driven, not earnings-driven — usually higher quality signals.</dd>
     </dl>
 
     <div class="hp-sub-h">Row shading — what the colors mean</div>
@@ -1462,9 +1711,51 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
     <div class="hp-p">Uncheck the red rows where EPS % was very low (below 50%), then re-check the summary stats. If the hit rate and average return improve significantly when you exclude low-EPS signals, that tells you: <em>this sector's cheap-valuation signals only work when earnings are healthy</em>. That's important context for acting on today's signal — check the current EPS tile before committing.</div>
   </div>
 
-  <!-- ══ 7. LIMITS ══ -->
+  <!-- ══ 7. SECTORSCOPE PLUS ══ -->
+  <div class="hp-sec" id="h-plus">
+    <div class="hp-sec-h">7 · SectorScope Plus</div>
+    <div class="hp-p">SectorScope Plus unlocks three features designed for investors who want to act on signals — not just read them.</div>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">What's included</div>
+      <ul class="hp-list" style="margin:0">
+        <li><strong>Custom email alerts</strong> — set a valuation threshold for any sector and get an email the moment the live P/E or P/B crosses it. You pick the metric, the level, and whether the alert fires once or recurs. Up to 2 alerts per sector.</li>
+        <li><strong>AI sector summaries</strong> — tap "Generate" on any sector's detail page to get a plain-language read on the current valuation and earnings position, powered by Claude. Limited to 30 summaries per day. No buy/sell recommendations — only facts derived from the same data you see on screen.</li>
+        <li><strong>Alpha vs Nifty 50 in backtest</strong> — the "vs Nifty 50" column in the results table shows how much the sector beat or lagged the Nifty 50 index over the same forward window. Positive values (green) mean the sector outperformed; negative (red) means it lagged. This lets you distinguish genuine sector alpha from returns that simply rode the broader market.</li>
+      </ul>
+    </div>
+
+    <div class="hp-sub-h">Email alerts — how they work</div>
+    <div class="hp-p">Open any sector's detail page and scroll to the Alerts card. Set your threshold (a % of reference value), choose whether you want the alert to fire once or repeat after a 24-hour cooldown, and save. The system checks live NSE data every 15 minutes during market hours (9:15am–3:30pm IST, Mon–Fri) and sends an email to your registered address when the condition is met.</div>
+    <div class="hp-card warn">
+      <div class="hp-card-ttl">Alert thresholds explained</div>
+      <div class="hp-p" style="margin-bottom:0">The threshold is a <strong>% of the weighted reference</strong> — the same number shown as "% of ref" on the dashboard card. Setting an alert at <strong>85%</strong> means "notify me when the sector's P/E (or P/B) drops to 85% of its weighted historical median." This directly links alerts to the same valuation framework the whole dashboard uses, so a signal and an alert at the same level are measuring identical things.</div>
+    </div>
+
+    <div class="hp-sub-h">AI summary — how to use it</div>
+    <div class="hp-p">The AI summary sits at the top of every sector's detail overlay. It does not load automatically — tap <strong>Generate</strong> when you want a read. The summary covers: current valuation band and what it means relative to history, the EPS trend (level and direction), and any notable divergence between P/E and P/B for dual-metric sectors.</div>
+    <div class="hp-card tip">
+      <div class="hp-card-ttl">What the AI does and doesn't do</div>
+      <ul class="hp-list" style="margin:0">
+        <li><strong>Does:</strong> Summarises the valuation data in plain language. Identifies the signal band, the EPS trend pill, and whether the cheapness looks earnings-driven or price-driven.</li>
+        <li><strong>Does not:</strong> Access news, macro data, or anything outside the numbers on screen. It cannot tell you about RBI policy, recent results, or management changes. The summary is a structured reading of the existing data — not research.</li>
+        <li><strong>Daily limit:</strong> 30 summaries per account per day, resets at midnight.</li>
+      </ul>
+    </div>
+
+    <div class="hp-sub-h">Alpha vs Nifty 50 — what it means</div>
+    <div class="hp-p">A sector earning +22% CAGR over 12 months sounds strong — but if Nifty 50 returned +20% in the same period, the sector only generated +2% of genuine alpha. The "vs Nifty 50" column does this comparison automatically for every signal row in the backtest. It uses the same forward period as the CAGR (6 months or 1 year) and anchors the Nifty 50 return to the exact same buy date, so you're comparing like for like.</div>
+    <div class="hp-p">A strong backtest setup should show not just a high hit rate and positive CAGR, but also consistently positive vs-Nifty values — confirming that the sector was genuinely beating the market during those windows, not just rising with it.</div>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">Upgrading</div>
+      <div class="hp-p" style="margin-bottom:0">Sign in with Google, then tap your name in the top-right corner. Plus features are enabled for all signed-in users.</div>
+    </div>
+  </div>
+
+  <!-- ══ 8. LIMITS ══ -->
   <div class="hp-sec" id="h-limits">
-    <div class="hp-sec-h">7 · Limits &amp; caveats</div>
+    <div class="hp-sec-h">8 · Limits &amp; caveats</div>
     <div class="hp-p">This tool is designed to sharpen decisions, not replace judgement. Here are the honest limits:</div>
 
     <ul class="hp-list">
@@ -1495,6 +1786,31 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
   <div class="sd-body" id="sd-body"></div>
 </div>
 
+<!-- My Alerts overlay -->
+<div id="my-alerts-overlay" role="dialog" aria-modal="true" aria-label="My Alerts">
+  <div class="ma-header">
+    <div class="ma-title">🔔 My Alerts</div>
+    <button class="sd-close" onclick="closeMyAlerts()" aria-label="Close alerts">✕</button>
+  </div>
+  <div class="ma-body" id="ma-body">
+    <div class="ma-loading">Loading your alerts…</div>
+  </div>
+</div>
+
+<!-- SectorScope Plus pane -->
+<div id="plus-pane" role="dialog" aria-modal="true" aria-label="SectorScope Plus">
+  <div class="pp-header">
+    <div class="pp-title">
+      SectorScope
+      <span class="pp-plus-badge">PLUS</span>
+    </div>
+    <button class="sd-close" onclick="closePlusPane()" aria-label="Close">✕</button>
+  </div>
+  <div class="pp-body" id="pp-body">
+    <!-- populated by openPlusPane() -->
+  </div>
+</div>
+
 <script>
 /* ════════════════════════════════════════
    CONFIG
@@ -1505,23 +1821,23 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
    IP, and blocks declared AI crawlers. See Worker source in a separate
    repo / folder; secrets (the Apps Script URLs) live in Worker Secrets
    and are never shipped to the browser. */
-var PROXY_BASE='https://sectorscope.prashant-06f.workers.dev';
+var PLUSXY_BASE='https://sectorscope.prashant-06f.workers.dev';
 
 var SECTORS=[
-  {name:'Infra',   abbr:'INF',color:'#818cf8',url:PROXY_BASE+'/sector/Infra'},
-  {name:'Realty',  abbr:'REL',color:'#f472b6',url:PROXY_BASE+'/sector/Realty'},
-  {name:'Bank',    abbr:'BNK',color:'#60a5fa',url:PROXY_BASE+'/sector/Bank'},
-  {name:'PSU Bank',abbr:'PSU',color:'#22d3ee',url:PROXY_BASE+'/sector/'+encodeURIComponent('PSU Bank')},
-  {name:'IT',      abbr:'IT', color:'#a78bfa',url:PROXY_BASE+'/sector/IT'},
-  {name:'Auto',    abbr:'AUT',color:'#fbbf24',url:PROXY_BASE+'/sector/Auto'},
-  {name:'FMCG',    abbr:'FMC',color:'#34d399',url:PROXY_BASE+'/sector/FMCG'},
-  {name:'Energy',  abbr:'ENE',color:'#fb923c',url:PROXY_BASE+'/sector/Energy'},
-  {name:'Metals',  abbr:'MET',color:'#94a3b8',url:PROXY_BASE+'/sector/Metals'},
-  {name:'Pharma',  abbr:'PHR',color:'#2dd4bf',url:PROXY_BASE+'/sector/Pharma'}
+  {name:'Infra',   abbr:'INF',color:'#818cf8',url:PLUSXY_BASE+'/sector/Infra'},
+  {name:'Realty',  abbr:'REL',color:'#f472b6',url:PLUSXY_BASE+'/sector/Realty'},
+  {name:'Bank',    abbr:'BNK',color:'#60a5fa',url:PLUSXY_BASE+'/sector/Bank'},
+  {name:'PSU Bank',abbr:'PSU',color:'#22d3ee',url:PLUSXY_BASE+'/sector/'+encodeURIComponent('PSU Bank')},
+  {name:'IT',      abbr:'IT', color:'#a78bfa',url:PLUSXY_BASE+'/sector/IT'},
+  {name:'Auto',    abbr:'AUT',color:'#fbbf24',url:PLUSXY_BASE+'/sector/Auto'},
+  {name:'FMCG',    abbr:'FMC',color:'#34d399',url:PLUSXY_BASE+'/sector/FMCG'},
+  {name:'Energy',  abbr:'ENE',color:'#fb923c',url:PLUSXY_BASE+'/sector/Energy'},
+  {name:'Metals',  abbr:'MET',color:'#94a3b8',url:PLUSXY_BASE+'/sector/Metals'},
+  {name:'Pharma',  abbr:'PHR',color:'#2dd4bf',url:PLUSXY_BASE+'/sector/Pharma'}
 ];
 
 /* ── Live intraday feed (updates every 20 min) ── */
-var LIVE_FEED_URL=PROXY_BASE+'/live';
+var LIVE_FEED_URL=PLUSXY_BASE+'/live';
 /* Maps live feed sector names → our internal sector names */
 var LIVE_NAME_MAP={
   'NIFTY BANK':    'Bank',
@@ -1648,7 +1964,7 @@ function weightedRef(m3,m5,m10){
 }
 function f(n,d){return(n==null||isNaN(n)||!isFinite(n))?'—':(+n).toFixed(d!=null?d:1);}
 function fx(x){return(x==null||isNaN(x)||!isFinite(x))?'—':x.toFixed(2)+'×';}
-function fmtDate(d){var dt=typeof d==='string'?new Date(d):d;return isNaN(dt)?d:dt.toLocaleDateString('en-IN',{month:'short',year:'numeric'});}
+function fmtDate(d){var dt=typeof d==='string'?new Date(d):d;return isNaN(dt)?d:dt.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});}
 /* Indian fiscal-quarter label: FY runs Apr-Mar.
    Apr-Jun = Q1, Jul-Sep = Q2, Oct-Dec = Q3, Jan-Mar = Q4.
    FY year is the year in which the FY ends (e.g. Apr 2024 → "Q1 FY25"). */
@@ -2158,23 +2474,16 @@ function buildCard(sec,st){
             +'</div>'
           +'</div>'
           +frontChart
-          +'<div class="cf-foot"><button class="expand-btn" data-action="detail" data-sector="'+sec.name+'" aria-label="Expand '+fullName+' detail"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>Detail</button><span class="flip-hint">Analysis &nbsp;›</span></div>'
+          +'<div class="cf-foot"><button class="expand-btn" data-action="detail" data-sector="'+sec.name+'" aria-label="Expand '+fullName+' detail"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>Detail</button><span class="flip-hint">🔔 Alert &nbsp;›</span></div>'
         +'</div>'
       +'</div>'
     +'</div>';
     var back='<div class="card-face card-back dual-face" style="--acc:'+sc+'">'
       +'<div class="dual-split" style="'+splitSt+'">'
-        +'<div class="cb">'+bkHead(bpill(peB,'P/E · '+peBobj.label)+bpill(pbB,'P/B · '+pbBobj.label))
-          +'<div class="cb-body">'
-            +'<div class="cb-cur"><span class="cb-cur-l">P/E · '+pctCaption(st.pePct,st.pePctRef)+'</span><span class="cb-cur-v" style="color:'+peBobj.clr+'">'+f(st.curPE,1)+'</span></div>'
-            +refNote(st.peRef,1)
-            +'<div class="cb-sec">P/E Comparison to Median</div>'+cbrows('pe',st.pe3,st.pe5,st.pe10,st.curPE)
-            +'<div class="cb-divider"></div>'
-            +'<div class="cb-cur"><span class="cb-cur-l">P/B · '+pctCaption(st.pbPct,st.pbPctRef)+'</span><span class="cb-cur-v" style="color:'+pbBobj.clr+'">'+f(st.curPB,2)+'</span></div>'
-            +refNote(st.pbRef,2)
-            +'<div class="cb-sec">P/B Comparison to Median</div>'+cbrows('pb',st.pb3,st.pb5,st.pb10,st.curPB)
-            +epsBox(st)
-          +'</div>'
+        +'<div class="ab">'
+          +'<div class="ab-head"><div class="ab-hl"><span class="ab-bell">🔔</span><span class="ab-name">'+fullName+'</span></div><span class="cb-hint">‹ Flip</span></div>'
+          +'<div class="ab-cur-snap">P/E <strong style="color:'+peBobj.clr+'">'+f(st.curPE,1)+'</strong> · '+Math.round(st.pePctRef||0)+'% of ref &nbsp;|&nbsp; P/B <strong style="color:'+pbBobj.clr+'">'+f(st.curPB,2)+'</strong> · '+Math.round(st.pbPctRef||0)+'% of ref</div>'
+          +'<div class="ab-body" data-alert-sector="'+sec.name+'"></div>'
         +'</div>'
       +'</div>'
     +'</div>';
@@ -2209,17 +2518,16 @@ function buildCard(sec,st){
           +'</div>'
         +'</div>'
         +frontChart
-        +'<div class="cf-foot"><button class="expand-btn" data-action="detail" data-sector="'+sec.name+'" aria-label="Expand '+fullName+' detail"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>Detail</button><span class="flip-hint">Analysis &nbsp;›</span></div>'
+        +'<div class="cf-foot"><button class="expand-btn" data-action="detail" data-sector="'+sec.name+'" aria-label="Expand '+fullName+' detail"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>Detail</button><span class="flip-hint">🔔 Alert &nbsp;›</span></div>'
       +'</div>'
     +'</div>';
     var back='<div class="card-face card-back '+bnd.cls+'" style="--acc:'+sc+'">'
-        +'<div class="cb-body">'
-          +'<div class="cb-cur"><span class="cb-cur-l">Current P/B · '+pctCaption(st.pbPct,st.pbPctRef)+'</span><span class="cb-cur-v" style="color:'+bnd.clr+'">'+f(st.curPB,2)+'</span></div>'
-          +refNote(st.pbRef,2)
-          +'<div class="cb-sec">Comparison to Median</div>'+cbrows('pb',st.pb3,st.pb5,st.pb10,st.curPB)
+        +'<div class="ab">'
+          +'<div class="ab-head"><div class="ab-hl"><span class="ab-bell">🔔</span><span class="ab-name">'+fullName+'</span></div><span class="cb-hint">‹ Flip</span></div>'
+          +'<div class="ab-cur-snap">P/B <strong style="color:'+bnd.clr+'">'+f(st.curPB,2)+'</strong> · '+Math.round(st.pbPctRef||0)+'% of ref</div>'
+          +'<div class="ab-body" data-alert-sector="'+sec.name+'"></div>'
         +'</div>'
-      +'</div>'
-    +'</div>';
+      +'</div>';
     return front+back;
   }
 
@@ -2250,17 +2558,14 @@ function buildCard(sec,st){
         +'</div>'
       +'</div>'
       +frontChart
-      +'<div class="cf-foot"><button class="expand-btn" data-action="detail" data-sector="'+sec.name+'" aria-label="Expand '+fullName+' detail"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>Detail</button><span class="flip-hint">Analysis &nbsp;›</span></div>'
+      +'<div class="cf-foot"><button class="expand-btn" data-action="detail" data-sector="'+sec.name+'" aria-label="Expand '+fullName+' detail"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>Detail</button><span class="flip-hint">🔔 Alert &nbsp;›</span></div>'
     +'</div>'
   +'</div>';
   var back='<div class="card-face card-back '+bnd.cls+'" style="--acc:'+sc+'">'
-    +'<div class="cb">'+bkHead(bpill(st.peBand))
-      +'<div class="cb-body">'
-        +'<div class="cb-cur"><span class="cb-cur-l">Current P/E · '+pctCaption(st.pePct,st.pePctRef)+'</span><span class="cb-cur-v" style="color:'+bnd.clr+'">'+f(st.curPE,1)+'</span></div>'
-        +refNote(st.peRef,1)
-        +'<div class="cb-sec">Comparison to Median</div>'+cbrows('pe',st.pe3,st.pe5,st.pe10,st.curPE)
-        +epsBox(st)
-      +'</div>'
+    +'<div class="ab">'
+      +'<div class="ab-head"><div class="ab-hl"><span class="ab-bell">🔔</span><span class="ab-name">'+fullName+'</span></div><span class="cb-hint">‹ Flip</span></div>'
+      +'<div class="ab-cur-snap">P/E <strong style="color:'+bnd.clr+'">'+f(st.curPE,1)+'</strong> · '+Math.round(st.pePctRef||0)+'% of ref</div>'
+      +'<div class="ab-body" data-alert-sector="'+sec.name+'"></div>'
     +'</div>'
   +'</div>';
   return front+back;
@@ -2269,7 +2574,7 @@ function buildCard(sec,st){
 /* ════════════════════════════════════════
    DASHBOARD STATE + RENDER + LOAD
 ════════════════════════════════════════ */
-var loadedCount=0,failedCount=0,statCache={},dataCache={};
+var loadedCount=0,failedCount=0,statCache={},dataCache={},aiSummaryCache={};
 
 function sortVal(sec,st){
   var ct=cardType(sec.name);
@@ -2477,10 +2782,20 @@ function initGridEvents(){
       else if(action==='retry') retrySector(name);
       return;
     }
+    /* Clicks on interactive elements inside the alert pane should not flip —
+       but tapping anywhere else on the back (background, labels area) should flip back. */
+    if(e.target.closest('input, button, select, a, label, .ab-existing-del')) return;
     var card=e.target.closest('.s-card');
     if(!card||card.dataset.rendered!=='1') return;  /* skeleton/error: ignore */
     var inner=card.querySelector('.card-inner');
-    if(inner) inner.classList.toggle('flipped');
+    if(inner){
+      inner.classList.toggle('flipped');
+      /* Populate alert pane when flipping to back */
+      if(inner.classList.contains('flipped')){
+        var sectorName=card.id.replace('c-','');
+        renderAlertPane(sectorName);
+      }
+    }
   });
 
   /* Keyboard flip: Enter or Space when focus is on the card itself.
@@ -2581,7 +2896,8 @@ async function btOnSectorChange(){
   var si=document.getElementById('bt-start'),ei=document.getElementById('bt-end');
   si.min=minD;si.max=maxD;si.value=minD;
   ei.min=minD;ei.max=maxD;ei.value=maxD;
-  /* slider defaults: current value / weighted ref */
+  /* slider defaults: use live-adjusted % of ref from statCache if available,
+     fall back to computing from last historical row                          */
   function defPct(fld){
     var last=btData[btData.length-1],cur=last[fld];
     if(!cur||isNaN(cur)||cur<=0) return 90;
@@ -2590,7 +2906,13 @@ async function btOnSectorChange(){
     var p=(!isNaN(ref)&&ref>0)?Math.round((cur/ref)*100):90;
     return Math.max(50,Math.min(150,p));
   }
-  var peP=defPct('pe'),pbP=defPct('pb');
+  var st=statCache[name];
+  var peP=(st&&!isNaN(st.pePctRef)&&st.pePctRef>0)
+    ? Math.max(50,Math.min(150,Math.round(st.pePctRef)))
+    : defPct('pe');
+  var pbP=(st&&!isNaN(st.pbPctRef)&&st.pbPctRef>0)
+    ? Math.max(50,Math.min(150,Math.round(st.pbPctRef)))
+    : defPct('pb');
   document.getElementById('bt-sl-pe').value=peP;btSlideLbl('pe',peP);
   document.getElementById('bt-sl-pb').value=pbP;btSlideLbl('pb',pbP);
   document.getElementById('bt-run-btn').disabled=false;
@@ -2638,7 +2960,7 @@ function btValidateDates(startVal,endVal,dataMinDate,dataMaxDate){
   return null;
 }
 
-function btRun(){
+async function btRun(){
   if(!btData) return;
   /* Validate dates before doing any work */
   var startVal=btEl('bt-start').value, endVal=btEl('bt-end').value;
@@ -2656,6 +2978,17 @@ function btRun(){
   btEl('bt-run-btn').disabled=true;
   btEl('bt-spinner').classList.add('visible');
   btEl('bt-results-card').style.display='none';
+
+  /* Fetch Nifty 50 historical data for vs-Nifty column (Plus only, cached after first load) */
+  if(userIsSubscribed()&&!dataCache['Nifty 50']){
+    try{
+      dataCache['Nifty 50']=normalise(await fetchWithRetry(PLUSXY_BASE+'/sector/'+encodeURIComponent('Nifty 50')));
+    }catch(e){
+      console.warn('[backtest] Nifty 50 data unavailable:',e);
+      dataCache['Nifty 50']=[];
+    }
+  }
+
   setTimeout(function(){
     try {
       _btCompute();
@@ -2712,17 +3045,45 @@ function _btCompute(){
 
   function fwdReturn(buyIdx,months){
     const bd=new Date(data[buyIdx].date), bp=data[buyIdx].price;
-    if(!bp||bp<=0) return{cagr:null,open:true};
+    if(!bp||bp<=0) return{cagr:null,open:true,sellPrice:null};
     const tgt=new Date(bd);tgt.setMonth(tgt.getMonth()+months);
     for(let k=buyIdx+1;k<data.length;k++){
       const sp=data[k].price;
-      if(new Date(data[k].date)>=tgt&&sp>0) return{cagr:Math.pow(sp/bp,12/months)-1,open:false};
+      if(new Date(data[k].date)>=tgt&&sp>0) return{cagr:Math.pow(sp/bp,12/months)-1,open:false,sellPrice:sp};
     }
     for(let m=data.length-1;m>buyIdx;m--){
       const lp=data[m].price;
-      if(lp>0){const el=(new Date(data[m].date)-bd)/(365.25*86400000);if(el>0.05) return{cagr:Math.pow(lp/bp,1/el)-1,open:true};}
+      if(lp>0){const el=(new Date(data[m].date)-bd)/(365.25*86400000);if(el>0.05) return{cagr:Math.pow(lp/bp,1/el)-1,open:true,sellPrice:lp};}
     }
-    return{cagr:null,open:true};
+    return{cagr:null,open:true,sellPrice:null};
+  }
+
+  /* Nifty 50 forward return for the same period — used for alpha (sector − Nifty) */
+  var nifty50=dataCache['Nifty 50']||[];
+  var nifty50Ts=nifty50.map(function(r){return new Date(r.date).getTime();});
+  function niftyFwdReturn(buyDateStr,months){
+    if(!nifty50.length) return null;
+    const bd=new Date(buyDateStr).getTime();
+    const tgt=bd+months*(365.25/12)*86400000;
+    /* find closest row to buy date */
+    let bi=0,bestDiff=Infinity;
+    for(let i=0;i<nifty50Ts.length;i++){
+      const d=Math.abs(nifty50Ts[i]-bd);
+      if(d<bestDiff){bestDiff=d;bi=i;}
+      if(nifty50Ts[i]>bd+7*86400000) break; /* stop scanning once a week past buy date */
+    }
+    const bp=nifty50[bi].price;
+    if(!bp||bp<=0) return null;
+    for(let k=bi+1;k<nifty50.length;k++){
+      const sp=nifty50[k].price;
+      if(nifty50Ts[k]>=tgt&&sp>0) return Math.pow(sp/bp,12/months)-1;
+    }
+    /* open: use last available price annualised */
+    for(let m=nifty50.length-1;m>bi;m--){
+      const lp=nifty50[m].price;
+      if(lp>0){const el=(nifty50Ts[m]-new Date(buyDateStr).getTime())/(365.25*86400000);if(el>0.05) return Math.pow(lp/bp,1/el)-1;}
+    }
+    return null;
   }
 
   /* pre-compute date timestamps once — avoids thousands of Date parses in the loop */
@@ -2809,7 +3170,8 @@ function _btCompute(){
             pct2:pbRatio*100,
             epsPctMax:epsPctMaxToDate,
             price:price,
-            r6m:fwdReturn(i,6),r1yr:fwdReturn(i,12)
+            r6m:fwdReturn(i,6),r1yr:fwdReturn(i,12),
+            n6m:niftyFwdReturn(row.date,6),n1yr:niftyFwdReturn(row.date,12)
           });
         }
       }
@@ -2831,7 +3193,8 @@ function _btCompute(){
             pct:sRatio*100,
             epsPctMax:epsPctMaxToDate,
             price:price,
-            r6m:fwdReturn(i,6),r1yr:fwdReturn(i,12)
+            r6m:fwdReturn(i,6),r1yr:fwdReturn(i,12),
+            n6m:niftyFwdReturn(row.date,6),n1yr:niftyFwdReturn(row.date,12)
           });
         }
       }
@@ -2950,45 +3313,66 @@ function btRenderTable(trades){
     return 'bt-row-yellow';
   }
   var rows=trades.map(function(tr){
-    var valCell,medCell,pctCell;
+    var valCell,medCell;
     if(isBoth){
       valCell='<span style="color:var(--vchp-c)">PE '+f(tr.val,1)+'</span> / <span style="color:var(--chp-c)">PB '+f(tr.val2,2)+'</span>';
       medCell='<span style="color:var(--vchp-c)">'+f(tr.med,1)+'</span> / <span style="color:var(--chp-c)">'+f(tr.med2,2)+'</span>';
-      pctCell=(isNaN(tr.pct)?'—':tr.pct.toFixed(1)+'%')+' / '+(isNaN(tr.pct2)?'—':tr.pct2.toFixed(1)+'%');
     }else{
       valCell='<span class="vc">'+f(tr.val,2)+'</span>';
       medCell=f(tr.med,2);
-      pctCell=isNaN(tr.pct)?'—':tr.pct.toFixed(1)+'%';
     }
     var epsCell=isNaN(tr.epsPctMax)?'—':Math.round(tr.epsPctMax)+'%';
+    var buyPriceCell=tr.price&&!isNaN(tr.price)?Math.round(tr.price).toLocaleString('en-IN'):'—';
+    var sp6=tr.r6m.sellPrice, sp1=tr.r1yr.sellPrice;
+    var sell6Cell=(sp6!=null&&!isNaN(sp6))?Math.round(sp6).toLocaleString('en-IN'):'—';
+    var sell1Cell=(sp1!=null&&!isNaN(sp1))?Math.round(sp1).toLocaleString('en-IN'):'—';
+    function alphaCell(sectorCagr,niftyCagr,isOpen){
+      if(!userIsSubscribed()) return'<td style="text-align:center"><span class="bt-plus-gate" onclick="showUpgradeFlow()" title="SectorScope Plus feature">🔒</span></td>';
+      if(isOpen||sectorCagr===null||niftyCagr===null) return'<td>—</td>';
+      var a=sectorCagr-niftyCagr;
+      var pct=(a*100).toFixed(1);
+      var clr=a>0?'var(--vchp-c)':a<0?'var(--vexp-c)':'var(--sub)';
+      return'<td style="color:'+clr+';font-weight:600">'+(a>0?'+':'')+pct+'%</td>';
+    }
     var cls=rowShade(tr);
     return'<tr'+(cls?' class="'+cls+'"':'')+'>'
       +'<td><input type="checkbox" class="trade-cb-inp" checked onchange="btRecalcStats()"></td>'
       +'<td>'+fmtDate(tr.date)+'</td>'
-      +'<td style="text-align:center">'+trigBadge(tr.field)+'</td>'
+      +'<td style="color:var(--txt);font-weight:600">'+buyPriceCell+'</td>'
       +'<td class="vc">'+valCell+'</td>'
       +'<td>'+medCell+'</td>'
-      +'<td style="color:var(--txt)">'+pctCell+'</td>'
       +'<td>'+epsCell+'</td>'
+      +'<td class="td-sep">'+sell6Cell+'</td>'
       +'<td>'+fmtCAGR(tr.r6m.cagr,tr.r6m.open)+'</td>'
+      +alphaCell(tr.r6m.cagr,tr.n6m,tr.r6m.open)
+      +'<td class="td-sep">'+sell1Cell+'</td>'
       +'<td>'+fmtCAGR(tr.r1yr.cagr,tr.r1yr.open)+'</td>'
+      +alphaCell(tr.r1yr.cagr,tr.n1yr,tr.r1yr.open)
     +'</tr>';
   }).join('');
   var valHdr=isBoth?'PE · PB at Buy':'Value at Buy';
   var medHdr=isBoth?'PE · PB Ref':'Weighted Ref';
-  var pctHdr=isBoth?'PE% · PB%':'% of Ref';
   document.getElementById('bt-table-div').innerHTML='<div class="bt-tbl-wrap"><table class="bt-tbl">'
-    +'<thead><tr>'
-    +'<th><input type="checkbox" class="sel-all-cb" checked onchange="btToggleAll(this.checked)"></th>'
-    +'<th style="text-align:left">Date</th>'
-    +'<th>Trigger</th>'
-    +'<th>'+valHdr+'</th>'
-    +'<th>'+medHdr+'</th>'
-    +'<th>'+pctHdr+'</th>'
-    +'<th title="EPS as % of max EPS up to that date">EPS %</th>'
-    +'<th>6m CAGR</th>'
-    +'<th>1yr CAGR</th>'
-    +'</tr></thead>'
+    +'<thead>'
+    +'<tr>'
+      +'<th rowspan="2"><input type="checkbox" class="sel-all-cb" checked onchange="btToggleAll(this.checked)"></th>'
+      +'<th rowspan="2" style="text-align:left">Date</th>'
+      +'<th rowspan="2">Price at Buy</th>'
+      +'<th rowspan="2">'+valHdr+'</th>'
+      +'<th rowspan="2">'+medHdr+'</th>'
+      +'<th rowspan="2" title="EPS as % of max EPS up to that date">EPS %</th>'
+      +'<th colspan="3" class="th-group">Outcome · 6M</th>'
+      +'<th colspan="3" class="th-group">Outcome · 1Yr</th>'
+    +'</tr>'
+    +'<tr>'
+      +'<th class="th-sub th-sub-sep">Price at Sell</th>'
+      +'<th class="th-sub">CAGR</th>'
+      +'<th class="th-sub">vs Nifty 50</th>'
+      +'<th class="th-sub th-sub-sep">Price at Sell</th>'
+      +'<th class="th-sub">CAGR</th>'
+      +'<th class="th-sub">vs Nifty 50</th>'
+    +'</tr>'
+    +'</thead>'
     +'<tbody>'+rows+'</tbody>'
     +'</table></div>';
 }
@@ -3250,7 +3634,36 @@ function buildSectorDetailHTML(sec, st, data){
 
   const epsGrowthCharts=buildEpsGrowthCharts(data,sec.color);
 
-  return '<div class="sd-section-title">Current Snapshot</div>'
+  var claudeLogo='<svg viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Claude">'
+    +'<path d="M19.254 7.033l-7.71 22.05h3.028l1.58-4.74h7.91l1.58 4.74h3.029l-7.71-22.05h-1.707zm-.854 4.93l2.987 8.93h-5.974l2.987-8.93z" fill="currentColor"/>'
+    +'</svg>';
+
+  var cached=aiSummaryCache[sec.name];
+  var remainingHtml=cached?'<span class="ai-summary-remaining">'+cached.remaining+' of 30 remaining today</span>':'<span class="ai-summary-remaining" id="ai-remaining"></span>';
+
+  var initialContent;
+  if(cached){
+    initialContent='<div class="ai-summary-body">'+cached.bodyHtml+'</div>'
+      +'<div class="ai-regenerate-wrap"><button class="ai-regenerate-btn" onclick="triggerAISummary(\''+sec.name+'\')">↺ Regenerate</button></div>';
+  } else {
+    initialContent='<div id="ai-summary-content" class="ai-generate-wrap">'
+      +'<div class="ai-generate-hint">Get an instant plain-language read on this sector\'s valuation and earnings.</div>'
+      +'<button class="ai-generate-btn" onclick="triggerAISummary(\''+sec.name+'\')">✦ Generate</button>'
+      +'</div>';
+  }
+
+  return '<div class="ai-summary-wrap" id="ai-summary-block">'
+      +'<div class="ai-summary-head">'
+        +'<div class="ai-summary-title">✨ AI Summary <span class="plus-tag">PLUS</span></div>'
+        +'<div class="ai-summary-right">'
+          +remainingHtml
+          +'<div class="ai-powered">'+claudeLogo+'Powered by Claude</div>'
+        +'</div>'
+      +'</div>'
+      +'<div id="ai-summary-block-body">'+initialContent+'</div>'
+      +'<div class="ai-disclaimer">AI Summary is for informational purposes only and is not investment advice. Always do your own research before making any investment decisions.</div>'
+    +'</div>'
+    +'<div class="sd-section-title">Current Snapshot</div>'
     +'<div class="sd-stats-grid">'+statCards+'</div>'
     +(peMedBlock||pbMedBlock?'<div class="sd-section-title">Historical Medians</div>'+peMedBlock+pbMedBlock:'')
     +(epsGrowthCharts?'<div class="sd-section-title">EPS Growth</div>'+epsGrowthCharts:'')
@@ -3269,7 +3682,7 @@ function openSectorDetail(name){
   document.getElementById('sd-color-bar').style.background=sec.color;
   document.getElementById('sd-body').innerHTML=buildSectorDetailHTML(sec,st,data||[]);
   overlay.classList.add('open');
-  document.body.style.overflow='hidden'; /* prevent background scroll */
+  document.body.style.overflow='hidden';
   document.getElementById('sd-close').focus();
 }
 
@@ -3369,6 +3782,7 @@ function authHandleCredential(response){
     email  : currentUser.email,
     name   : currentUser.name,
     picture: currentUser.picture,
+    token  : response.credential,
   }));
 }
 
@@ -3397,6 +3811,8 @@ function authRender(){
     avatarImg.style.display='none';
   }
   pill.classList.add('visible');
+  /* Load subscription status from Worker */
+  loadSubscriptionStatus();
 }
 
 function authSignIn(){
@@ -3424,6 +3840,7 @@ function authSignIn(){
               email  : currentUser.email,
               name   : currentUser.name,
               picture: currentUser.picture,
+              token  : resp.access_token,
             }));
           });
         },
@@ -3434,9 +3851,13 @@ function authSignIn(){
 
 function authSignOut(){
   currentUser=null;
+  subscriptionState=null;
+  subscriptionMeta={};
   localStorage.removeItem('ss_user');
+  localStorage.removeItem('ss_sub');
   if(typeof google!=='undefined') google.accounts.id.disableAutoSelect();
   authRender();
+  renderSubscriptionUI();
   closeUserMenu();
 }
 
@@ -3461,13 +3882,952 @@ document.addEventListener('click',function(e){
   if(!saved) return;
   try{
     var u=JSON.parse(saved);
-    currentUser={email:u.email,name:u.name,picture:u.picture||'',token:null};
+    currentUser={email:u.email,name:u.name,picture:u.picture||'',token:u.token||null};
     authRender();
+    /* Restore cached Plus status instantly — re-validated once real token arrives */
+    var savedSub=localStorage.getItem('ss_sub');
+    if(savedSub){
+      var sub=JSON.parse(savedSub);
+      subscriptionState=sub.state||'none';
+      subscriptionMeta =sub.meta ||{};
+      renderSubscriptionUI();
+    }
   }catch(e){}
 })();
 
 /* Init Google after GSI script loads */
 window.addEventListener('load',function(){ authInit(); });
+
+/* ════════════════════════════════════════
+   ALERTS
+════════════════════════════════════════ */
+var WORKER_BASE='https://sectorscope.prashant-06f.workers.dev';
+
+/* Stub — replace with real KV check after Razorpay */
+/* Subscription state — loaded from Worker after sign-in */
+var subscriptionState = null; /* null=unknown, 'active'=pro, 'none'=free */
+var subscriptionMeta  = {};   /* { expiresAt, cancelledAt } from /subscription */
+
+/* ── Soft-launch: Plus free for all signed-in users until 31 Oct 2026 ── */
+var PLUS_FOR_ALL_UNTIL = new Date('2026-10-31T23:59:59+05:30');
+function userIsSubscribed(){
+  if(currentUser && new Date() < PLUS_FOR_ALL_UNTIL) return true;
+  return subscriptionState === 'active';
+}
+
+function subscriptionIsCancelled(){
+  return subscriptionState === 'active' && !!subscriptionMeta.cancelledAt;
+}
+
+async function loadSubscriptionStatus(){
+  if(!currentUser||!currentUser.token) return;
+  try{
+    var res=await fetch(WORKER_BASE+'/subscription',{
+      headers:{'Authorization':'Bearer '+currentUser.token},
+    });
+    if(!res.ok) return;
+    var data=await res.json();
+    subscriptionState = data.status || 'none';
+    subscriptionMeta  = { expiresAt: data.expiresAt||null, cancelledAt: data.cancelledAt||null };
+    /* Cache so refresh doesn't lose Plus status before token arrives */
+    try{ localStorage.setItem('ss_sub',JSON.stringify({state:subscriptionState,meta:subscriptionMeta})); }catch(e){}
+    renderSubscriptionUI();
+  }catch(e){}
+}
+
+function renderSubscriptionUI(){
+  var upgradeBtn = document.getElementById('menu-upgrade-btn');
+  var cancelBtn  = document.getElementById('menu-cancel-btn');
+  var subStatus  = document.getElementById('user-sub-status');
+  var nameEl     = document.getElementById('user-name');
+  if(!upgradeBtn||!subStatus) return;
+
+  if(userIsSubscribed()){
+    upgradeBtn.style.display='none';
+    cancelBtn && (cancelBtn.style.display = subscriptionMeta.cancelledAt ? 'none' : 'flex');
+
+    if(subscriptionMeta.cancelledAt){
+      var expLabel = subscriptionMeta.expiresAt
+        ? 'Plus until '+new Date(subscriptionMeta.expiresAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})
+        : 'Plus (cancelling)';
+      subStatus.textContent = expLabel;
+      subStatus.style.color = 'var(--ghost)';
+    } else {
+      subStatus.textContent = 'Plus member';
+      subStatus.style.color = '#a5b4fc';
+    }
+
+    if(nameEl && !document.getElementById('plus-badge')){
+      var badge=document.createElement('span');
+      badge.id='plus-badge';
+      badge.className='plus-badge';
+      badge.textContent='PLUS';
+      nameEl.parentNode.insertBefore(badge, nameEl.nextSibling);
+    }
+  } else {
+    upgradeBtn.style.display='none';
+    cancelBtn && (cancelBtn.style.display='none');
+    subStatus.textContent='';
+    subStatus.style.color='';
+    var badge=document.getElementById('plus-badge');
+    if(badge) badge.remove();
+  }
+}
+
+var alertTrigState={};
+
+/* ── Render alert pane ── */
+var alertOperatorState={};  /* 'and' | 'or' per sector */
+
+function renderAlertPane(sectorName){
+  var pane=document.querySelector('[data-alert-sector="'+sectorName+'"]');
+  if(!pane) return;
+
+  if(!currentUser){
+    pane.innerHTML='<div class="ab-gate">'
+      +'<div class="ab-gate-icon">🔒</div>'
+      +'<div class="ab-gate-ttl">Sign in to set alerts</div>'
+      +'<div class="ab-gate-sub">Get notified when a sector reaches your target valuation level.</div>'
+      +'<button class="ab-gate-btn signin" onclick="authSignIn()">Sign in with Google</button>'
+    +'</div>';
+    return;
+  }
+
+  if(!userIsSubscribed()){
+    pane.innerHTML='<div class="ab-gate">'
+      +'<div class="ab-gate-icon">🔒</div>'
+      +'<div class="ab-gate-ttl">Sign in to set alerts</div>'
+      +'<div class="ab-gate-sub">Get notified when a sector reaches your target valuation level.</div>'
+      +'<button class="ab-gate-btn signin" onclick="authSignIn()">Sign in with Google</button>'
+    +'</div>';
+    return;
+  }
+
+  var ct=cardType(sectorName);
+  var st=statCache[sectorName];
+  if(!st){ pane.innerHTML='<div class="ab-gate"><div class="ab-gate-sub">Data not loaded yet.</div></div>'; return; }
+
+  /* Defaults based on card type:
+     dual  → both checked, OR operator
+     pe    → PE checked only
+     pb    → PB checked only  */
+  var isDual=(ct==='dual');
+  var isPBOnly=(ct==='pb');
+  var defPeChecked=!isPBOnly;
+  var defPbChecked=(isDual||isPBOnly);
+
+  var defPE=(!isNaN(st.pePctRef)?Math.max(50,Math.min(150,Math.round(st.pePctRef))):80);
+  var defPB=(!isNaN(st.pbPctRef)?Math.max(50,Math.min(150,Math.round(st.pbPctRef))):80);
+
+  if(!alertTrigState[sectorName])    alertTrigState[sectorName]='once';
+  if(!alertOperatorState[sectorName]) alertOperatorState[sectorName]=isDual?'or':'and';
+
+  var trig=alertTrigState[sectorName];
+  var op  =alertOperatorState[sectorName];
+  var bothChecked=defPeChecked&&defPbChecked;
+
+  var html='';
+
+  /* ── Metric checkboxes ── */
+  html+='<div class="ab-field">'
+    +'<div class="ab-field-lbl">Alert on</div>'
+    +'<div class="ab-metric-row">'
+      +'<label class="ab-metric-cb">'
+        +'<input type="checkbox" id="al-cb-pe-'+sectorName+'" '+(defPeChecked?'checked ':'')+' '
+          +'onchange="alertToggleMetric(\'pe\',\''+sectorName+'\',this.checked)"> P / E'
+      +'</label>'
+      +'<label class="ab-metric-cb">'
+        +'<input type="checkbox" id="al-cb-pb-'+sectorName+'" '+(defPbChecked?'checked ':'')+' '
+          +'onchange="alertToggleMetric(\'pb\',\''+sectorName+'\',this.checked)"> P / B'
+      +'</label>'
+    +'</div>'
+  +'</div>';
+
+  /* ── PE slider ── */
+  html+='<div class="ab-field-wrap'+(defPeChecked?'':' hidden')+'" id="al-pe-wrap-'+sectorName+'">'
+    +'<div class="ab-field">'
+      +'<div class="ab-field-lbl">P/E threshold &nbsp;<strong id="al-pe-lbl-'+sectorName+'">'+defPE+'%</strong> of median</div>'
+      +'<div class="ab-slider-row">'
+        +'<input type="range" class="ab-slider" id="al-sl-pe-'+sectorName+'" min="50" max="150" value="'+defPE+'" '
+          +'oninput="alertSlideLbl(\'pe\',\''+sectorName+'\',this.value)"/>'
+        +'<span class="ab-slider-val" id="al-sv-pe-'+sectorName+'">'+defPE+'%</span>'
+      +'</div>'
+    +'</div>'
+  +'</div>';
+
+  /* ── AND / OR switch — shown only when both metrics are checked ── */
+  html+='<div class="ab-op-row'+(bothChecked?'':' hidden')+'" id="al-op-row-'+sectorName+'">'
+    +'<div class="ab-field-lbl" style="margin-bottom:2px">Condition</div>'
+    +'<div class="ab-trig-row">'
+      +'<button class="ab-trig'+(op==='and'?' active':'')+'" onclick="alertSetOp(\''+sectorName+'\',\'and\',this)">AND &nbsp;<span style="font-weight:400;opacity:.7">both must trigger</span></button>'
+      +'<button class="ab-trig'+(op==='or'?' active':'')+'" onclick="alertSetOp(\''+sectorName+'\',\'or\',this)">OR &nbsp;<span style="font-weight:400;opacity:.7">either triggers</span></button>'
+    +'</div>'
+  +'</div>';
+
+  /* ── PB slider ── */
+  html+='<div class="ab-field-wrap'+(defPbChecked?'':' hidden')+'" id="al-pb-wrap-'+sectorName+'">'
+    +'<div class="ab-field">'
+      +'<div class="ab-field-lbl">P/B threshold &nbsp;<strong id="al-pb-lbl-'+sectorName+'">'+defPB+'%</strong> of median</div>'
+      +'<div class="ab-slider-row">'
+        +'<input type="range" class="ab-slider" id="al-sl-pb-'+sectorName+'" min="50" max="150" value="'+defPB+'" '
+          +'oninput="alertSlideLbl(\'pb\',\''+sectorName+'\',this.value)"/>'
+        +'<span class="ab-slider-val" id="al-sv-pb-'+sectorName+'">'+defPB+'%</span>'
+      +'</div>'
+    +'</div>'
+  +'</div>';
+
+  /* ── Trigger type ── */
+  html+='<div class="ab-field">'
+    +'<div class="ab-field-lbl">Trigger</div>'
+    +'<div class="ab-trig-row">'
+      +'<button class="ab-trig'+(trig==='once'?' active':'')+'" onclick="alertSetTrig(\''+sectorName+'\',\'once\',this)">One-time</button>'
+      +'<button class="ab-trig'+(trig==='recurring'?' active':'')+'" onclick="alertSetTrig(\''+sectorName+'\',\'recurring\',this)">Recurring · 1d cooldown</button>'
+    +'</div>'
+  +'</div>';
+
+  html+='<button class="ab-set-btn" id="al-btn-'+sectorName+'" onclick="alertSubmit(\''+sectorName+'\')">🔔 Set Alert</button>'
+    +'<div class="ab-feedback" id="al-fb-'+sectorName+'" style="display:none"></div>'
+    +'<div id="al-existing-'+sectorName+'"></div>';
+
+  pane.innerHTML=html;
+  loadExistingAlerts(sectorName);
+}
+
+function alertSetOp(sector,op,btn){
+  alertOperatorState[sector]=op;
+  var row=btn.closest('.ab-trig-row');
+  if(row) row.querySelectorAll('.ab-trig').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+function alertToggleMetric(metric,sector,checked){
+  var wrap=document.getElementById('al-'+metric+'-wrap-'+sector);
+  if(wrap) wrap.classList.toggle('hidden',!checked);
+
+  /* Ensure at least one metric stays checked */
+  var otherMetric=(metric==='pe'?'pb':'pe');
+  var otherCb=document.getElementById('al-cb-'+otherMetric+'-'+sector);
+  if(!checked&&otherCb&&!otherCb.checked){
+    var thisCb=document.getElementById('al-cb-'+metric+'-'+sector);
+    if(thisCb){ thisCb.checked=true; if(wrap) wrap.classList.remove('hidden'); }
+    return;
+  }
+
+  /* Show/hide AND-OR switch based on whether both are now checked */
+  var cbPE=document.getElementById('al-cb-pe-'+sector);
+  var cbPB=document.getElementById('al-cb-pb-'+sector);
+  var opRow=document.getElementById('al-op-row-'+sector);
+  if(opRow) opRow.classList.toggle('hidden',!(cbPE&&cbPE.checked&&cbPB&&cbPB.checked));
+}
+
+
+function alertSlideLbl(metric,sector,val){
+  var lbl=document.getElementById('al-'+metric+'-lbl-'+sector);
+  var sv =document.getElementById('al-sv-'+metric+'-'+sector);
+  if(lbl) lbl.textContent=val+'%';
+  if(sv)  sv.textContent=val+'%';
+}
+
+function alertSetTrig(sector,trig,btn){
+  alertTrigState[sector]=trig;
+  var row=btn.closest('.ab-trig-row');
+  if(row) row.querySelectorAll('.ab-trig').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+}
+
+function alertFeedback(sector,msg,type){
+  var el=document.getElementById('al-fb-'+sector);
+  if(!el) return;
+  el.textContent=msg;
+  el.className='ab-feedback '+type;
+  el.style.display='';
+  setTimeout(function(){ el.style.display='none'; },4000);
+}
+
+async function alertSubmit(sector){
+  if(!currentUser||!currentUser.token){ alertFeedback(sector,'Sign in first','err'); return; }
+  var btn=document.getElementById('al-btn-'+sector);
+  if(btn) btn.disabled=true;
+
+  var thresholds={};
+  var cbPE=document.getElementById('al-cb-pe-'+sector);
+  var cbPB=document.getElementById('al-cb-pb-'+sector);
+  if(cbPE&&cbPE.checked){
+    var slPE=document.getElementById('al-sl-pe-'+sector);
+    if(slPE) thresholds.pe=parseInt(slPE.value);
+  }
+  if(cbPB&&cbPB.checked){
+    var slPB=document.getElementById('al-sl-pb-'+sector);
+    if(slPB) thresholds.pb=parseInt(slPB.value);
+  }
+  if(!Object.keys(thresholds).length){ alertFeedback(sector,'Select at least one metric','err'); if(btn) btn.disabled=false; return; }
+
+  var payload={
+    sector    : sector,
+    email     : currentUser.email,
+    thresholds: thresholds,
+    trigger   : alertTrigState[sector]||'once',
+    operator  : alertOperatorState[sector]||'or',
+  };
+
+  try{
+    var res=await fetch(WORKER_BASE+'/alerts',{
+      method :'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
+      body   :JSON.stringify(payload),
+    });
+
+    /* 409 = per-sector limit reached */
+    if(res.status===409){
+      var errData=await res.json();
+      alertFeedback(sector,'Max 2 alerts per sector. Remove one first.','err');
+      if(btn) btn.disabled=false;
+      return;
+    }
+    if(!res.ok) throw new Error('Server error '+res.status);
+
+    alertFeedback(sector,'✓ Alert set! We\'ll notify '+currentUser.email,'ok');
+    loadExistingAlerts(sector);
+  }catch(e){
+    alertFeedback(sector,'Failed to save alert. Try again.','err');
+  }finally{
+    if(btn) btn.disabled=false;
+  }
+}
+
+/* loadExistingAlerts — shows up to 2 alerts per sector, each with individual remove */
+async function loadExistingAlerts(sector){
+  var container=document.getElementById('al-existing-'+sector);
+  if(!container||!currentUser||!currentUser.token) return;
+  try{
+    var res=await fetch(WORKER_BASE+'/alerts?sector='+encodeURIComponent(sector),{
+      headers:{'Authorization':'Bearer '+currentUser.token},
+    });
+    if(!res.ok) return;
+    var data=await res.json();
+    var alerts=data.alerts||[];
+    if(!alerts.length){ container.innerHTML=''; return; }
+
+    var html='';
+    alerts.forEach(function(a){
+      var thrStr=Object.entries(a.thresholds||{}).map(function(kv){
+        return kv[0].toUpperCase()+' at '+kv[1]+'%';
+      }).join(' '+(a.operator==='and'?'AND':'OR')+' ');
+      html+='<div class="ab-existing" id="ab-alert-'+a.id+'">'
+        +'<div class="ab-existing-lbl">Active alert'+(alerts.length>1?' &nbsp;<span style="opacity:.5">'+alerts.indexOf(a)+1+' of 2</span>':'')+'</div>'
+        +'<div class="ab-existing-val">'+thrStr+' · '+(a.trigger==='recurring'?'Recurring':'One-time')+'</div>'
+        +'<div class="ab-existing-del" onclick="alertDelete(\''+sector+'\',\''+a.id+'\')">Remove</div>'
+      +'</div>';
+    });
+
+    /* Show warning if at limit */
+    if(alerts.length>=2){
+      html+='<div class="ab-feedback err" style="display:block;margin-top:2px">Max 2 alerts reached. Remove one to add another.</div>';
+    }
+    container.innerHTML=html;
+  }catch(e){}
+}
+
+async function alertDelete(sector,alertId){
+  if(!currentUser||!currentUser.token) return;
+  var delUrl=WORKER_BASE+'/alerts?sector='+encodeURIComponent(sector)+(alertId?'&id='+alertId:'');
+  try{
+    await fetch(delUrl,{
+      method :'DELETE',
+      headers:{'Authorization':'Bearer '+currentUser.token},
+    });
+    /* Remove just this alert's card from the DOM if possible */
+    if(alertId){
+      var card=document.getElementById('ab-alert-'+alertId);
+      if(card) card.remove();
+    }
+    alertFeedback(sector,'Alert removed','ok');
+    loadExistingAlerts(sector);   /* refresh to clear limit warning */
+  }catch(e){
+    alertFeedback(sector,'Failed to remove alert','err');
+  }
+}
+
+/* ── My Alerts overlay ── */
+async function openMyAlerts(){
+  var overlay=document.getElementById('my-alerts-overlay');
+  overlay.classList.add('open');
+  document.body.style.overflow='hidden';
+  var body=document.getElementById('ma-body');
+
+  if(!currentUser||!currentUser.token){
+    body.innerHTML='<div class="ma-empty">Sign in to view your alerts.</div>';
+    return;
+  }
+
+  body.innerHTML='<div class="ma-loading">Loading your alerts…</div>';
+  try{
+    var res=await fetch(WORKER_BASE+'/alerts/all',{
+      headers:{'Authorization':'Bearer '+currentUser.token},
+    });
+    if(!res.ok) throw new Error('Server error');
+    var data=await res.json();
+    var alerts=data.alerts||[];
+
+    if(!alerts.length){
+      body.innerHTML='<div class="ma-empty">No active alerts.<br><span style="font-size:.6rem">Flip any sector card and set a threshold to create one.</span></div>';
+      return;
+    }
+
+    var html='<div class="ma-list">';
+    alerts.forEach(function(a){
+      var sec=SECTORS.find(function(s){ return s.name===a.sector; });
+      var color=sec?sec.color:'#6366f1';
+      var thrStr=Object.entries(a.thresholds||{}).map(function(kv){
+        return kv[0].toUpperCase()+' ≤ '+kv[1]+'% of median';
+      }).join(' '+(a.operator==='and'?'AND':'OR')+' ');
+      html+='<div class="ma-item" id="ma-alert-'+a.id+'">'
+        +'<div class="ma-item-color" style="background:'+color+'"></div>'
+        +'<div class="ma-item-info">'
+          +'<div class="ma-item-sector">Nifty '+a.sector+'</div>'
+          +'<div class="ma-item-detail">'+thrStr+'</div>'
+        +'</div>'
+        +'<span class="ma-item-trig">'+(a.trigger==='recurring'?'↻ Recurring':'1× One-time')+'</span>'
+        +'<button class="ma-item-del" onclick="myAlertDelete(\''+a.sector+'\',\''+a.id+'\',this)">Cancel</button>'
+      +'</div>';
+    });
+    html+='</div>';
+    body.innerHTML=html;
+  }catch(e){
+    body.innerHTML='<div class="ma-empty">Failed to load alerts. Try again.</div>';
+  }
+}
+
+function closeMyAlerts(){
+  document.getElementById('my-alerts-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+async function myAlertDelete(sector,alertId,btn){
+  if(!currentUser||!currentUser.token) return;
+  btn.disabled=true; btn.textContent='…';
+  try{
+    await fetch(WORKER_BASE+'/alerts?sector='+encodeURIComponent(sector)+'&id='+alertId,{
+      method :'DELETE',
+      headers:{'Authorization':'Bearer '+currentUser.token},
+    });
+    /* Fade and remove this specific row */
+    var item=document.getElementById('ma-alert-'+alertId);
+    if(item){ item.style.opacity='0';item.style.transition='opacity .2s';setTimeout(function(){item.remove();},200); }
+    /* Refresh card back if visible */
+    loadExistingAlerts(sector);
+  }catch(e){ btn.disabled=false; btn.textContent='Cancel'; }
+}
+
+/* Close overlays on Escape */
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){ closeSectorDetail(); closeMyAlerts(); closePlusPane(); }
+});
+
+async function confirmCancelSubscription(){
+  closeUserMenu();
+  if(!currentUser||!currentUser.token) return;
+  var confirmed=window.confirm(
+    'Cancel your SectorScope Plus subscription?\n\n'+
+    'You will keep Plus access until the end of your current billing period. '+
+    'After that, alerts and AI summaries will be paused.'
+  );
+  if(!confirmed) return;
+
+  try{
+    var res=await fetch(WORKER_BASE+'/cancel-subscription',{
+      method :'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
+    });
+    var data=await res.json();
+    if(!res.ok){
+      alert('Could not cancel: '+(data.error||'Unknown error. Please try again.'));
+      return;
+    }
+    alert('Done. Your Plus access continues until the end of this billing period.');
+  }catch(e){
+    alert('Something went wrong. Please try again.');
+  }
+}
+
+function showUpgradeFlow(){
+  if(!currentUser||!currentUser.token){
+    authSignIn();
+    return;
+  }
+
+  /* Step 1 — create a Razorpay subscription order via Worker */
+  fetch(WORKER_BASE+'/create-subscription',{
+    method :'POST',
+    headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
+    body   :JSON.stringify({ email: currentUser.email }),
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(!data.subscription_id) throw new Error(data.error||'Failed to create subscription');
+
+    /* Step 2 — open Razorpay checkout */
+    var options={
+      key              : data.key_id,
+      subscription_id  : data.subscription_id,
+      name             : 'SectorScope',
+      description      : 'Pro · ₹99/month',
+      image            : 'https://sectorscope.in/favicon.ico',
+      prefill          : { email: currentUser.email },
+      theme            : { color: '#6366f1' },
+      handler          : function(response){
+        /* Payment successful — verify with Worker */
+        fetch(WORKER_BASE+'/verify-payment',{
+          method :'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
+          body   :JSON.stringify({
+            razorpay_payment_id     : response.razorpay_payment_id,
+            razorpay_subscription_id: response.razorpay_subscription_id,
+            razorpay_signature      : response.razorpay_signature,
+          }),
+        })
+        .then(function(r){ return r.json(); })
+        .then(function(v){
+          if(v.ok){
+            subscriptionState='active';
+            renderSubscriptionUI();
+            /* Refresh all open alert panes */
+            document.querySelectorAll('[data-alert-sector]').forEach(function(pane){
+              var sector=pane.dataset.alertSector;
+              if(sector) renderAlertPane(sector);
+            });
+          }
+        })
+        .catch(function(e){ console.error('Verify failed',e); });
+      },
+      modal: {
+        ondismiss: function(){ console.log('Checkout dismissed'); }
+      }
+    };
+
+    var rzp=new Razorpay(options);
+    rzp.open();
+  })
+  .catch(function(e){
+    console.error('Upgrade flow error:', e);
+    alert('Could not start checkout. Please try again.');
+  });
+}
+/* ════════════════════════════════════════
+   AI SUMMARY
+════════════════════════════════════════ */
+function triggerAISummary(sectorName){
+  var st=statCache[sectorName];
+  if(!st) return;
+  /* Switch the block body to a loading state immediately */
+  var blockBody=document.getElementById('ai-summary-block-body');
+  if(blockBody) blockBody.innerHTML='<div id="ai-summary-content" class="ai-loading">Generating summary…</div>';
+  loadAISummary(sectorName, st);
+}
+
+async function loadAISummary(sectorName, st){
+  var content=document.getElementById('ai-summary-content');
+  var blockBody=document.getElementById('ai-summary-block-body');
+  if(!content && !blockBody) return;
+
+  /* Gate: not signed in at all */
+  if(!currentUser){
+    if(blockBody) blockBody.innerHTML='<div id="ai-summary-content" class="ai-gate">'
+      +'<div class="ai-gate-icon">🔒</div>'
+      +'<div class="ai-gate-txt">Sign in to access AI summaries</div>'
+      +'<button class="ai-gate-btn" onclick="authSignIn()">Sign in with Google</button>'
+      +'</div>';
+    return;
+  }
+
+  /* Token not yet refreshed — wait for One Tap then retry once */
+  if(!currentUser.token){
+    if(blockBody) blockBody.innerHTML='<div id="ai-summary-content" class="ai-loading">Loading session…</div>';
+    setTimeout(function(){
+      if(currentUser && currentUser.token) loadAISummary(sectorName, st);
+      else if(blockBody) blockBody.innerHTML='<div id="ai-summary-content" class="ai-gate">'
+        +'<div class="ai-gate-icon">🔒</div>'
+        +'<div class="ai-gate-txt">Please sign out and sign in again to refresh your session.</div>'
+        +'</div>';
+    }, 2000);
+    return;
+  }
+
+  try{
+    var payload={
+      sector    :sectorName,
+      curPE     :st.curPE,     curPB     :st.curPB,
+      pePctRef  :st.pePctRef,  pbPctRef  :st.pbPctRef,
+      peRef     :st.peRef,     pbRef     :st.pbRef,
+      peBand    :st.peBand,    pbBand    :st.pbBand,
+      pePct     :st.pePct,     pbPct     :st.pbPct,
+      pe3       :st.pe3,       pe5       :st.pe5,       pe10      :st.pe10,
+      pb3       :st.pb3,       pb5       :st.pb5,       pb10      :st.pb10,
+      curEPS    :st.curEPS,    maxEPS    :st.maxEPS,
+      epsPctPeak:st.epsPctPeak,epsYoY   :st.epsYoY,    epsPill   :st.epsPill,
+      divergence:st.divergence||false,
+    };
+
+    var res=await fetch(WORKER_BASE+'/ai-summary',{
+      method :'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
+      body   :JSON.stringify(payload),
+    });
+
+    if(!res.ok){
+      var errHtml='<div id="ai-summary-content" class="ai-error">'
+        +(res.status===429?'Daily limit reached (30/day). Resets at midnight.':'Could not generate summary. Try again later.')
+        +'</div>';
+      if(blockBody) blockBody.innerHTML=errHtml;
+      return;
+    }
+
+    var data=await res.json();
+    var rem=data.remaining!=null?data.remaining:29;
+
+    /* Strip any leading markdown header the model may include */
+    var rawSummary=(data.summary||'').replace(/^#+[^\n]*\n+/,'').trim();
+    var paragraphs=rawSummary.split(/\n\n+/).map(function(p){return p.trim();}).filter(Boolean);
+    var verdict='';
+    var bodyParas=paragraphs.filter(function(p){
+      if(p.startsWith('In short:')||p.startsWith('Verdict:')){verdict=p;return false;}
+      return true;
+    });
+
+    var bodyHtml=bodyParas.map(function(p){return '<p>'+p+'</p>';}).join('')
+      +(verdict?'<div class="ai-verdict">'+verdict+'</div>':'');
+
+    /* Save to in-memory cache */
+    aiSummaryCache[sectorName]={bodyHtml:bodyHtml, remaining:rem};
+
+    /* Render summary + regenerate button */
+    if(blockBody){
+      blockBody.innerHTML='<div class="ai-summary-body">'+bodyHtml+'</div>'
+        +'<div class="ai-regenerate-wrap">'
+          +'<button class="ai-regenerate-btn" onclick="triggerAISummary(\''+sectorName+'\')">↺ Regenerate</button>'
+        +'</div>';
+    }
+
+    /* Update remaining count in header */
+    var remEl=document.getElementById('ai-remaining');
+    if(remEl) remEl.textContent=rem+' of 30 remaining today';
+
+  }catch(e){
+    if(blockBody) blockBody.innerHTML='<div id="ai-summary-content" class="ai-error">Could not load summary. Check your connection.</div>';
+    console.error('[ai-summary]',e);
+  }
+}
+/* ════════════════════════════════════════
+   PLUS PANE
+════════════════════════════════════════ */
+function openPlusPane(){
+  var pane=document.getElementById('plus-pane');
+  var body=document.getElementById('pp-body');
+  if(!pane||!body) return;
+  body.innerHTML = userIsSubscribed() ? buildPlusPaidHTML() : buildPlusFreeHTML();
+  pane.classList.add('open');
+  document.body.style.overflow='hidden';
+  /* spawn particles */
+  var pc=document.getElementById('pp-particles');
+  if(pc && !pc.childElementCount){
+    var colors=['rgba(99,102,241,.5)','rgba(139,92,246,.4)','rgba(6,182,212,.3)','rgba(167,139,250,.4)'];
+    for(var i=0;i<16;i++){
+      var p=document.createElement('div'); p.className='pp-particle';
+      var sz=Math.random()*3+1.5;
+      p.style.cssText='width:'+sz+'px;height:'+sz+'px;left:'+Math.random()*100+'%;bottom:'+(Math.random()*20-5)+'%;background:'+colors[Math.floor(Math.random()*colors.length)]+';animation-duration:'+(Math.random()*6+5)+'s;animation-delay:'+Math.random()*6+'s';
+      pc.appendChild(p);
+    }
+  }
+  /* scroll reveal */
+  setTimeout(function(){
+    var obs=new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting) e.target.classList.add('visible'); });
+    },{root:pane,threshold:.1});
+    body.querySelectorAll('.pp-feature,.pp-pricing').forEach(function(el){ obs.observe(el); });
+  },100);
+}
+
+function closePlusPane(){
+  document.getElementById('plus-pane').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+function buildPlusFreeHTML(){
+  var claudeLogo="<svg viewBox='0 0 41 41' fill='none' width='10' height='10'><path d='M19.254 7.033l-7.71 22.05h3.028l1.58-4.74h7.91l1.58 4.74h3.029l-7.71-22.05h-1.707zm-.854 4.93l2.987 8.93h-5.974l2.987-8.93z' fill='currentColor'/></svg>";
+  var h = "";
+  /* HERO */
+  h += "<div class='pp-hero'>";
+  h += "<div class='pp-particles' id='pp-particles'></div>";
+  h += "<div class='pp-hero-eyebrow'>Unlock the full toolkit</div>";
+  h += "<div class='pp-hero-title'>SECTORSCOPE<br><span class='pp-word'>PLUS</span></div>";
+  h += "<div class='pp-hero-sub'>Everything you need to act on valuation signals — not just read them.</div>";
+  h += "<div class='pp-cta-row'>";
+  h += "<button class='pp-btn-primary' onclick='authSignIn();closePlusPane()'>Sign in to get started &#8594;</button>";
+  h += "<button class='pp-btn-secondary' onclick=\"document.getElementById('pp-feat-1').scrollIntoView({behavior:'smooth'})\">See what&#39;s included</button>";
+  h += "</div></div>";
+  h += "<hr class='pp-divider'>";
+  /* FEATURE 1 — ALERTS */
+  h += "<div class='pp-feature' id='pp-feat-1'>";
+  h += "<div>";
+  h += "<div class='pp-feat-num'>01 &middot; Email Alerts</div>";
+  h += "<div class='pp-feat-title'>Never miss a signal</div>";
+  h += "<div class='pp-feat-desc'>Set a threshold on any sector. Get an email the moment the live P/E or P/B crosses it &#8212; no refreshing required.</div>";
+  h += "<ul class='pp-bullets'>";
+  h += "<li>Tied directly to the <strong>% of reference</strong> framework</li>";
+  h += "<li><strong>Once or recurring</strong> &#8212; daily cooldown after firing</li>";
+  h += "<li>Checked every <strong>15 min</strong> during market hours</li>";
+  h += "<li>Up to <strong>2 alerts per sector</strong></li>";
+  h += "</ul></div>";
+  h += "<div class='pp-mock'>";
+  h += "<div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div>";
+  h += "<div class='pp-mock-body'>";
+  h += "<div class='ppm-sector-row'><div class='ppm-sector'>Nifty Bank</div><div class='ppm-band'>CHEAP</div></div>";
+  h += "<div style='font-family:var(--mono);font-size:.48rem;color:var(--ghost);margin-bottom:6px;display:flex;justify-content:space-between'><span>P/E THRESHOLD</span><span style='color:#a5b4fc;font-weight:700'>78%</span></div>";
+  h += "<div class='ppm-track'><div class='ppm-fill'></div><div class='ppm-thumb'></div></div>";
+  h += "<div class='ppm-ticks'><span>50%</span><span>75%</span><span>100%</span><span>125%</span></div>";
+  h += "<div style='display:flex;gap:5px;margin:10px 0 4px'>";
+  h += "<div style='flex:1;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:7px;padding:6px 9px;font-family:var(--mono);font-size:.5rem'><div style='color:var(--ghost);margin-bottom:2px'>TRIGGER</div><div style='color:#a5b4fc;font-weight:600'>Once</div></div>";
+  h += "<div style='flex:1;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:7px;padding:6px 9px;font-family:var(--mono);font-size:.5rem'><div style='color:var(--ghost);margin-bottom:2px'>OPERATOR</div><div style='color:#a5b4fc;font-weight:600'>OR</div></div>";
+  h += "</div>";
+  h += "<div class='ppm-notif'><span style='font-size:1rem'>&#128276;</span><div><div class='ppm-notif-ttl'>Nifty Bank alert fired</div><div class='ppm-notif-body'>P/E at <span style='color:var(--vchp-c);font-weight:700'>77.8%</span> of reference</div></div></div>";
+  h += "</div></div></div>";
+  /* FEATURE 2 — AI */
+  h += "<div class='pp-feature rev' id='pp-feat-2'>";
+  h += "<div>";
+  h += "<div class='pp-feat-num'>02 &middot; AI Summaries</div>";
+  h += "<div class='pp-feat-title'>Instant plain-language reads</div>";
+  h += "<div class='pp-feat-desc'>Tap Generate on any sector. Claude reads the data and explains the valuation in plain language &#8212; no jargon, no buy/sell calls.</div>";
+  h += "<ul class='pp-bullets'>";
+  h += "<li>Powered by <strong>Claude</strong> (Anthropic)</li>";
+  h += "<li>Covers valuation band, <strong>EPS trend</strong>, and PE/PB divergence</li>";
+  h += "<li>Session-cached &#8212; <strong>no repeat calls</strong> for the same sector</li>";
+  h += "<li><strong>30 summaries</strong> per day</li>";
+  h += "</ul></div>";
+  h += "<div class='pp-mock'>";
+  h += "<div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div>";
+  h += "<div class='pp-mock-body'>";
+  h += "<div class='ppm-ai-head'><div class='ppm-ai-title'>&#10024; AI Summary <span style='font-family:var(--mono);font-size:.42rem;font-weight:700;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:2px 5px;border-radius:4px'>PLUS</span></div><div class='ppm-ai-pwrd'>"+claudeLogo+" Powered by Claude</div></div>";
+  h += "<div style='font-family:var(--mono);font-size:.43rem;color:var(--ghost);margin-bottom:10px'>28 of 30 remaining today</div>";
+  h += "<div class='ppm-line' style='width:100%'></div><div class='ppm-line' style='width:88%'></div><div class='ppm-line' style='width:68%'></div>";
+  h += "<div class='ppm-line' style='width:100%;margin-top:8px'></div><div class='ppm-line' style='width:82%'></div>";
+  h += "<div class='ppm-verdict'><strong>In short:</strong> Nifty IT at 91% of 5yr median P/E &#8212; Neutral. EPS at peak and rising.</div>";
+  h += "</div></div></div>";
+  /* FEATURE 3 — ALPHA */
+  h += "<div class='pp-feature' id='pp-feat-3'>";
+  h += "<div>";
+  h += "<div class='pp-feat-num'>03 &middot; Alpha vs Nifty 50</div>";
+  h += "<div class='pp-feat-title'>Did it beat the market?</div>";
+  h += "<div class='pp-feat-desc'>Raw CAGR tells you what the sector returned. Alpha shows how much it beat &#8212; or lagged &#8212; the Nifty 50 over the exact same window.</div>";
+  h += "<ul class='pp-bullets'>";
+  h += "<li>Anchored to the <strong>same buy date</strong> as the signal</li>";
+  h += "<li><strong>Green = outperformed</strong>, red = lagged Nifty</li>";
+  h += "<li>Separates genuine <strong>alpha from market beta</strong></li>";
+  h += "<li>Available for both <strong>6M and 1Yr</strong> windows</li>";
+  h += "</ul></div>";
+  h += "<div class='pp-mock'>";
+  h += "<div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div>";
+  h += "<div class='pp-mock-body' style='padding:10px 9px'>";
+  h += "<table class='ppm-tbl'>";
+  h += "<thead><tr><th rowspan='2'>Date</th><th rowspan='2'>Buy</th><th colspan='3' class='grp'>Outcome &middot; 1Yr</th></tr>";
+  h += "<tr><th class='sep'>Sell</th><th>CAGR</th><th class='hl sep' style='color:#a5b4fc'>vs N50</th></tr></thead>";
+  h += "<tbody>";
+  h += "<tr class='rg'><td>14 Mar 2020</td><td>8,142</td><td class='sep'>13,540</td><td style='color:var(--vchp-c);font-weight:700'>+66.3%</td><td class='alpha-p hl sep'>+42.1%</td></tr>";
+  h += "<tr class='rg'><td>22 Jun 2022</td><td>14,891</td><td class='sep'>21,230</td><td style='color:var(--vchp-c);font-weight:700'>+42.6%</td><td class='alpha-p hl sep'>+24.3%</td></tr>";
+  h += "<tr class='rr'><td>11 Dec 2023</td><td>20,305</td><td class='sep'>19,880</td><td style='color:var(--vexp-c);font-weight:700'>&#8722;2.1%</td><td class='alpha-n hl sep'>&#8722;10.8%</td></tr>";
+  h += "</tbody></table>";
+  h += "</div></div></div>";
+  h += "<hr class='pp-divider'>";
+  h += "<div class='pp-pricing' id='pp-pricing'>";
+  h += "<div class='pp-pricing-card'>";
+  h += "<div class='pp-price-amt' style='font-size:1.6rem;letter-spacing:0'>Free during launch</div>";
+  h += "<div class='pp-price-per' style='margin-bottom:18px'>SIGN IN WITH GOOGLE TO ACCESS</div>";
+  h += "<ul class='pp-price-feats'>";
+  h += "<li><strong>Email alerts</strong> on any sector</li>";
+  h += "<li><strong>AI summaries</strong> powered by Claude &#8212; 30/day</li>";
+  h += "<li><strong>Alpha vs Nifty 50</strong> in every backtest</li>";
+  h += "<li>All future Plus features, automatically</li>";
+  h += "</ul>";
+  h += "<button class='pp-btn-primary' style='width:100%;padding:13px' onclick='authSignIn();closePlusPane()'>Sign in with Google &#8594;</button>";
+  h += "</div></div>";
+  return h;
+}
+
+function buildPlusPaidHTML(){
+  var claudeLogo="<svg viewBox='0 0 41 41' fill='none' width='10' height='10'><path d='M19.254 7.033l-7.71 22.05h3.028l1.58-4.74h7.91l1.58 4.74h3.029l-7.71-22.05h-1.707zm-.854 4.93l2.987 8.93h-5.974l2.987-8.93z' fill='currentColor'/></svg>";
+  var h = "";
+  /* MEMBER HERO */
+  h += "<div class='pp-member-hero'>";
+  h += "<div class='pp-member-glow'>&#10022;</div>";
+  h += "<div class='pp-member-badge'>&#10022; PLUS MEMBER</div>";
+  h += "<div class='pp-member-title'>YOU'RE ALL SET</div>";
+  h += "<div class='pp-member-sub'>All Plus features are active on your account.</div>";
+  h += "</div>";
+  h += "<hr class='pp-divider' style='margin-bottom:40px'>";
+  /* ACTIVE FEATURES */
+  h += "<div class='pp-feature' id='pp-feat-1'>";
+  h += "<div><div class='pp-feat-num' style='color:var(--vchp-c)'>&#10003; Active</div><div class='pp-feat-title'>Email Alerts</div><div class='pp-feat-desc'>Open any sector's detail overlay and scroll to the Alerts card to set or manage thresholds.</div></div>";
+  h += "<div class='pp-mock'><div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div><div class='pp-mock-body'><div class='ppm-sector-row'><div class='ppm-sector'>Nifty Bank</div><div class='ppm-band'>CHEAP</div></div><div style='font-family:var(--mono);font-size:.48rem;color:var(--ghost);margin-bottom:6px;display:flex;justify-content:space-between'><span>P/E THRESHOLD</span><span style='color:#a5b4fc;font-weight:700'>78%</span></div><div class='ppm-track'><div class='ppm-fill'></div><div class='ppm-thumb'></div></div><div class='ppm-ticks'><span>50%</span><span>75%</span><span>100%</span><span>125%</span></div><div class='ppm-notif' style='margin-top:10px'><span style='font-size:1rem'>&#128276;</span><div><div class='ppm-notif-ttl'>Nifty Bank alert fired</div><div class='ppm-notif-body'>P/E at <span style='color:var(--vchp-c);font-weight:700'>77.8%</span> of reference</div></div></div></div></div>";
+  h += "</div>";
+  h += "<div class='pp-feature rev' id='pp-feat-2' style='margin-top:8px'>";
+  h += "<div><div class='pp-feat-num' style='color:var(--vchp-c)'>&#10003; Active</div><div class='pp-feat-title'>AI Summaries</div><div class='pp-feat-desc'>Tap Generate on any sector's detail page for an instant Claude-powered valuation read.</div></div>";
+  h += "<div class='pp-mock'><div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div><div class='pp-mock-body'><div class='ppm-ai-head'><div class='ppm-ai-title'>&#10024; AI Summary <span style='font-family:var(--mono);font-size:.42rem;font-weight:700;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:2px 5px;border-radius:4px'>PLUS</span></div><div class='ppm-ai-pwrd'>"+claudeLogo+" Powered by Claude</div></div><div class='ppm-line' style='width:100%'></div><div class='ppm-line' style='width:85%'></div><div class='ppm-line' style='width:65%'></div><div class='ppm-verdict'><strong>In short:</strong> Nifty IT at 91% of 5yr median P/E &#8212; Neutral. EPS at peak and rising.</div></div></div>";
+  h += "</div>";
+  h += "<div class='pp-feature' id='pp-feat-3' style='margin-top:8px'>";
+  h += "<div><div class='pp-feat-num' style='color:var(--vchp-c)'>&#10003; Active</div><div class='pp-feat-title'>Alpha vs Nifty 50</div><div class='pp-feat-desc'>Every backtest row shows how much the sector beat or lagged the Nifty 50 over the same window.</div></div>";
+  h += "<div class='pp-mock'><div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div><div class='pp-mock-body' style='padding:10px 9px'><table class='ppm-tbl'><thead><tr><th rowspan='2'>Date</th><th rowspan='2'>Buy</th><th colspan='3' class='grp'>Outcome &middot; 1Yr</th></tr><tr><th class='sep'>Sell</th><th>CAGR</th><th class='hl sep' style='color:#a5b4fc'>vs N50</th></tr></thead><tbody><tr class='rg'><td>14 Mar 2020</td><td>8,142</td><td class='sep'>13,540</td><td style='color:var(--vchp-c);font-weight:700'>+66.3%</td><td class='alpha-p hl sep'>+42.1%</td></tr><tr class='rg'><td>22 Jun 2022</td><td>14,891</td><td class='sep'>21,230</td><td style='color:var(--vchp-c);font-weight:700'>+42.6%</td><td class='alpha-p hl sep'>+24.3%</td></tr><tr class='rr'><td>11 Dec 2023</td><td>20,305</td><td class='sep'>19,880</td><td style='color:var(--vexp-c);font-weight:700'>&#8722;2.1%</td><td class='alpha-n hl sep'>&#8722;10.8%</td></tr></tbody></table></div></div>";
+  h += "</div>";
+  return h;
+}
+
+async function ppStartUpgrade(){
+  if(!currentUser||!currentUser.token){ authSignIn(); return; }
+  var btns=document.querySelectorAll('.pp-btn-primary');
+  btns.forEach(function(b){ b.textContent='Loading\u2026'; b.disabled=true; });
+  try{
+    var res=await fetch(WORKER_BASE+'/create-subscription',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
+      body:JSON.stringify({email:currentUser.email}),
+    });
+    var data=await res.json();
+    if(!data.subscription_id) throw new Error(data.error||'Failed');
+    var rzp=new Razorpay({
+      key:data.key_id, subscription_id:data.subscription_id,
+      name:'SectorScope', description:'Plus \u00b7 \u20b999/month',
+      image:'https://sectorscope.in/favicon.ico',
+      prefill:{email:currentUser.email}, theme:{color:'#6366f1'},
+      handler:async function(response){
+        var vres=await fetch(WORKER_BASE+'/verify-payment',{
+          method:'POST',
+          headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
+          body:JSON.stringify({
+            razorpay_payment_id:response.razorpay_payment_id,
+            razorpay_subscription_id:response.razorpay_subscription_id,
+            razorpay_signature:response.razorpay_signature,
+          }),
+        });
+        var v=await vres.json();
+        if(v.ok){
+          subscriptionState='active';
+          renderSubscriptionUI();
+          document.getElementById('pp-body').innerHTML=buildPlusPaidHTML();
+          setTimeout(function(){
+            document.querySelectorAll('#pp-body .pp-feature').forEach(function(el){ el.classList.add('visible'); });
+          },100);
+        }
+      },
+      modal:{ondismiss:function(){
+        btns.forEach(function(b){ b.textContent='Get Plus \u2014 \u20b999/mo \u2192'; b.disabled=false; });
+      }}
+    });
+    rzp.open();
+  }catch(e){
+    alert('Could not start checkout: '+(e.message||'Please try again.'));
+    btns.forEach(function(b){ b.textContent='Get Plus \u2014 \u20b999/mo \u2192'; b.disabled=false; });
+  }
+}
+
+async function ppConfirmCancel(){
+  if(!currentUser||!currentUser.token) return;
+  var confirmed=window.confirm('Cancel SectorScope Plus?\n\nYour access continues until the end of this billing period. Alerts and AI summaries will pause after that.');
+  if(!confirmed) return;
+  try{
+    var res=await fetch(WORKER_BASE+'/cancel-subscription',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
+    });
+    var data=await res.json();
+    if(!res.ok){ alert('Could not cancel: '+(data.error||'Please try again.')); return; }
+    alert('Done. Your Plus access continues until the end of this billing period.');
+  }catch(e){ alert('Something went wrong. Please try again.'); }
+}
+</script>
+
+<!-- ── WHAT'S NEW PANE ── -->
+<div id="whatsnew-pane" aria-live="polite" aria-label="What's new in SectorScope">
+  <div class="wn-header">
+    <div class="wn-badge">✦ What's New</div>
+    <button class="wn-close" onclick="dismissWhatsNew()" aria-label="Dismiss">✕</button>
+  </div>
+  <div class="wn-title">Introducing <span class="wn-plus">SectorScope Plus</span></div>
+  <ul class="wn-list">
+    <li>
+      <span class="wn-icon">🔔</span>
+      <div><strong>Custom email alerts</strong> — get notified the moment a sector hits your valuation threshold.</div>
+    </li>
+    <li>
+      <span class="wn-icon">✨</span>
+      <div><strong>AI sector summaries</strong> — plain-language valuation reads, powered by Claude. No noise, no buy/sell calls.</div>
+    </li>
+    <li>
+      <span class="wn-icon">📊</span>
+      <div><strong>Alpha vs Nifty 50</strong> — backtest results now show how much each sector beat or lagged the index.</div>
+    </li>
+  </ul>
+  <div class="wn-actions">
+    <button class="wn-dismiss-btn" onclick="dismissWhatsNew()">Got it</button>
+  </div>
+</div>
+
+<style>
+#whatsnew-pane{
+  position:fixed;bottom:24px;right:24px;z-index:9000;
+  width:310px;
+  background:var(--bg2);
+  border:1px solid var(--bdr);
+  border-radius:16px;
+  box-shadow:0 8px 40px rgba(0,0,0,.45);
+  padding:20px 20px 16px;
+  font-family:var(--body);
+  transform:translateY(calc(100% + 100px));
+  opacity:0;
+  transition:transform .4s cubic-bezier(.22,.68,0,1.2),opacity .3s ease;
+  pointer-events:none;
+}
+#whatsnew-pane.wn-visible{
+  transform:translateY(0);
+  opacity:1;
+  pointer-events:auto;
+}
+.wn-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.wn-badge{font-family:var(--mono);font-size:.55rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#a78bfa;background:rgba(167,139,250,.12);padding:3px 8px;border-radius:20px;border:1px solid rgba(167,139,250,.25)}
+.wn-close{background:none;border:none;color:var(--ghost);font-size:.9rem;cursor:pointer;padding:2px 4px;line-height:1;border-radius:4px;transition:color .15s,background .15s}
+.wn-close:hover{color:var(--txt);background:var(--bg3)}
+.wn-title{font-size:1.05rem;font-weight:800;color:var(--txt);margin-bottom:14px;line-height:1.3}
+.wn-plus{background:linear-gradient(135deg,#6366f1,#a78bfa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.wn-list{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:10px}
+.wn-list li{display:flex;align-items:flex-start;gap:10px;font-size:.8rem;color:var(--sub);line-height:1.5}
+.wn-list li strong{color:var(--txt)}
+.wn-icon{font-size:.95rem;flex-shrink:0;margin-top:1px}
+.wn-price{font-size:.75rem;color:var(--ghost);text-align:center;margin-bottom:14px;padding:8px;background:var(--bg3);border-radius:8px}
+.wn-price strong{color:var(--txt)}
+.wn-actions{display:flex;flex-direction:column;gap:7px}
+.wn-upgrade-btn{width:100%;padding:9px;border-radius:9px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:var(--body);font-size:.82rem;font-weight:700;cursor:pointer;transition:opacity .15s}
+.wn-upgrade-btn:hover{opacity:.88}
+.wn-dismiss-btn{width:100%;padding:7px;border-radius:9px;border:1px solid var(--bdr);background:transparent;color:var(--ghost);font-family:var(--body);font-size:.76rem;cursor:pointer;transition:color .15s,background .15s}
+.wn-dismiss-btn:hover{color:var(--txt);background:var(--bg3)}
+@media(max-width:400px){#whatsnew-pane{left:12px;right:12px;width:auto;bottom:16px}}
+</style>
+
+<script>
+(function(){
+  var KEY='ss_whatsnew_v1';
+  function showWhatsNew(){
+    if(localStorage.getItem(KEY)) return;
+    var pane=document.getElementById('whatsnew-pane');
+    if(pane) setTimeout(function(){pane.classList.add('wn-visible');},1500);
+  }
+  window.dismissWhatsNew=function(){
+    localStorage.setItem(KEY,'1');
+    var pane=document.getElementById('whatsnew-pane');
+    if(!pane) return;
+    pane.style.transition='transform .3s ease,opacity .25s ease';
+    pane.style.transform='translateY(calc(100% + 100px))';
+    pane.style.opacity='0';
+    setTimeout(function(){pane.style.display='none';},320);
+  };
+  window.addEventListener('load',showWhatsNew);
+})();
 </script>
 </body>
 </html>
