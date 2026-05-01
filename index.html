@@ -1821,23 +1821,23 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
    IP, and blocks declared AI crawlers. See Worker source in a separate
    repo / folder; secrets (the Apps Script URLs) live in Worker Secrets
    and are never shipped to the browser. */
-var PLUSXY_BASE='https://sectorscope.prashant-06f.workers.dev';
+var WORKER_BASE='https://sectorscope.prashant-06f.workers.dev';
 
 var SECTORS=[
-  {name:'Infra',   abbr:'INF',color:'#818cf8',url:PLUSXY_BASE+'/sector/Infra'},
-  {name:'Realty',  abbr:'REL',color:'#f472b6',url:PLUSXY_BASE+'/sector/Realty'},
-  {name:'Bank',    abbr:'BNK',color:'#60a5fa',url:PLUSXY_BASE+'/sector/Bank'},
-  {name:'PSU Bank',abbr:'PSU',color:'#22d3ee',url:PLUSXY_BASE+'/sector/'+encodeURIComponent('PSU Bank')},
-  {name:'IT',      abbr:'IT', color:'#a78bfa',url:PLUSXY_BASE+'/sector/IT'},
-  {name:'Auto',    abbr:'AUT',color:'#fbbf24',url:PLUSXY_BASE+'/sector/Auto'},
-  {name:'FMCG',    abbr:'FMC',color:'#34d399',url:PLUSXY_BASE+'/sector/FMCG'},
-  {name:'Energy',  abbr:'ENE',color:'#fb923c',url:PLUSXY_BASE+'/sector/Energy'},
-  {name:'Metals',  abbr:'MET',color:'#94a3b8',url:PLUSXY_BASE+'/sector/Metals'},
-  {name:'Pharma',  abbr:'PHR',color:'#2dd4bf',url:PLUSXY_BASE+'/sector/Pharma'}
+  {name:'Infra',   abbr:'INF',color:'#818cf8',url:WORKER_BASE+'/sector/Infra'},
+  {name:'Realty',  abbr:'REL',color:'#f472b6',url:WORKER_BASE+'/sector/Realty'},
+  {name:'Bank',    abbr:'BNK',color:'#60a5fa',url:WORKER_BASE+'/sector/Bank'},
+  {name:'PSU Bank',abbr:'PSU',color:'#22d3ee',url:WORKER_BASE+'/sector/'+encodeURIComponent('PSU Bank')},
+  {name:'IT',      abbr:'IT', color:'#a78bfa',url:WORKER_BASE+'/sector/IT'},
+  {name:'Auto',    abbr:'AUT',color:'#fbbf24',url:WORKER_BASE+'/sector/Auto'},
+  {name:'FMCG',    abbr:'FMC',color:'#34d399',url:WORKER_BASE+'/sector/FMCG'},
+  {name:'Energy',  abbr:'ENE',color:'#fb923c',url:WORKER_BASE+'/sector/Energy'},
+  {name:'Metals',  abbr:'MET',color:'#94a3b8',url:WORKER_BASE+'/sector/Metals'},
+  {name:'Pharma',  abbr:'PHR',color:'#2dd4bf',url:WORKER_BASE+'/sector/Pharma'}
 ];
 
 /* ── Live intraday feed (updates every 20 min) ── */
-var LIVE_FEED_URL=PLUSXY_BASE+'/live';
+var LIVE_FEED_URL=WORKER_BASE+'/live';
 /* Maps live feed sector names → our internal sector names */
 var LIVE_NAME_MAP={
   'NIFTY BANK':    'Bank',
@@ -2578,9 +2578,19 @@ var loadedCount=0,failedCount=0,statCache={},dataCache={},aiSummaryCache={};
 
 function sortVal(sec,st){
   var ct=cardType(sec.name);
-  if(ct==='dual') return (st.pePct+st.pbPct)/2;  /* lower = cheaper */
-  if(ct==='pb')   return st.pbPct;
-  return st.pePct;
+  /* Sort by % of weighted reference — same metric that drives card bands.
+     Lower = cheaper. Dual sectors take Math.max so a card only ranks cheap
+     when BOTH PE and PB agree; the worse-looking metric wins. */
+  if(ct==='dual'){
+    var pe=st.pePctRef, pb=st.pbPctRef;
+    var hasPe=!isNaN(pe), hasPb=!isNaN(pb);
+    if(hasPe && hasPb) return Math.max(pe,pb);
+    if(hasPe) return pe;
+    if(hasPb) return pb;
+    return NaN;
+  }
+  if(ct==='pb') return st.pbPctRef;
+  return st.pePctRef;
 }
 
 function sortCards(){
@@ -2982,7 +2992,7 @@ async function btRun(){
   /* Fetch Nifty 50 historical data for vs-Nifty column (Plus only, cached after first load) */
   if(userIsSubscribed()&&!dataCache['Nifty 50']){
     try{
-      dataCache['Nifty 50']=normalise(await fetchWithRetry(PLUSXY_BASE+'/sector/'+encodeURIComponent('Nifty 50')));
+      dataCache['Nifty 50']=normalise(await fetchWithRetry(WORKER_BASE+'/sector/'+encodeURIComponent('Nifty 50')));
     }catch(e){
       console.warn('[backtest] Nifty 50 data unavailable:',e);
       dataCache['Nifty 50']=[];
@@ -3901,7 +3911,6 @@ window.addEventListener('load',function(){ authInit(); });
 /* ════════════════════════════════════════
    ALERTS
 ════════════════════════════════════════ */
-var WORKER_BASE='https://sectorscope.prashant-06f.workers.dev';
 
 /* Stub — replace with real KV check after Razorpay */
 /* Subscription state — loaded from Worker after sign-in */
