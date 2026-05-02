@@ -3349,6 +3349,127 @@ function _btCompute(){
   btShow();
 }
 
+/* ── Headless backtest for AI summary ──
+   Same engine as _btCompute (rolling 30/60/10 weighted ref, signal at threshold,
+   cooldown between trades, 1Y forward return) but takes arguments instead of
+   reading DOM. Returns null when usable signals < 4 — caller must handle.
+   Cached per (sector, field, threshold, cooldownDays). */
+var btHeadlessCache={};
+function btComputeHeadless(opts){
+  /* opts: { sectorName, field:'pe'|'pb', threshold:Number (e.g. 0.87), cooldownDays:Number=180 } */
+  var data=dataCache[opts.sectorName];
+  if(!data || data.length<60) return null;
+
+  var key=opts.sectorName+'::'+opts.field+'::'+opts.threshold.toFixed(3)+'::'+(opts.cooldownDays||180);
+  if(btHeadlessCache[key]) return btHeadlessCache[key];
+
+  var field=opts.field, thr=opts.threshold;
+  var cdDays=opts.cooldownDays||180;
+  var COOLDOWN=cdDays*86400000;
+  var TOL=0.01;        /* same ±1% tolerance as _btCompute */
+  var STRIDE=5;        /* same stride as _btCompute */
+
+  /* sliding window pointers (same as _btCompute) */
+  var h3s=0,h5s=0,h10s=0;
+  var ts=data.map(function(r){return new Date(r.date).getTime();});
+  var MS_YR=365.25*86400000;
+
+  /* Forward return helper — replicates fwdReturn from _btCompute */
+  function fwdRet(buyIdx,months){
+    var bd=new Date(data[buyIdx].date), bp=data[buyIdx].price;
+    if(!bp||bp<=0) return null;
+    var tgt=new Date(bd); tgt.setMonth(tgt.getMonth()+months);
+    for(var k=buyIdx+1;k<data.length;k++){
+      var sp=data[k].price;
+      if(new Date(data[k].date)>=tgt && sp>0) return Math.pow(sp/bp,12/months)-1;
+    }
+    return null;  /* still open — ignore for AI summary */
+  }
+
+  /* Nifty 50 forward return — replicates niftyFwdReturn from _btCompute */
+  var nifty50=dataCache['Nifty 50']||[];
+  var n50Ts=nifty50.map(function(r){return new Date(r.date).getTime();});
+  function niftyFwd(buyDateStr,months){
+    if(!nifty50.length) return null;
+    var bd=new Date(buyDateStr).getTime();
+    var tgt=bd+months*(365.25/12)*86400000;
+    var bi=0,bestDiff=Infinity;
+    for(var i=0;i<n50Ts.length;i++){
+      var d=Math.abs(n50Ts[i]-bd);
+      if(d<bestDiff){bestDiff=d;bi=i;}
+      if(n50Ts[i]>bd+7*86400000) break;
+    }
+    var bp=nifty50[bi].price;
+    if(!bp||bp<=0) return null;
+    for(var k=bi+1;k<nifty50.length;k++){
+      var sp=nifty50[k].price;
+      if(n50Ts[k]>=tgt && sp>0) return Math.pow(sp/bp,12/months)-1;
+    }
+    return null;
+  }
+
+  var trades=[], lastBuy=null;
+  for(var i=0;i<data.length;i++){
+    var row=data[i];
+    var tMs=ts[i];
+    /* advance window starts (O(1) amortised) */
+    var c3=tMs-3*MS_YR, c5=tMs-5*MS_YR, c10=tMs-10*MS_YR;
+    while(h3s <=i && ts[h3s] <c3 ) h3s++;
+    while(h5s <=i && ts[h5s] <c5 ) h5s++;
+    while(h10s<=i && ts[h10s]<c10) h10s++;
+
+    /* stride gate: same as _btCompute */
+    if((i % STRIDE)!==0 && i!==data.length-1) continue;
+
+    var price=row.price; if(!price||isNaN(price)||price<=0) continue;
+    var cur=row[field];  if(!cur||isNaN(cur)||cur<=0) continue;
+
+    /* Compute weighted ref at this date (no winsorise, matching _btCompute) */
+    var w3=[],w5=[],w10=[];
+    for(var k=h3s;  k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w3.push(v); }
+    for(var k=h5s;  k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w5.push(v); }
+    for(var k=h10s; k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w10.push(v); }
+    var ref=weightedRef(median(w3),median(w5),median(w10));
+    if(isNaN(ref)||ref<=0) continue;
+
+    var ratio=cur/ref;
+    if(Math.abs(ratio-thr)>TOL) continue;
+    if(lastBuy && (tMs-lastBuy)<COOLDOWN) continue;
+    lastBuy=tMs;
+
+    var r1y=fwdRet(i,12);
+    var n1y=niftyFwd(row.date,12);
+    /* Only keep CLOSED 1Y trades — open positions can't be counted */
+    if(r1y===null) continue;
+    trades.push({ cagr:r1y, niftyCagr:n1y });
+  }
+
+  /* Aggregate */
+  if(trades.length<4){
+    btHeadlessCache[key]={signals:trades.length, sufficient:false};
+    return btHeadlessCache[key];
+  }
+  var avgCagr=trades.reduce(function(s,t){return s+t.cagr;},0)/trades.length;
+  var hits=trades.filter(function(t){return t.cagr>0;}).length;
+  var hitRate=hits/trades.length;
+  /* Alpha: average of (sectorCagr − niftyCagr), only over trades where Nifty data exists */
+  var alphaT=trades.filter(function(t){return t.niftyCagr!==null;});
+  var avgAlpha=alphaT.length?alphaT.reduce(function(s,t){return s+(t.cagr-t.niftyCagr);},0)/alphaT.length:null;
+
+  var out={
+    signals  : trades.length,
+    sufficient: true,
+    cagr     : avgCagr,
+    hitRate  : hitRate,
+    alpha    : avgAlpha,
+    cooldownDays: cdDays,
+    threshold: thr,
+    field    : field
+  };
+  btHeadlessCache[key]=out;
+  return out;
+}
+
 /* ── RENDER RESULTS ── */
 function btShow(){
   if(!btResults) return;
@@ -5319,6 +5440,49 @@ async function loadAISummary(sectorName, st){
   }
 
   try{
+    /* ── Compute a backtest at the current valuation level for the prompt.
+       Rules:
+       - Only when sector is at or below its weighted reference (pctRef ≤ 100)
+       - Dual sectors: use whichever metric is cheaper (lower pctRef)
+       - 1Y forward, 180d cooldown, ≥4 closed trades required
+       - All sector data already in dataCache, so this runs locally in ~100-300ms */
+    var btForAI=null;
+    var ct=cardType(sectorName);
+    /* Pick metric. For pb sectors, must be PB; pe sectors, must be PE; dual = cheaper of the two. */
+    var btField=null, btPctRef=NaN;
+    if(ct==='pb'){
+      if(!isNaN(st.pbPctRef)) { btField='pb'; btPctRef=st.pbPctRef; }
+    } else if(ct==='pe'){
+      if(!isNaN(st.pePctRef)) { btField='pe'; btPctRef=st.pePctRef; }
+    } else {
+      /* dual: cheaper-band metric wins */
+      var pe=st.pePctRef, pb=st.pbPctRef;
+      var pOk=!isNaN(pe), bOk=!isNaN(pb);
+      if(pOk && bOk)      { btField=(pe<=pb)?'pe':'pb'; btPctRef=Math.min(pe,pb); }
+      else if(pOk)        { btField='pe'; btPctRef=pe; }
+      else if(bOk)        { btField='pb'; btPctRef=pb; }
+    }
+    /* Only run backtest if currently at-or-below reference (cheap or neutral) */
+    if(btField && btPctRef<=100 && dataCache[sectorName] && dataCache['Nifty 50']){
+      var thr=Math.max(50, Math.min(100, Math.round(btPctRef))) / 100;  /* clamp 50%–100%, in fraction form */
+      var stats=btComputeHeadless({
+        sectorName  : sectorName,
+        field       : btField,
+        threshold   : thr,
+        cooldownDays: 180
+      });
+      if(stats && stats.sufficient){
+        btForAI={
+          field    : stats.field,
+          threshold: Math.round(stats.threshold*100),
+          signals  : stats.signals,
+          cagr     : stats.cagr,
+          hitRate  : stats.hitRate,
+          alpha    : stats.alpha
+        };
+      }
+    }
+
     var payload={
       sector    :sectorName,
       curPE     :st.curPE,     curPB     :st.curPB,
@@ -5331,6 +5495,7 @@ async function loadAISummary(sectorName, st){
       curEPS    :st.curEPS,    maxEPS    :st.maxEPS,
       epsPctPeak:st.epsPctPeak,epsYoY   :st.epsYoY,    epsPill   :st.epsPill,
       divergence:st.divergence||false,
+      backtest  :btForAI       /* may be null if not applicable */
     };
 
     var res=await fetch(WORKER_BASE+'/ai-summary',{
