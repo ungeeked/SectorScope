@@ -262,8 +262,9 @@ html.light #my-alerts-overlay{background:var(--bg)}
 html.light .pp-header{background:rgba(238,241,248,.96)}
 .pp-title{font-family:var(--cond);font-size:1.4rem;font-weight:800;letter-spacing:-.2px;color:var(--txt);display:flex;align-items:center;gap:8px}
 .pp-plus-badge{font-family:var(--mono);font-size:.48rem;font-weight:700;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:3px 7px;border-radius:5px;letter-spacing:.5px}
-.pp-body{flex:1;overflow-y:auto;padding:0 22px 60px;max-width:820px;margin:0 auto;width:100%}
-@media(max-width:680px){.pp-body{padding:0 12px 48px}}
+.pp-body{flex:1;overflow-y:auto;width:100%}
+.pp-body-inner{max-width:820px;margin:0 auto;padding:0 22px 60px}
+@media(max-width:680px){.pp-body-inner{padding:0 12px 48px}}
 /* hero */
 .pp-hero{text-align:center;padding:52px 0 44px;position:relative;overflow:hidden}
 .pp-hero-eyebrow{font-family:var(--mono);font-size:.56rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:#6366f1;margin-bottom:14px}
@@ -836,6 +837,85 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
 .hp-qt-key{display:flex;gap:14px;flex-wrap:wrap;font-family:var(--mono);font-size:.64rem;color:var(--sub);margin-top:8px}
 .hp-qt-key-item{display:flex;align-items:center;gap:5px}
 .hp-qt-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+
+/* ── Card sparkline hover hint ── */
+.cf-chart{cursor:zoom-in}
+.cf-chart-hint{position:absolute;bottom:6px;right:7px;font-family:var(--mono);font-size:.46rem;color:var(--ghost);background:rgba(0,0,0,.55);backdrop-filter:blur(6px);padding:3px 7px;border-radius:5px;letter-spacing:.3px;opacity:0;transform:translateY(2px);transition:opacity .18s,transform .18s;pointer-events:none;z-index:2;border:1px solid rgba(255,255,255,.08)}
+html.light .cf-chart-hint{background:rgba(255,255,255,.85);color:#475569;border-color:rgba(0,0,0,.08)}
+.cf-chart:hover .cf-chart-hint{opacity:1;transform:translateY(0)}
+
+/* ── CHART MODAL ── */
+#chart-modal{position:fixed;inset:0;z-index:600;display:none;flex-direction:column;background:var(--bg)}
+#chart-modal.open{display:flex}
+.cm-header{position:sticky;top:0;z-index:10;padding:10px 22px;display:flex;align-items:center;gap:12px;background:rgba(8,11,18,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);flex-shrink:0}
+html.light .cm-header{background:rgba(238,241,248,.96)}
+.cm-color-bar{width:4px;height:28px;border-radius:2px;flex-shrink:0}
+.cm-title{font-family:var(--cond);font-size:1.4rem;font-weight:800;letter-spacing:-.2px;color:var(--txt);flex:1}
+
+/* Body becomes the canvas area itself. Controls float on top. */
+.cm-body{flex:1;position:relative;overflow:hidden}
+
+/* Single inline control bar — solid background, sits flush below header */
+.cm-bar{position:absolute;top:0;left:0;right:0;z-index:3;display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:9px 18px;background:var(--bg);border-bottom:1px solid var(--bdr)}
+.cm-group{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.cm-divider{width:1px;height:18px;background:var(--bdr)}
+.cm-arrow{color:var(--ghost);font-family:var(--mono);font-size:.7rem;padding:0 2px}
+
+.cm-checkbox{display:inline-flex;align-items:center;gap:5px;padding:4px 8px;border-radius:6px;border:1px solid transparent;background:transparent;font-family:var(--body);font-size:.72rem;color:var(--ghost);cursor:pointer;user-select:none;transition:all .12s;line-height:1;opacity:.5}
+.cm-checkbox:hover{opacity:.85;color:var(--sub);background:var(--bg2)}
+.cm-checkbox.checked{background:var(--bg3);color:var(--txt);border-color:var(--bdr2);opacity:1;font-weight:600}
+.cm-checkbox-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;filter:grayscale(1);transition:filter .12s}
+.cm-checkbox.checked .cm-checkbox-dot{filter:none}
+
+/* Dashed-line indicator for the Median toggle */
+.cm-checkbox-dash{display:inline-block;width:14px;height:0;flex-shrink:0;border-top:2px dashed var(--ghost);transition:border-color .12s}
+.cm-checkbox.checked .cm-checkbox-dash{border-top-color:var(--txt)}
+.cm-checkbox.disabled{opacity:.3;cursor:not-allowed}
+.cm-checkbox.disabled:hover{opacity:.3;background:transparent}
+
+.cm-pill{padding:4px 9px;border-radius:6px;border:1px solid transparent;background:transparent;font-family:var(--mono);font-size:.64rem;color:var(--sub);cursor:pointer;font-weight:600;letter-spacing:.3px;transition:all .12s;line-height:1}
+.cm-pill:hover{color:var(--txt);background:var(--bg2)}
+.cm-pill.active{background:#3b82f6;color:#fff}
+
+/* Canvas wrap fills the entire body */
+.cm-canvas-wrap{position:absolute;inset:0;background:var(--bg2)}
+.cm-canvas{display:block;width:100%;height:100%}
+.cm-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.8rem;color:var(--ghost)}
+
+/* Hover crosshair + tooltip */
+.cm-crosshair{position:absolute;top:0;width:1px;background:var(--bdr2);pointer-events:none;display:none;z-index:2}
+
+/* Drag-zoom selection rectangle */
+.cm-canvas-wrap.dragging{cursor:crosshair}
+.cm-drag-rect{position:absolute;top:0;background:rgba(59,130,246,.15);border-left:1px solid rgba(59,130,246,.7);border-right:1px solid rgba(59,130,246,.7);pointer-events:none;display:none;z-index:1}
+.cm-dot{position:absolute;width:9px;height:9px;border-radius:50%;border:2px solid var(--bg);transform:translate(-50%,-50%);pointer-events:none;display:none;z-index:3;box-shadow:0 0 0 1px rgba(0,0,0,.2)}
+.cm-tooltip{position:absolute;pointer-events:none;display:none;z-index:4;padding:8px 10px;border-radius:8px;background:var(--bg);border:1px solid var(--bdr2);box-shadow:0 8px 24px rgba(0,0,0,.4);font-family:var(--body);font-size:.7rem;color:var(--txt);white-space:nowrap;min-width:140px;backdrop-filter:blur(8px)}
+html.light .cm-tooltip{background:rgba(255,255,255,.96);box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.cm-tt-date{font-family:var(--mono);font-size:.62rem;color:var(--ghost);letter-spacing:.3px;margin-bottom:5px;text-transform:uppercase}
+.cm-tt-row{display:flex;align-items:center;justify-content:space-between;gap:14px;line-height:1.4}
+.cm-tt-row + .cm-tt-row{margin-top:2px}
+.cm-tt-label{display:inline-flex;align-items:center;gap:6px;color:var(--sub);font-size:.7rem}
+.cm-tt-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.cm-tt-val{font-family:var(--mono);font-weight:600;color:var(--txt);font-size:.74rem}
+
+@media(max-width:680px){
+  .cm-header{padding:10px 14px}
+  .cm-bar{padding:8px 12px;gap:8px}
+  .cm-divider{display:none}
+}
+
+.cm-date-input{padding:3px 6px;border-radius:5px;border:1px solid var(--bdr);background:var(--bg2);color:var(--txt);font-family:var(--mono);font-size:.62rem;cursor:pointer}
+.cm-date-input:focus{outline:none;border-color:#3b82f6}
+
+/* Plus gate inside modal */
+.cm-paywall{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(8,11,18,.62);backdrop-filter:blur(8px);z-index:5}
+html.light .cm-paywall{background:rgba(238,241,248,.7)}
+.cm-paywall-card{max-width:340px;padding:22px 24px;border-radius:14px;background:var(--bg2);border:1px solid var(--bdr);text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.cm-paywall-title{font-family:var(--cond);font-size:1.05rem;font-weight:800;color:var(--txt);margin-bottom:6px}
+.cm-paywall-title .plus-tag{font-family:var(--mono);font-size:.5rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:2px 6px;border-radius:4px;letter-spacing:.4px;vertical-align:middle;margin-left:6px}
+.cm-paywall-desc{font-family:var(--body);font-size:.78rem;color:var(--sub);line-height:1.55;margin-bottom:14px}
+.cm-paywall-btn{padding:9px 18px;border-radius:9px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:var(--body);font-size:.82rem;font-weight:700;cursor:pointer;transition:opacity .15s}
+.cm-paywall-btn:hover{opacity:.88}
 
 </style>
 </head>
@@ -1576,6 +1656,22 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
     </div>
 
     <div class="hp-p">The shaded area under the main line is purely visual emphasis — it has no separate numeric meaning.</div>
+
+    <div class="hp-sub-h">Expanded chart <span class="plus-badge">PLUS</span></div>
+    <div class="hp-p"><strong>Click any sparkline</strong> to open a full-window chart with much more flexibility than the card view. The card sparkline is fixed at 3 years P/E + EPS (or P/B for bank sectors); the expanded view lets you choose what to plot, over what period, and inspect specific dates.</div>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">What you can do in the expanded chart</div>
+      <ul class="hp-list" style="margin:0">
+        <li><strong>Overlay any two metrics</strong> — pick from P/E, P/B, EPS, or Price. They render on dual Y-axes (one on each side) so you can compare scales that differ wildly (P/E in the teens vs EPS in the thousands).</li>
+        <li><strong>Pick a time window</strong> — quick pills for 1W, 1M, 3M, 1Y, 3Y, 5Y, All. Or use the date pickers to set any custom range. Pickers always show the dates of whatever's currently displayed, even when you got there by clicking a pill.</li>
+        <li><strong>Drag to zoom</strong> — click and drag horizontally on the chart to zoom into that exact slice. Double-click anywhere to reset to the default 3Y view.</li>
+        <li><strong>Hover for exact values</strong> — move your mouse over the chart to see a vertical crosshair, dot markers on each visible series, and a tooltip showing the date and the exact value of each metric on that day.</li>
+        <li><strong>Rolling weighted-median overlay</strong> — toggle the Median checkbox to see a dashed reference curve. Unlike a flat horizontal line, this curve recomputes the 30/60/10 weighted median (3yr/5yr/10yr) at every historical date — so you see how the "typical" valuation level evolved over time, not just where it sits today.</li>
+      </ul>
+    </div>
+
+    <div class="hp-p">The rolling-median curve uses the same weighted blend as the rest of the dashboard: 30% × 3yr median + 60% × 5yr median + 10% × 10yr median. Looking at the curve in 2018 shows you the reference value as it would have appeared in 2018 — using only data available before then. This is the same logic the backtest uses to evaluate signals at each historical date, so the chart and the backtest are now visually consistent.</div>
   </div>
 
   <!-- ══ 6. BACKTEST ══ -->
@@ -1714,7 +1810,7 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
   <!-- ══ 7. SECTORSCOPE PLUS ══ -->
   <div class="hp-sec" id="h-plus">
     <div class="hp-sec-h">7 · SectorScope Plus</div>
-    <div class="hp-p">SectorScope Plus unlocks three features designed for investors who want to act on signals — not just read them.</div>
+    <div class="hp-p">SectorScope Plus unlocks four features designed for investors who want to act on signals — not just read them.</div>
 
     <div class="hp-card info">
       <div class="hp-card-ttl">What's included</div>
@@ -1722,6 +1818,7 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
         <li><strong>Custom email alerts</strong> — set a valuation threshold for any sector and get an email the moment the live P/E or P/B crosses it. You pick the metric, the level, and whether the alert fires once or recurs. Up to 2 alerts per sector.</li>
         <li><strong>AI sector summaries</strong> — tap "Generate" on any sector's detail page to get a plain-language read on the current valuation and earnings position, powered by Claude. Limited to 30 summaries per day. No buy/sell recommendations — only facts derived from the same data you see on screen.</li>
         <li><strong>Alpha vs Nifty 50 in backtest</strong> — the "vs Nifty 50" column in the results table shows how much the sector beat or lagged the Nifty 50 index over the same forward window. Positive values (green) mean the sector outperformed; negative (red) means it lagged. This lets you distinguish genuine sector alpha from returns that simply rode the broader market.</li>
+        <li><strong>Expanded charts</strong> — click any sector's sparkline to open a full-window chart. Overlay any two of P/E, P/B, EPS, or Price on dual axes. Pick any time window from 1W to All, or drag-to-zoom into a custom slice. Hover for exact values on any date. Includes the rolling weighted-median overlay (the actual reference at every historical date, not a flat line).</li>
       </ul>
     </div>
 
@@ -1808,6 +1905,38 @@ html.light .hp-matrix td:first-child{background:rgba(0,0,0,.02)}
   </div>
   <div class="pp-body" id="pp-body">
     <!-- populated by openPlusPane() -->
+  </div>
+</div>
+
+<!-- ══════════════ CHART MODAL ══════════════ -->
+<div id="chart-modal" role="dialog" aria-modal="true" aria-label="Sector chart">
+  <div class="cm-header">
+    <div class="cm-color-bar" id="cm-color-bar"></div>
+    <div class="cm-title" id="cm-title">—</div>
+    <button class="sd-close" onclick="closeChartModal()" aria-label="Close chart">✕</button>
+  </div>
+  <div class="cm-body">
+    <div class="cm-bar" id="cm-bar">
+      <div class="cm-group" id="cm-metrics"><!-- populated by openChartModal() --></div>
+      <div class="cm-divider"></div>
+      <div class="cm-group" id="cm-overlay"><!-- populated by openChartModal() --></div>
+      <div class="cm-divider"></div>
+      <div class="cm-group" id="cm-ranges"><!-- populated by openChartModal() --></div>
+      <div class="cm-divider"></div>
+      <div class="cm-group" id="cm-dates">
+        <input type="date" id="cm-date-from" class="cm-date-input" aria-label="From date">
+        <span class="cm-arrow">→</span>
+        <input type="date" id="cm-date-to" class="cm-date-input" aria-label="To date">
+      </div>
+    </div>
+    <div class="cm-canvas-wrap" id="cm-canvas-wrap">
+      <canvas id="cm-canvas" class="cm-canvas"></canvas>
+      <div class="cm-drag-rect" id="cm-drag-rect"></div>
+      <div class="cm-crosshair" id="cm-crosshair"></div>
+      <div class="cm-dot cm-dot-left"  id="cm-dot-left"></div>
+      <div class="cm-dot cm-dot-right" id="cm-dot-right"></div>
+      <div class="cm-tooltip" id="cm-tooltip"></div>
+    </div>
   </div>
 </div>
 
@@ -2306,15 +2435,17 @@ function sparkSVG(rows,f1,c1,f2,c2,med3,isLight){
     +(d2?'<path d="'+d2+'" fill="none" stroke="'+c2+'" stroke-width="1.1" opacity=".72" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>':'')
     +'</svg>';
 }
-function chartEl(rows,f1,c1,f2,c2,med3,isLight,lbl1,lbl2){
+function chartEl(rows,f1,c1,f2,c2,med3,isLight,lbl1,lbl2,sectorName){
   var svg=sparkSVG(rows,f1,c1,f2,c2,med3,isLight);
   if(!svg) return '';
-  return'<div class="cf-chart">'
+  var hint=sectorName?'<div class="cf-chart-hint">Click to expand ⤢</div>':'';
+  var attrs=sectorName?(' data-action="chart" data-sector="'+sectorName+'"'):'';
+  return'<div class="cf-chart"'+attrs+'>'
     +'<div class="chart-legend">'
       +'<div class="cl-item"><div class="cl-line" style="background:'+c1+'"></div><span>'+lbl1+'</span></div>'
       +(f2?'<div class="cl-item"><div class="cl-line" style="background:'+c2+'"></div><span>'+lbl2+'</span></div>':'')
       +'<div class="cl-item"><div class="cl-dash"></div><span>3yr median</span></div>'
-    +'</div>'+svg+'</div>';
+    +'</div>'+svg+hint+'</div>';
 }
 
 /* ════════════════════════════════════════
@@ -2435,7 +2566,7 @@ function buildCard(sec,st){
     var peHex=BH[peB]||BH.na,pbHex=BH[pbB]||BH.na;
     var bgTop=isLight?peHex.l:peHex.d,bgBot=isLight?pbHex.l:pbHex.d;
     var splitSt='background:linear-gradient(180deg,'+bgTop+' 50%,'+bgBot+' 50%);border:1px solid '+peHex.bd;
-    var frontChart=chartEl(st.data3yr,'pe',sc,'eps',EC,st.pe3,isLight,'3yr P/E','EPS');
+    var frontChart=chartEl(st.data3yr,'pe',sc,'eps',EC,st.pe3,isLight,'3yr P/E','EPS',sec.name);
     var front='<div class="card-face dual-face" style="--acc:'+sc+'">'
       +'<div class="dual-split" style="'+splitSt+'">'
         +'<div class="cf">'
@@ -2493,7 +2624,7 @@ function buildCard(sec,st){
   /* ══ PURE PB ══ */
   if(ct==='pb'){
     var bnd=BAND[st.pbBand]||BAND.na;
-    var frontChart=chartEl(st.data3yr,'pb',sc,null,null,st.pb3,isLight,'3yr P/B',null);
+    var frontChart=chartEl(st.data3yr,'pb',sc,null,null,st.pb3,isLight,'3yr P/B',null,sec.name);
     var front='<div class="card-face '+bnd.cls+'" style="--acc:'+sc+'">'
       +'<div class="cf">'
         +'<div class="cf-top"><span class="cf-name">'+fullName+'</span>'
@@ -2533,7 +2664,7 @@ function buildCard(sec,st){
 
   /* ══ PE ══ */
   var bnd=BAND[st.peBand]||BAND.na;
-  var frontChart=chartEl(st.data3yr,'pe',sc,'eps',EC,st.pe3,isLight,'3yr P/E','EPS');
+  var frontChart=chartEl(st.data3yr,'pe',sc,'eps',EC,st.pe3,isLight,'3yr P/E','EPS',sec.name);
   var front='<div class="card-face '+bnd.cls+'" style="--acc:'+sc+'">'
     +'<div class="cf">'
       +'<div class="cf-top"><span class="cf-name">'+fullName+'</span>'
@@ -2788,7 +2919,8 @@ function initGridEvents(){
     if(actionEl){
       var action=actionEl.dataset.action, name=actionEl.dataset.sector;
       e.stopPropagation();
-      if(action==='detail') openSectorDetail(name);
+      if(action==='chart')  openChartModal(name);
+      else if(action==='detail') openSectorDetail(name);
       else if(action==='retry') retrySector(name);
       return;
     }
@@ -3707,6 +3839,730 @@ document.addEventListener('keydown',function(e){
 });
 
 
+/* ════════════════════════════════════════
+   CHART MODAL — full-screen expanded chart
+   - Plus-gated (uses userIsSubscribed)
+   - Cap of 2 simultaneous metrics
+   - Default range 3Y
+   - Dual Y-axis on canvas
+════════════════════════════════════════ */
+var CM_STATE={sector:null,metrics:[],range:'3Y',from:null,to:null,showMedian:true};
+var CM_DRAW=null;  /* set by cmDrawCanvas, consumed by hover handler */
+var CM_DRAG=null;  /* { active, startX, currentX } during a zoom drag */
+
+var CM_METRICS={
+  /* field, label, colourLight, colourDark */
+  pe : {field:'pe' , label:'P/E', cLight:'#0ea5e9', cDark:'#38bdf8'},
+  eps: {field:'eps', label:'EPS', cLight:'#10b981', cDark:'#34d399'},
+  pb : {field:'pb' , label:'P/B', cLight:'#f97316', cDark:'#fb923c'},
+  cls: {field:'price', label:'Price', cLight:'#ec4899', cDark:'#f472b6'}
+};
+var CM_METRIC_ORDER=['pe','eps','pb','cls']; /* render order in checkbox row */
+
+var CM_RANGES=['1W','1M','3M','1Y','3Y','5Y','All'];
+function cmRangeDays(r){
+  return r==='1W'?7:r==='1M'?30:r==='3M'?90:r==='1Y'?365:r==='3Y'?1095:r==='5Y'?1825:Infinity;
+}
+
+function cmDefaultMetrics(sectorName){
+  var ct=cardType(sectorName);
+  if(ct==='pb') return ['pb'];
+  return ['pe','eps'];
+}
+
+function openChartModal(sectorName){
+  var sec=SECTORS.find(function(s){return s.name===sectorName;});
+  var data=dataCache[sectorName];
+  if(!sec||!data||!data.length) return;
+
+  CM_STATE.sector=sectorName;
+  CM_STATE.metrics=cmDefaultMetrics(sectorName);
+  CM_STATE.range='3Y';
+  CM_STATE.from=null;
+  CM_STATE.to=null;
+  CM_STATE.showMedian=true;
+
+  document.getElementById('cm-title').textContent='Nifty '+sec.name;
+  document.getElementById('cm-color-bar').style.background=sec.color;
+
+  /* Open the modal first so the canvas has a real layout box. */
+  var modal=document.getElementById('chart-modal');
+  modal.classList.add('open');
+  document.body.style.overflow='hidden';
+
+  cmRenderControls();
+  /* Defer chart render to next frame so canvas has been laid out. */
+  requestAnimationFrame(function(){ cmRenderChart(); cmAttachHover(); cmAttachDragZoom(); });
+}
+
+function closeChartModal(){
+  document.getElementById('chart-modal').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+/* Esc closes chart modal too */
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape'){
+    var m=document.getElementById('chart-modal');
+    if(m&&m.classList.contains('open')) closeChartModal();
+  }
+});
+
+function cmRenderControls(){
+  var isLight=document.documentElement.classList.contains('light');
+
+  /* Metrics checkboxes */
+  var mRow=document.getElementById('cm-metrics');
+  var html='';
+  CM_METRIC_ORDER.forEach(function(k){
+    var m=CM_METRICS[k];
+    var checked=CM_STATE.metrics.indexOf(k)>=0;
+    var col=isLight?m.cLight:m.cDark;
+    html+='<label class="cm-checkbox'+(checked?' checked':'')+'" data-metric="'+k+'">'
+      +'<span class="cm-checkbox-dot" style="background:'+col+'"></span>'
+      +m.label
+    +'</label>';
+  });
+  mRow.innerHTML=html;
+  mRow.querySelectorAll('.cm-checkbox').forEach(function(el){
+    el.addEventListener('click',function(){
+      var k=this.dataset.metric;
+      var idx=CM_STATE.metrics.indexOf(k);
+      if(idx>=0){
+        /* toggle off — but never go below 1 selected */
+        if(CM_STATE.metrics.length>1) CM_STATE.metrics.splice(idx,1);
+      } else {
+        /* cap at 2: drop oldest, push new */
+        CM_STATE.metrics.push(k);
+        if(CM_STATE.metrics.length>2) CM_STATE.metrics.shift();
+      }
+      cmRenderControls();
+      cmRenderChart();
+    });
+  });
+
+  /* Median toggle — only meaningful when PE or PB is among the visible metrics.
+     Visually disabled (no click effect) otherwise. */
+  var oRow=document.getElementById('cm-overlay');
+  var medApplies=(CM_STATE.metrics.indexOf('pe')>=0)||(CM_STATE.metrics.indexOf('pb')>=0);
+  var medChecked=CM_STATE.showMedian && medApplies;
+  oRow.innerHTML=
+    '<label class="cm-checkbox'+(medChecked?' checked':'')+(medApplies?'':' disabled')+'" data-overlay="median" title="Weighted reference: 30% × 3yr + 60% × 5yr + 10% × 10yr median">'
+    +'<span class="cm-checkbox-dash"></span>Median'
+    +'</label>';
+  oRow.querySelectorAll('[data-overlay="median"]').forEach(function(el){
+    el.addEventListener('click',function(){
+      if(!medApplies) return;
+      CM_STATE.showMedian=!CM_STATE.showMedian;
+      cmRenderControls();
+      cmRenderChart();
+    });
+  });
+
+  /* Range pills */
+  var rRow=document.getElementById('cm-ranges');
+  var rHtml='';
+  CM_RANGES.forEach(function(r){
+    var active=(CM_STATE.range===r&&!CM_STATE.from);
+    rHtml+='<button class="cm-pill'+(active?' active':'')+'" data-range="'+r+'">'+r+'</button>';
+  });
+  rRow.innerHTML=rHtml;
+  rRow.querySelectorAll('.cm-pill').forEach(function(el){
+    el.addEventListener('click',function(){
+      CM_STATE.range=this.dataset.range;
+      CM_STATE.from=null;CM_STATE.to=null;
+      cmRenderControls();
+      cmRenderChart();
+    });
+  });
+
+  /* Sync date pickers to currently-displayed window. Pickers always show the
+     From/To dates of the chart that's actually rendered — whether the user
+     got there by clicking a range pill or by typing dates manually. */
+  var dFrom=document.getElementById('cm-date-from');
+  var dTo  =document.getElementById('cm-date-to');
+  var win  =cmRangeWindow();
+  if(win){
+    dFrom.value=cmISO(win.from);
+    dTo.value  =cmISO(win.to);
+  }
+
+  /* (Re-)bind manual-edit handler. Editing pickers deactivates range pills. */
+  function dChange(){
+    var f=dFrom.value, t=dTo.value;
+    if(f&&t){
+      CM_STATE.from=new Date(f);
+      CM_STATE.to=new Date(t);
+      CM_STATE.range=null; /* deactivate range pills */
+      cmRenderControls();
+      cmRenderChart();
+    }
+  }
+  dFrom.onchange=dChange;
+  dTo.onchange=dChange;
+}
+
+/* Format a Date as YYYY-MM-DD (the format <input type="date"> requires) */
+function cmISO(d){
+  var y=d.getFullYear(), m=d.getMonth()+1, dd=d.getDate();
+  return y+'-'+(m<10?'0':'')+m+'-'+(dd<10?'0':'')+dd;
+}
+
+/* Returns {from, to} Dates representing the currently-rendered window.
+   - If user typed custom dates, those win.
+   - Otherwise compute from the active range pill.
+   - "All" returns the actual data range. */
+function cmRangeWindow(){
+  if(CM_STATE.from && CM_STATE.to){
+    return {from:CM_STATE.from, to:CM_STATE.to};
+  }
+  var rows=dataCache[CM_STATE.sector]||[];
+  if(!rows.length) return null;
+  var to=new Date();
+  var range=CM_STATE.range||'3Y';
+  if(range==='All'){
+    var earliest=rows.reduce(function(min,r){
+      var t=new Date(r.date).getTime();
+      return (min==null||t<min)?t:min;
+    },null);
+    return {from:new Date(earliest), to:to};
+  }
+  var days=cmRangeDays(range);
+  var from=new Date(Date.now()-days*86400000);
+  return {from:from, to:to};
+}
+
+/* Slice dataCache rows by current range or custom dates */
+function cmFilteredRows(){
+  var rows=dataCache[CM_STATE.sector]||[];
+  if(!rows.length) return [];
+  if(CM_STATE.from&&CM_STATE.to){
+    var f=CM_STATE.from.getTime(), t=CM_STATE.to.getTime();
+    return rows.filter(function(r){
+      var d=new Date(r.date).getTime();
+      return d>=f&&d<=t;
+    });
+  }
+  var days=cmRangeDays(CM_STATE.range||'3Y');
+  if(!isFinite(days)) return rows.slice();
+  var cutoff=Date.now()-days*86400000;
+  return rows.filter(function(r){return new Date(r.date).getTime()>=cutoff;});
+}
+
+/* ── Rolling weighted-reference series ──
+   At each historical date T, returns the weighted reference (30/60/10 of
+   3y/5y/10y medians ending at T). Same logic as the backtest at line 3253–3262.
+   Uses sliding-window pointers + a stride so a 10y dataset costs ~250 medians
+   instead of ~2500. Cached per (sector, field). Returns [{d:tsMs, v:ref}, ...]. */
+var CM_REF_CACHE={};
+function cmRollingRef(sectorName, field){
+  var key=sectorName+'::'+field;
+  if(CM_REF_CACHE[key]) return CM_REF_CACHE[key];
+
+  var rows=dataCache[sectorName]||[];
+  if(!rows.length){ CM_REF_CACHE[key]=[]; return []; }
+
+  /* Pre-extract timestamps + values, dropping rows where the metric is missing. */
+  var pts=[];
+  for(var i=0;i<rows.length;i++){
+    var v=rows[i][field];
+    if(v==null || isNaN(v)) continue;
+    pts.push({ t:new Date(rows[i].date).getTime(), v:+v });
+  }
+  if(pts.length<30){ CM_REF_CACHE[key]=[]; return []; }
+
+  /* Stride: aim for ~250 points across the full series. With ~2500 daily rows
+     over 10 years, stride ≈ 10. Always include the last row. */
+  var TARGET=250;
+  var stride=Math.max(1, Math.floor(pts.length/TARGET));
+
+  var MS_YR=365.25*86400000;
+  var h3s=0, h5s=0, h10s=0;  /* sliding window start pointers */
+  var out=[];
+  for(var i=0;i<pts.length;i++){
+    var T=pts[i].t;
+    /* advance window starts (O(1) amortised) */
+    var c3=T-3*MS_YR, c5=T-5*MS_YR, c10=T-10*MS_YR;
+    while(h3s<=i  && pts[h3s].t  <c3 ) h3s++;
+    while(h5s<=i  && pts[h5s].t  <c5 ) h5s++;
+    while(h10s<=i && pts[h10s].t<c10) h10s++;
+
+    /* compute only every Nth row, plus the final row so the rightmost
+       point of the curve always reflects the current reference. */
+    if((i % stride)!==0 && i!==pts.length-1) continue;
+
+    /* Need at least one full year of history before the curve makes sense. */
+    if(T-pts[0].t < 365*86400000) continue;
+
+    var w3=[],w5=[],w10=[];
+    for(var k=h3s;  k<=i; k++) w3.push(pts[k].v);
+    for(var k=h5s;  k<=i; k++) w5.push(pts[k].v);
+    for(var k=h10s; k<=i; k++) w10.push(pts[k].v);
+
+    var m3 =w3.length ?median(w3) :NaN;
+    var m5 =w5.length ?median(w5) :NaN;
+    var m10=w10.length?median(w10):NaN;
+    var ref=weightedRef(m3,m5,m10);
+    if(!isNaN(ref)) out.push({d:T, v:ref});
+  }
+  CM_REF_CACHE[key]=out;
+  return out;
+}
+
+function cmRenderChart(){
+  var wrap=document.getElementById('cm-canvas-wrap');
+  /* Remove any prior paywall/empty overlays */
+  wrap.querySelectorAll('.cm-paywall,.cm-empty').forEach(function(n){n.remove();});
+
+  var canvas=document.getElementById('cm-canvas');
+  var rows=cmFilteredRows();
+
+  cmDrawCanvas(canvas, rows);
+
+  /* Plus gate: blur + paywall over the canvas */
+  if(!userIsSubscribed()){
+    canvas.style.filter='blur(6px)';
+    var pw=document.createElement('div');
+    pw.className='cm-paywall';
+    pw.innerHTML=
+      '<div class="cm-paywall-card">'
+      +'<div class="cm-paywall-title">Expanded charts <span class="plus-tag">PLUS</span></div>'
+      +'<div class="cm-paywall-desc">Multi-metric overlay, custom date ranges, drag-to-zoom, hover values, and rolling-median reference. All data already loaded — Plus unlocks the full chart.</div>'
+      +(currentUser
+        ? '<button class="cm-paywall-btn" onclick="closeChartModal();openPlusPane();">Upgrade to Plus</button>'
+        : '<button class="cm-paywall-btn" onclick="closeChartModal();openSignInPrompt&&openSignInPrompt();">Sign in to continue</button>')
+    +'</div>';
+    wrap.appendChild(pw);
+  } else {
+    canvas.style.filter='';
+  }
+
+  if(!rows.length){
+    var empty=document.createElement('div');
+    empty.className='cm-empty';
+    empty.textContent='No data in selected range';
+    wrap.appendChild(empty);
+  }
+}
+
+/* ── Canvas drawing: dual-Y axis line chart ── */
+function cmDrawCanvas(canvas, rows){
+  var dpr=window.devicePixelRatio||1;
+  /* Measure the wrap (layout container), not the canvas itself —
+     canvas inherits 100%/100% from CSS and stays fluid on resize. */
+  var wrap=canvas.parentElement;
+  var rect=wrap.getBoundingClientRect();
+  var W=Math.max(rect.width,300), H=Math.max(rect.height,200);
+  /* Set the pixel buffer for crisp rendering at devicePixelRatio. CSS keeps display size fluid. */
+  canvas.width=Math.floor(W*dpr); canvas.height=Math.floor(H*dpr);
+  var ctx=canvas.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,W,H);
+
+  if(!rows.length) return;
+
+  var isLight=document.documentElement.classList.contains('light');
+  var gridCol=isLight?'rgba(0,0,0,.08)':'rgba(255,255,255,.08)';
+  var axisCol=isLight?'#94a3b8':'#64748b';
+  var txtCol =isLight?'#475569':'#94a3b8';
+
+  /* Plot area: leave room for axes, bottom dates, and the single-row controls bar at top.
+     The bar is ~46px tall on desktop; on narrow widths it can wrap to 2 rows. */
+  var ml=54, mr=54, mt=64, mb=34;
+  if(W<560) { mt=92; }  /* controls wrap to more rows on narrow widths */
+  var pw=W-ml-mr, ph=H-mt-mb;
+
+  /* Decide which metric goes on which axis */
+  var metrics=CM_STATE.metrics.slice();
+  if(metrics.length===0) return;
+  var leftKey=metrics[0], rightKey=metrics[1]||null;
+
+  /* For each metric, compute filtered series and min/max */
+  function seriesFor(key){
+    var f=CM_METRICS[key].field;
+    var pts=[];
+    for(var i=0;i<rows.length;i++){
+      var v=rows[i][f];
+      if(v!=null && !isNaN(v)){
+        pts.push({d:new Date(rows[i].date).getTime(), v:+v});
+      }
+    }
+    return pts;
+  }
+  function rangeOf(pts){
+    if(!pts.length) return [0,1];
+    var mn=pts[0].v,mx=pts[0].v;
+    for(var i=1;i<pts.length;i++){if(pts[i].v<mn)mn=pts[i].v;if(pts[i].v>mx)mx=pts[i].v;}
+    if(mn===mx){mn-=1;mx+=1;}
+    /* 6% padding */
+    var pad=(mx-mn)*0.06;
+    return [mn-pad,mx+pad];
+  }
+
+  var leftPts=seriesFor(leftKey);
+  var leftRng=rangeOf(leftPts);
+  var rightPts=rightKey?seriesFor(rightKey):null;
+  var rightRng=rightPts?rangeOf(rightPts):null;
+
+  /* X domain — overall date range from rows (so both series share x) */
+  var xMin=Infinity, xMax=-Infinity;
+  rows.forEach(function(r){
+    var t=new Date(r.date).getTime();
+    if(t<xMin) xMin=t;
+    if(t>xMax) xMax=t;
+  });
+  if(xMin===xMax){xMin-=86400000;xMax+=86400000;}
+
+  function xPx(t){return ml+((t-xMin)/(xMax-xMin))*pw;}
+  function yLeftPx(v){return mt+ph-((v-leftRng[0])/(leftRng[1]-leftRng[0]))*ph;}
+  function yRightPx(v){return mt+ph-((v-rightRng[0])/(rightRng[1]-rightRng[0]))*ph;}
+
+  /* Horizontal grid + Y-axis labels (use leftRng for tick stops) */
+  ctx.strokeStyle=gridCol; ctx.lineWidth=1;
+  ctx.font='10px ui-monospace,Menlo,monospace';
+  ctx.fillStyle=txtCol;
+  var nTicks=5;
+  for(var i=0;i<=nTicks;i++){
+    var y=mt+(i/nTicks)*ph;
+    ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(W-mr,y); ctx.stroke();
+    var leftVal=leftRng[1] - (i/nTicks)*(leftRng[1]-leftRng[0]);
+    ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(leftVal.toFixed(leftKey==='cls'||leftKey==='eps'?0:1), ml-6, y);
+    if(rightRng){
+      var rightVal=rightRng[1] - (i/nTicks)*(rightRng[1]-rightRng[0]);
+      ctx.textAlign='left';
+      ctx.fillText(rightVal.toFixed(rightKey==='cls'||rightKey==='eps'?0:1), W-mr+6, y);
+    }
+  }
+
+  /* X-axis date labels — pick ~5 evenly spaced */
+  ctx.textAlign='center'; ctx.textBaseline='top';
+  var nx=5;
+  for(var j=0;j<=nx;j++){
+    var t=xMin+(j/nx)*(xMax-xMin);
+    var d=new Date(t);
+    var lbl=d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+(((xMax-xMin)>365*86400000)?(' '+String(d.getFullYear()).slice(2)):'');
+    ctx.fillText(lbl, xPx(t), mt+ph+7);
+  }
+
+  /* Draw left series */
+  function drawLine(pts, col, mapY, lw){
+    if(!pts||pts.length<2) return;
+    ctx.strokeStyle=col; ctx.lineWidth=lw||1.6; ctx.lineJoin='round'; ctx.lineCap='round';
+    ctx.beginPath();
+    pts.forEach(function(p,i){
+      var x=xPx(p.d), y=mapY(p.v);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  }
+  drawLine(leftPts,  isLight?CM_METRICS[leftKey].cLight :CM_METRICS[leftKey].cDark,  yLeftPx, 1.8);
+  if(rightKey) drawLine(rightPts, isLight?CM_METRICS[rightKey].cLight:CM_METRICS[rightKey].cDark, yRightPx, 1.6);
+
+  /* ── Weighted-median overlay — rolling reference curve.
+     Drawn for PE and/or PB if visible AND the user has Median toggled on.
+     The curve is the 30/60/10 weighted blend of 3y/5y/10y medians, computed
+     at each historical date using sliding windows ending at that date.
+     Plus-gated: skipped entirely for non-Plus users (they see a blurred
+     chart behind the paywall, no point computing 250 medians). */
+  if(CM_STATE.showMedian && userIsSubscribed()){
+    function drawRollingRef(metricKey, mapY, axisRng, col){
+      if(metricKey!=='pe' && metricKey!=='pb') return;
+      var series=cmRollingRef(CM_STATE.sector, metricKey);
+      if(!series.length) return;
+      ctx.save();
+      ctx.strokeStyle=col;
+      ctx.lineWidth=1.4;
+      ctx.setLineDash([5,4]);
+      ctx.globalAlpha=0.75;
+      ctx.lineJoin='round';
+      ctx.beginPath();
+      var moved=false;
+      for(var i=0;i<series.length;i++){
+        var p=series[i];
+        if(p.d < xMin || p.d > xMax) continue;          /* outside visible window */
+        if(p.v < axisRng[0] || p.v > axisRng[1]) continue; /* outside visible Y range */
+        var x=xPx(p.d), y=mapY(p.v);
+        if(!moved){ ctx.moveTo(x,y); moved=true; }
+        else      { ctx.lineTo(x,y); }
+      }
+      if(moved) ctx.stroke();
+      ctx.restore();
+    }
+    if(leftKey==='pe' || leftKey==='pb'){
+      drawRollingRef(leftKey, yLeftPx, leftRng, isLight?CM_METRICS[leftKey].cLight:CM_METRICS[leftKey].cDark);
+    }
+    if(rightKey==='pe' || rightKey==='pb'){
+      drawRollingRef(rightKey, yRightPx, rightRng, isLight?CM_METRICS[rightKey].cLight:CM_METRICS[rightKey].cDark);
+    }
+  }
+
+  /* Save params on the canvas so the hover handler can map mouse-X back to data points. */
+  CM_DRAW={
+    W:W, H:H, ml:ml, mr:mr, mt:mt, mb:mb, pw:pw, ph:ph,
+    xMin:xMin, xMax:xMax,
+    leftKey:leftKey, leftPts:leftPts, leftRng:leftRng,
+    rightKey:rightKey, rightPts:rightPts, rightRng:rightRng,
+    isLight:isLight
+  };
+
+  /* Border line on plot area */
+  ctx.strokeStyle=axisCol; ctx.lineWidth=1;
+  ctx.strokeRect(ml,mt,pw,ph);
+}
+
+/* ── Hover crosshair + tooltip ──
+   Uses CM_DRAW (set by cmDrawCanvas) to map mouse X to nearest data points
+   on each rendered series, then positions DOM overlay elements.
+   No canvas redraw needed — overlays are pure DOM. */
+function cmAttachHover(){
+  var wrap=document.getElementById('cm-canvas-wrap');
+  if(!wrap || wrap._hoverBound) return;
+  wrap._hoverBound=true;
+
+  var crosshair=document.getElementById('cm-crosshair');
+  var dotL    =document.getElementById('cm-dot-left');
+  var dotR    =document.getElementById('cm-dot-right');
+  var tooltip =document.getElementById('cm-tooltip');
+
+  function nearestPt(pts, t){
+    if(!pts || !pts.length) return null;
+    /* pts are sorted by date already (oldest → newest in the rows array). */
+    var lo=0, hi=pts.length-1;
+    while(lo<hi){
+      var mid=(lo+hi)>>1;
+      if(pts[mid].d<t) lo=mid+1; else hi=mid;
+    }
+    /* lo points to first pt.d >= t. Compare to lo-1 and pick whichever is closer. */
+    if(lo>0 && (pts[lo].d-t) > (t-pts[lo-1].d)) lo=lo-1;
+    return pts[lo];
+  }
+
+  function fmt(key, v){
+    if(v==null||isNaN(v)) return '—';
+    if(key==='cls'||key==='eps') return Math.round(v).toLocaleString('en-IN');
+    return v.toFixed(2);
+  }
+  function fmtDate(d){
+    var dd=new Date(d);
+    var mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return dd.getDate()+' '+mons[dd.getMonth()]+' '+dd.getFullYear();
+  }
+
+  function onMove(e){
+    if(!CM_DRAW) return;
+    /* Suppress hover overlay while user is dragging a zoom selection */
+    if(CM_DRAG && CM_DRAG.active){ onLeave(); return; }
+    var d=CM_DRAW;
+    var rect=wrap.getBoundingClientRect();
+    var mx=e.clientX-rect.left;
+    var my=e.clientY-rect.top;
+
+    /* Hide if mouse is outside the plot area */
+    if(mx<d.ml||mx>d.W-d.mr||my<d.mt||my>d.mt+d.ph){ onLeave(); return; }
+
+    /* Convert mouse-X to a target timestamp, then find nearest pt on each series */
+    var t=d.xMin + ((mx-d.ml)/d.pw)*(d.xMax-d.xMin);
+    var pL=nearestPt(d.leftPts,  t);
+    var pR=d.rightKey?nearestPt(d.rightPts, t):null;
+    if(!pL) { onLeave(); return; }
+
+    /* Use left series's date as the "anchor" date for crosshair X */
+    var anchorD=pL.d;
+    var anchorX=d.ml + ((anchorD-d.xMin)/(d.xMax-d.xMin))*d.pw;
+
+    /* Position crosshair line */
+    crosshair.style.display='block';
+    crosshair.style.left=anchorX+'px';
+    crosshair.style.top =d.mt+'px';
+    crosshair.style.height=d.ph+'px';
+
+    /* Left series dot */
+    var yL=d.mt+d.ph-((pL.v-d.leftRng[0])/(d.leftRng[1]-d.leftRng[0]))*d.ph;
+    var lCol=d.isLight?CM_METRICS[d.leftKey].cLight:CM_METRICS[d.leftKey].cDark;
+    dotL.style.display='block';
+    dotL.style.background=lCol;
+    dotL.style.left=anchorX+'px';
+    dotL.style.top =yL+'px';
+
+    /* Right series dot (optional) */
+    if(pR){
+      var yR=d.mt+d.ph-((pR.v-d.rightRng[0])/(d.rightRng[1]-d.rightRng[0]))*d.ph;
+      var rCol=d.isLight?CM_METRICS[d.rightKey].cLight:CM_METRICS[d.rightKey].cDark;
+      dotR.style.display='block';
+      dotR.style.background=rCol;
+      dotR.style.left=anchorX+'px';
+      dotR.style.top =yR+'px';
+    } else {
+      dotR.style.display='none';
+    }
+
+    /* Tooltip content */
+    var rows='<div class="cm-tt-row"><span class="cm-tt-label"><span class="cm-tt-dot" style="background:'+lCol+'"></span>'+CM_METRICS[d.leftKey].label+'</span><span class="cm-tt-val">'+fmt(d.leftKey,pL.v)+'</span></div>';
+    if(pR){
+      var rCol2=d.isLight?CM_METRICS[d.rightKey].cLight:CM_METRICS[d.rightKey].cDark;
+      rows+='<div class="cm-tt-row"><span class="cm-tt-label"><span class="cm-tt-dot" style="background:'+rCol2+'"></span>'+CM_METRICS[d.rightKey].label+'</span><span class="cm-tt-val">'+fmt(d.rightKey,pR.v)+'</span></div>';
+    }
+    tooltip.innerHTML='<div class="cm-tt-date">'+fmtDate(anchorD)+'</div>'+rows;
+
+    /* Position tooltip — prefer right of cursor, flip left near right edge */
+    tooltip.style.display='block';
+    var ttW=tooltip.offsetWidth, ttH=tooltip.offsetHeight;
+    var tx=anchorX+14;
+    if(tx+ttW>d.W-8) tx=anchorX-ttW-14;
+    var ty=my-ttH-12;
+    if(ty<d.mt+4) ty=my+18;
+    tooltip.style.left=tx+'px';
+    tooltip.style.top =ty+'px';
+  }
+
+  function onLeave(){
+    crosshair.style.display='none';
+    dotL.style.display='none';
+    dotR.style.display='none';
+    tooltip.style.display='none';
+  }
+
+  wrap.addEventListener('mousemove', onMove);
+  wrap.addEventListener('mouseleave', onLeave);
+}
+
+/* ── Drag-to-zoom ──
+   Click-and-drag horizontally on the chart to zoom into that date range.
+   - Direction-agnostic (left→right or right→left both work)
+   - 5px threshold so a click doesn't accidentally trigger a zoom
+   - Double-click anywhere on the chart resets to default 3Y window
+   - Hover overlay is suppressed while dragging (see onMove guard)
+   - Touch-friendly: pointer events cover mouse + touch + pen */
+function cmAttachDragZoom(){
+  var wrap=document.getElementById('cm-canvas-wrap');
+  if(!wrap || wrap._dragBound) return;
+  wrap._dragBound=true;
+
+  var rectEl=document.getElementById('cm-drag-rect');
+  var THRESHOLD=5; /* px the user must drag before we start showing the rectangle */
+
+  function getLocalX(e){
+    var r=wrap.getBoundingClientRect();
+    var clientX=(e.touches&&e.touches[0])?e.touches[0].clientX:e.clientX;
+    return clientX - r.left;
+  }
+  function getLocalY(e){
+    var r=wrap.getBoundingClientRect();
+    var clientY=(e.touches&&e.touches[0])?e.touches[0].clientY:e.clientY;
+    return clientY - r.top;
+  }
+  function clampX(x){
+    if(!CM_DRAW) return x;
+    return Math.max(CM_DRAW.ml, Math.min(CM_DRAW.W-CM_DRAW.mr, x));
+  }
+  function pxToDate(x){
+    var d=CM_DRAW;
+    var t=d.xMin + ((x-d.ml)/d.pw)*(d.xMax-d.xMin);
+    return new Date(t);
+  }
+  function showRect(){
+    if(!CM_DRAW || !CM_DRAG) return;
+    var d=CM_DRAW;
+    var x1=clampX(CM_DRAG.startX), x2=clampX(CM_DRAG.currentX);
+    var lo=Math.min(x1,x2), hi=Math.max(x1,x2);
+    rectEl.style.display='block';
+    rectEl.style.left  = lo+'px';
+    rectEl.style.width = (hi-lo)+'px';
+    rectEl.style.top   = d.mt+'px';
+    rectEl.style.height= d.ph+'px';
+  }
+  function hideRect(){
+    rectEl.style.display='none';
+    rectEl.style.width='0';
+  }
+
+  function onDown(e){
+    if(!CM_DRAW) return;
+    var x=getLocalX(e), y=getLocalY(e);
+    var d=CM_DRAW;
+    /* Only start drag if the press began inside the plot area */
+    if(x<d.ml || x>d.W-d.mr || y<d.mt || y>d.mt+d.ph) return;
+    CM_DRAG={ active:false, startX:x, currentX:x };
+    e.preventDefault(); /* stop text-selection while dragging */
+  }
+
+  function onUp(e){
+    if(!CM_DRAG){ return; }
+    var wasActive=CM_DRAG.active;
+    var startX=CM_DRAG.startX, endX=CM_DRAG.currentX;
+    CM_DRAG=null;
+    hideRect();
+    wrap.classList.remove('dragging');
+    if(!wasActive) return; /* below threshold — treated as click, no zoom */
+
+    /* Map pixel range to dates and apply as custom window */
+    var lo=Math.min(startX,endX), hi=Math.max(startX,endX);
+    lo=clampX(lo); hi=clampX(hi);
+    if((hi-lo)<THRESHOLD) return;
+    var fromDate=pxToDate(lo), toDate=pxToDate(hi);
+
+    /* Reject if the selected window holds <2 data points to avoid empty charts */
+    var rows=dataCache[CM_STATE.sector]||[];
+    var f=fromDate.getTime(), t=toDate.getTime();
+    var ptsInRange=0;
+    for(var i=0;i<rows.length;i++){
+      var rd=new Date(rows[i].date).getTime();
+      if(rd>=f && rd<=t){ ptsInRange++; if(ptsInRange>=2) break; }
+    }
+    if(ptsInRange<2) return;
+
+    CM_STATE.from=fromDate;
+    CM_STATE.to  =toDate;
+    CM_STATE.range=null; /* deactivate range pills */
+    cmRenderControls();
+    cmRenderChart();
+  }
+
+  function onDrag(e){
+    if(!CM_DRAG) return;
+    var x=getLocalX(e);
+    CM_DRAG.currentX=x;
+    if(!CM_DRAG.active && Math.abs(x-CM_DRAG.startX)>=THRESHOLD){
+      CM_DRAG.active=true;
+      wrap.classList.add('dragging');
+      /* Hide hover overlay now that drag is starting */
+      document.getElementById('cm-crosshair').style.display='none';
+      document.getElementById('cm-dot-left').style.display='none';
+      document.getElementById('cm-dot-right').style.display='none';
+      document.getElementById('cm-tooltip').style.display='none';
+    }
+    if(CM_DRAG.active){ showRect(); e.preventDefault(); }
+  }
+
+  /* Double-click to reset zoom */
+  function onDblClick(){
+    CM_STATE.from=null;
+    CM_STATE.to=null;
+    CM_STATE.range='3Y';
+    cmRenderControls();
+    cmRenderChart();
+  }
+
+  /* Mouse */
+  wrap.addEventListener('mousedown', onDown);
+  document.addEventListener('mousemove', onDrag); /* document-level so drag continues outside wrap */
+  document.addEventListener('mouseup',   onUp);
+  /* Touch */
+  wrap.addEventListener('touchstart', onDown, {passive:false});
+  document.addEventListener('touchmove',  onDrag, {passive:false});
+  document.addEventListener('touchend',   onUp);
+  /* Reset */
+  wrap.addEventListener('dblclick', onDblClick);
+}
+
+/* Re-draw on resize so canvas stays sharp */
+window.addEventListener('resize',function(){
+  var m=document.getElementById('chart-modal');
+  if(m&&m.classList.contains('open')) cmRenderChart();
+});
+
+
 function showPage(p){
   document.getElementById('page-dashboard').style.display=p==='dashboard'?'':'none';
   document.getElementById('page-bt').style.display=p==='backtest'?'':'none';
@@ -4533,7 +5389,7 @@ function openPlusPane(){
   var pane=document.getElementById('plus-pane');
   var body=document.getElementById('pp-body');
   if(!pane||!body) return;
-  body.innerHTML = userIsSubscribed() ? buildPlusPaidHTML() : buildPlusFreeHTML();
+  body.innerHTML = '<div class="pp-body-inner">'+(userIsSubscribed() ? buildPlusPaidHTML() : buildPlusFreeHTML())+'</div>';
   pane.classList.add('open');
   document.body.style.overflow='hidden';
   /* spawn particles */
@@ -4645,6 +5501,46 @@ function buildPlusFreeHTML(){
   h += "<tr class='rr'><td>11 Dec 2023</td><td>20,305</td><td class='sep'>19,880</td><td style='color:var(--vexp-c);font-weight:700'>&#8722;2.1%</td><td class='alpha-n hl sep'>&#8722;10.8%</td></tr>";
   h += "</tbody></table>";
   h += "</div></div></div>";
+  /* FEATURE 4 — EXPANDED CHARTS */
+  h += "<div class='pp-feature rev' id='pp-feat-4'>";
+  h += "<div>";
+  h += "<div class='pp-feat-num'>04 &middot; Expanded Charts</div>";
+  h += "<div class='pp-feat-title'>Full-screen, full history</div>";
+  h += "<div class='pp-feat-desc'>Click any sector&#39;s sparkline to open a full-window chart. Overlay any two of P/E, P/B, EPS, or Price on dual axes &#8212; pick your time window with one tap or drag to zoom into a custom range.</div>";
+  h += "<ul class='pp-bullets'>";
+  h += "<li><strong>Hover for exact values</strong> on any date</li>";
+  h += "<li><strong>Drag to zoom</strong> into a custom date range</li>";
+  h += "<li><strong>Rolling weighted median</strong> overlay &#8212; not a flat line, the actual reference at every historical date</li>";
+  h += "<li>Ranges from <strong>1W to All</strong>, plus custom date pickers</li>";
+  h += "</ul></div>";
+  h += "<div class='pp-mock'>";
+  h += "<div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div>";
+  h += "<div class='pp-mock-body' style='padding:10px 9px'>";
+  h += "<div style='display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap'>";
+  h += "<span style='padding:3px 7px;border-radius:5px;background:rgba(56,189,248,.15);color:#38bdf8;font-family:var(--mono);font-size:.46rem;font-weight:700'>&#9679; P/E</span>";
+  h += "<span style='padding:3px 7px;border-radius:5px;background:rgba(52,211,153,.15);color:#34d399;font-family:var(--mono);font-size:.46rem;font-weight:700'>&#9679; EPS</span>";
+  h += "<span style='padding:3px 7px;border-radius:5px;background:#3b82f6;color:#fff;font-family:var(--mono);font-size:.46rem;font-weight:700'>3Y</span>";
+  h += "</div>";
+  h += "<svg viewBox='0 0 280 110' width='100%' height='110' preserveAspectRatio='none' style='display:block;background:rgba(0,0,0,.18);border-radius:6px'>";
+  h += "<line x1='0' y1='27.5' x2='280' y2='27.5' stroke='rgba(255,255,255,.05)' stroke-width='.5'/>";
+  h += "<line x1='0' y1='55' x2='280' y2='55' stroke='rgba(255,255,255,.05)' stroke-width='.5'/>";
+  h += "<line x1='0' y1='82.5' x2='280' y2='82.5' stroke='rgba(255,255,255,.05)' stroke-width='.5'/>";
+  /* P/E series */
+  h += "<path d='M0,40 C28,38 50,55 75,52 C105,48 130,68 160,62 C190,55 215,40 245,35 C265,32 280,28 280,28' fill='none' stroke='#38bdf8' stroke-width='1.6' vector-effect='non-scaling-stroke'/>";
+  /* EPS series */
+  h += "<path d='M0,75 C28,72 50,68 75,64 C105,58 130,55 160,48 C190,42 215,38 245,34 C265,32 280,30 280,30' fill='none' stroke='#34d399' stroke-width='1.4' opacity='.85' vector-effect='non-scaling-stroke'/>";
+  /* Rolling median dashed */
+  h += "<path d='M0,52 C28,52 50,50 75,49 C105,48 130,46 160,46 C190,45 215,46 245,46 C265,46 280,46 280,46' fill='none' stroke='#38bdf8' stroke-width='1' stroke-dasharray='4,3' opacity='.6' vector-effect='non-scaling-stroke'/>";
+  /* Hover crosshair + dot */
+  h += "<line x1='200' y1='5' x2='200' y2='105' stroke='rgba(255,255,255,.25)' stroke-width='.7' vector-effect='non-scaling-stroke'/>";
+  h += "<circle cx='200' cy='52' r='3' fill='#38bdf8' stroke='#0b0d12' stroke-width='1.2'/>";
+  h += "<circle cx='200' cy='40' r='3' fill='#34d399' stroke='#0b0d12' stroke-width='1.2'/>";
+  h += "</svg>";
+  h += "<div style='margin-top:8px;padding:6px 9px;border-radius:6px;background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.08);font-family:var(--mono);font-size:.46rem;display:flex;justify-content:space-between;gap:14px'>";
+  h += "<span style='color:var(--ghost)'>14 NOV 2023</span>";
+  h += "<span><span style='color:#38bdf8'>P/E</span> <strong style='color:#fff'>17.4</strong> &middot; <span style='color:#34d399'>EPS</span> <strong style='color:#fff'>3,206</strong></span>";
+  h += "</div>";
+  h += "</div></div></div>";
   h += "<hr class='pp-divider'>";
   h += "<div class='pp-pricing' id='pp-pricing'>";
   h += "<div class='pp-pricing-card'>";
@@ -4654,6 +5550,7 @@ function buildPlusFreeHTML(){
   h += "<li><strong>Email alerts</strong> on any sector</li>";
   h += "<li><strong>AI summaries</strong> powered by Claude &#8212; 30/day</li>";
   h += "<li><strong>Alpha vs Nifty 50</strong> in every backtest</li>";
+  h += "<li><strong>Expanded charts</strong> &#8212; multi-metric, drag-to-zoom, rolling median</li>";
   h += "<li>All future Plus features, automatically</li>";
   h += "</ul>";
   h += "<button class='pp-btn-primary' style='width:100%;padding:13px' onclick='authSignIn();closePlusPane()'>Sign in with Google &#8594;</button>";
@@ -4685,6 +5582,27 @@ function buildPlusPaidHTML(){
   h += "<div><div class='pp-feat-num' style='color:var(--vchp-c)'>&#10003; Active</div><div class='pp-feat-title'>Alpha vs Nifty 50</div><div class='pp-feat-desc'>Every backtest row shows how much the sector beat or lagged the Nifty 50 over the same window.</div></div>";
   h += "<div class='pp-mock'><div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div><div class='pp-mock-body' style='padding:10px 9px'><table class='ppm-tbl'><thead><tr><th rowspan='2'>Date</th><th rowspan='2'>Buy</th><th colspan='3' class='grp'>Outcome &middot; 1Yr</th></tr><tr><th class='sep'>Sell</th><th>CAGR</th><th class='hl sep' style='color:#a5b4fc'>vs N50</th></tr></thead><tbody><tr class='rg'><td>14 Mar 2020</td><td>8,142</td><td class='sep'>13,540</td><td style='color:var(--vchp-c);font-weight:700'>+66.3%</td><td class='alpha-p hl sep'>+42.1%</td></tr><tr class='rg'><td>22 Jun 2022</td><td>14,891</td><td class='sep'>21,230</td><td style='color:var(--vchp-c);font-weight:700'>+42.6%</td><td class='alpha-p hl sep'>+24.3%</td></tr><tr class='rr'><td>11 Dec 2023</td><td>20,305</td><td class='sep'>19,880</td><td style='color:var(--vexp-c);font-weight:700'>&#8722;2.1%</td><td class='alpha-n hl sep'>&#8722;10.8%</td></tr></tbody></table></div></div>";
   h += "</div>";
+  h += "<div class='pp-feature rev' id='pp-feat-4' style='margin-top:8px'>";
+  h += "<div><div class='pp-feat-num' style='color:var(--vchp-c)'>&#10003; Active</div><div class='pp-feat-title'>Expanded Charts</div><div class='pp-feat-desc'>Click any sector card&#39;s sparkline to open the full-window chart with multi-metric overlay, drag-to-zoom, hover values, and rolling-median reference.</div></div>";
+  h += "<div class='pp-mock'><div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div><div class='pp-mock-body' style='padding:10px 9px'>";
+  h += "<div style='display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap'>";
+  h += "<span style='padding:3px 7px;border-radius:5px;background:rgba(56,189,248,.15);color:#38bdf8;font-family:var(--mono);font-size:.46rem;font-weight:700'>&#9679; P/E</span>";
+  h += "<span style='padding:3px 7px;border-radius:5px;background:rgba(52,211,153,.15);color:#34d399;font-family:var(--mono);font-size:.46rem;font-weight:700'>&#9679; EPS</span>";
+  h += "<span style='padding:3px 7px;border-radius:5px;background:#3b82f6;color:#fff;font-family:var(--mono);font-size:.46rem;font-weight:700'>3Y</span>";
+  h += "</div>";
+  h += "<svg viewBox='0 0 280 110' width='100%' height='110' preserveAspectRatio='none' style='display:block;background:rgba(0,0,0,.18);border-radius:6px'>";
+  h += "<line x1='0' y1='27.5' x2='280' y2='27.5' stroke='rgba(255,255,255,.05)' stroke-width='.5'/>";
+  h += "<line x1='0' y1='55' x2='280' y2='55' stroke='rgba(255,255,255,.05)' stroke-width='.5'/>";
+  h += "<line x1='0' y1='82.5' x2='280' y2='82.5' stroke='rgba(255,255,255,.05)' stroke-width='.5'/>";
+  h += "<path d='M0,40 C28,38 50,55 75,52 C105,48 130,68 160,62 C190,55 215,40 245,35 C265,32 280,28 280,28' fill='none' stroke='#38bdf8' stroke-width='1.6' vector-effect='non-scaling-stroke'/>";
+  h += "<path d='M0,75 C28,72 50,68 75,64 C105,58 130,55 160,48 C190,42 215,38 245,34 C265,32 280,30 280,30' fill='none' stroke='#34d399' stroke-width='1.4' opacity='.85' vector-effect='non-scaling-stroke'/>";
+  h += "<path d='M0,52 C28,52 50,50 75,49 C105,48 130,46 160,46 C190,45 215,46 245,46 C265,46 280,46 280,46' fill='none' stroke='#38bdf8' stroke-width='1' stroke-dasharray='4,3' opacity='.6' vector-effect='non-scaling-stroke'/>";
+  h += "<line x1='200' y1='5' x2='200' y2='105' stroke='rgba(255,255,255,.25)' stroke-width='.7' vector-effect='non-scaling-stroke'/>";
+  h += "<circle cx='200' cy='52' r='3' fill='#38bdf8' stroke='#0b0d12' stroke-width='1.2'/>";
+  h += "<circle cx='200' cy='40' r='3' fill='#34d399' stroke='#0b0d12' stroke-width='1.2'/>";
+  h += "</svg>";
+  h += "<div style='margin-top:8px;padding:6px 9px;border-radius:6px;background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.08);font-family:var(--mono);font-size:.46rem;display:flex;justify-content:space-between;gap:14px'><span style='color:var(--ghost)'>14 NOV 2023</span><span><span style='color:#38bdf8'>P/E</span> <strong style='color:#fff'>17.4</strong> &middot; <span style='color:#34d399'>EPS</span> <strong style='color:#fff'>3,206</strong></span></div>";
+  h += "</div></div></div>";
   return h;
 }
 
@@ -4719,7 +5637,7 @@ async function ppStartUpgrade(){
         if(v.ok){
           subscriptionState='active';
           renderSubscriptionUI();
-          document.getElementById('pp-body').innerHTML=buildPlusPaidHTML();
+          document.getElementById('pp-body').innerHTML='<div class="pp-body-inner">'+buildPlusPaidHTML()+'</div>';
           setTimeout(function(){
             document.querySelectorAll('#pp-body .pp-feature').forEach(function(el){ el.classList.add('visible'); });
           },100);
