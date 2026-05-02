@@ -5463,7 +5463,19 @@ async function loadAISummary(sectorName, st){
       else if(bOk)        { btField='pb'; btPctRef=pb; }
     }
     /* Only run backtest if currently at-or-below reference (cheap or neutral) */
-    if(btField && btPctRef<=100 && dataCache[sectorName] && dataCache['Nifty 50']){
+    if(btField && btPctRef<=100 && dataCache[sectorName]){
+      /* Nifty 50 is needed for the alpha portion of the backtest. The Backtest
+         page lazy-loads it on first Run, so on a fresh dashboard tab it's
+         empty when the user opens AI summary directly. Fetch it here on
+         demand. If the fetch fails, alpha will simply be null. */
+      if(!dataCache['Nifty 50']){
+        try{
+          dataCache['Nifty 50']=normalise(await fetchWithRetry(WORKER_BASE+'/sector/'+encodeURIComponent('Nifty 50')));
+        }catch(e){
+          console.warn('[ai-summary] Nifty 50 fetch failed:',e);
+          dataCache['Nifty 50']=[];
+        }
+      }
       var thr=Math.max(50, Math.min(100, Math.round(btPctRef))) / 100;  /* clamp 50%–100%, in fraction form */
       var stats=btComputeHeadless({
         sectorName  : sectorName,
