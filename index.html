@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "54b7012add694a9f98e8e37d89605df2"}'></script><!-- End Cloudflare Web Analytics -->
 <style>
 :root{
@@ -4802,12 +4802,12 @@ function toggleTheme(){
 })();
 initPlaceholders();
 initGridEvents();
-/* Await live feed first so liveCache is populated before any sector
-   fetches complete — avoids race where computeStats runs without live data. */
-(async function(){
-  await fetchLiveData().catch(function(){});
-  loadAllStaggered();
-})();
+/* Fire live feed and sector fetches in parallel. computeStats already
+   handles a missing live entry (liveCache[sec.name]||null), and renderCard
+   patches in live values when fetchLiveData resolves. Awaiting live first
+   would otherwise cost ~1-3s before any sector even starts loading. */
+fetchLiveData().catch(function(){});
+loadAllStaggered();
 /* Auto-refresh live data every 2 minutes.
    Worker caches NSE response for 60s, so users are at most ~3 min behind. */
 setInterval(function(){ fetchLiveData().catch(function(){}); }, 2 * 60 * 1000);
