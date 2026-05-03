@@ -870,6 +870,13 @@ html.light .cm-header{background:rgba(238,241,248,.96)}
 /* Dashed-line indicator for the Median toggle */
 .cm-checkbox-dash{display:inline-block;width:14px;height:0;flex-shrink:0;border-top:2px dashed var(--ghost);transition:border-color .12s}
 .cm-checkbox.checked .cm-checkbox-dash{border-top-color:var(--txt)}
+
+/* Three-line indicator for the Median Bands toggle.
+   Uses inline SVG so the dash patterns mirror what's drawn on the chart canvas:
+   row 1 = dotted (3yr), row 2 = small dashes (5yr), row 3 = bigger dashes (10yr). */
+.cm-checkbox-bands{display:inline-block;width:14px;height:11px;flex-shrink:0;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 11' width='14' height='11'><line x1='0' y1='2'  x2='14' y2='2'  stroke='%23999' stroke-width='1.4' stroke-dasharray='1,2'/><line x1='0' y1='5.5' x2='14' y2='5.5' stroke='%23999' stroke-width='1.4' stroke-dasharray='3,2'/><line x1='0' y1='9'  x2='14' y2='9'  stroke='%23999' stroke-width='1.4' stroke-dasharray='5,3'/></svg>");background-repeat:no-repeat;background-position:center;transition:filter .12s,opacity .12s;opacity:.65}
+.cm-checkbox.checked .cm-checkbox-bands{opacity:1;filter:brightness(1.5)}
+
 .cm-checkbox.disabled{opacity:.3;cursor:not-allowed}
 .cm-checkbox.disabled:hover{opacity:.3;background:transparent}
 
@@ -1667,7 +1674,12 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
         <li><strong>Pick a time window</strong> — quick pills for 1W, 1M, 3M, 1Y, 3Y, 5Y, All. Or use the date pickers to set any custom range. Pickers always show the dates of whatever's currently displayed, even when you got there by clicking a pill.</li>
         <li><strong>Drag to zoom</strong> — click and drag horizontally on the chart to zoom into that exact slice. Double-click anywhere to reset to the default 3Y view.</li>
         <li><strong>Hover for exact values</strong> — move your mouse over the chart to see a vertical crosshair, dot markers on each visible series, and a tooltip showing the date and the exact value of each metric on that day.</li>
-        <li><strong>Rolling weighted-median overlay</strong> — toggle the Median checkbox to see a dashed reference curve. Unlike a flat horizontal line, this curve recomputes the 30/60/10 weighted median (3yr/5yr/10yr) at every historical date — so you see how the "typical" valuation level evolved over time, not just where it sits today.</li>
+        <li><strong>Rolling median overlays</strong> — two toggles, mutually exclusive (turning one on turns the other off; both can be off):
+          <ul style="margin-top:4px">
+            <li><strong>Median</strong> — single dashed curve at the weighted reference (30% × 3yr + 60% × 5yr + 10% × 10yr median). At every historical date this is recomputed using only data available before that date, so you see how the "typical" valuation level evolved over time. Same logic the backtest uses.</li>
+            <li><strong>Median bands</strong> — three separate rolling curves for 3yr, 5yr, and 10yr medians, each with a distinct dash pattern (dotted / small dash / big dash). Useful for spotting whether the multiple has been expanding, compressing, or stable over time. If the 3yr line sits well above the 10yr, the sector has been valued more richly recently than its long-term norm.</li>
+          </ul>
+        </li>
       </ul>
     </div>
 
@@ -3266,17 +3278,17 @@ function _btCompute(){
     if((i % STRIDE)!==0 && !isLastRow) continue;
 
     /* weighted reference — 30% × 3y + 60% × 5y + 10% × 10y.
-       Winsorisation skipped inside the backtest inner loop for speed; median
-       is already robust to individual outliers. */
+       Each window is winsorised at 1%/99% before the median so backtest
+       references match what the cards display (computeStats does the same). */
     let peRef=NaN, pbRef=NaN;
     if(usePE){
       const h3sl=data.slice(h3s,i+1), h5sl=data.slice(h5s,i+1), h10sl=data.slice(h10s,i+1);
-      const pe3=median(vv(h3sl,'pe')),pe5=median(vv(h5sl,'pe')),pe10=median(vv(h10sl,'pe'));
+      const pe3=median(winsorise(vv(h3sl,'pe'))),pe5=median(winsorise(vv(h5sl,'pe'))),pe10=median(winsorise(vv(h10sl,'pe')));
       peRef=weightedRef(pe3,pe5,pe10);
     }
     if(usePB){
       const h3slb=data.slice(h3s,i+1), h5slb=data.slice(h5s,i+1), h10slb=data.slice(h10s,i+1);
-      const pb3=median(vv(h3slb,'pb')),pb5=median(vv(h5slb,'pb')),pb10=median(vv(h10slb,'pb'));
+      const pb3=median(winsorise(vv(h3slb,'pb'))),pb5=median(winsorise(vv(h5slb,'pb'))),pb10=median(winsorise(vv(h10slb,'pb')));
       pbRef=weightedRef(pb3,pb5,pb10);
     }
 
@@ -3424,12 +3436,13 @@ function btComputeHeadless(opts){
     var price=row.price; if(!price||isNaN(price)||price<=0) continue;
     var cur=row[field];  if(!cur||isNaN(cur)||cur<=0) continue;
 
-    /* Compute weighted ref at this date (no winsorise, matching _btCompute) */
+    /* Compute weighted ref at this date.
+       Each window winsorised at 1%/99% before median, matching computeStats and _btCompute. */
     var w3=[],w5=[],w10=[];
     for(var k=h3s;  k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w3.push(v); }
     for(var k=h5s;  k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w5.push(v); }
     for(var k=h10s; k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w10.push(v); }
-    var ref=weightedRef(median(w3),median(w5),median(w10));
+    var ref=weightedRef(median(winsorise(w3)),median(winsorise(w5)),median(winsorise(w10)));
     if(isNaN(ref)||ref<=0) continue;
 
     var ratio=cur/ref;
@@ -3967,7 +3980,7 @@ document.addEventListener('keydown',function(e){
    - Default range 3Y
    - Dual Y-axis on canvas
 ════════════════════════════════════════ */
-var CM_STATE={sector:null,metrics:[],range:'3Y',from:null,to:null,showMedian:true};
+var CM_STATE={sector:null,metrics:[],range:'3Y',from:null,to:null,showMedian:true,showBands:false};
 var CM_DRAW=null;  /* set by cmDrawCanvas, consumed by hover handler */
 var CM_DRAG=null;  /* { active, startX, currentX } during a zoom drag */
 
@@ -4001,7 +4014,8 @@ function openChartModal(sectorName){
   CM_STATE.range='3Y';
   CM_STATE.from=null;
   CM_STATE.to=null;
-  CM_STATE.showMedian=true;
+  CM_STATE.showMedian=false;
+  CM_STATE.showBands=false;
 
   document.getElementById('cm-title').textContent='Nifty '+sec.name;
   document.getElementById('cm-color-bar').style.background=sec.color;
@@ -4013,7 +4027,28 @@ function openChartModal(sectorName){
 
   cmRenderControls();
   /* Defer chart render to next frame so canvas has been laid out. */
-  requestAnimationFrame(function(){ cmRenderChart(); cmAttachHover(); cmAttachDragZoom(); });
+  requestAnimationFrame(function(){
+    cmRenderChart();
+    cmAttachHover();
+    cmAttachDragZoom();
+    /* Kick off idle-time prefetch of rolling medians so toggling Median or
+       Median Bands later feels instant. Both PE and PB are prefetched
+       regardless of which is currently visible — covers metric switches too.
+       Plus-gated to match what the toggles actually do. */
+    if(userIsSubscribed()) cmPrefetchMedians(sectorName);
+  });
+}
+
+/* Compute and cache cmRollingRef for both PE and PB during browser idle time.
+   Uses requestIdleCallback when available (modern browsers), falls back to
+   setTimeout. Idempotent — cmRollingRef itself caches, so re-calling is free. */
+function cmPrefetchMedians(sectorName){
+  var rows=dataCache[sectorName];
+  if(!rows || !rows.length) return;
+  var schedule=window.requestIdleCallback || function(cb){return setTimeout(cb,200);};
+  /* Two passes — second deferred slightly so the first doesn't starve the next idle slot. */
+  schedule(function(){ try{ cmRollingRef(sectorName, 'pe'); }catch(e){} });
+  schedule(function(){ try{ cmRollingRef(sectorName, 'pb'); }catch(e){} });
 }
 
 function closeChartModal(){
@@ -4062,19 +4097,31 @@ function cmRenderControls(){
     });
   });
 
-  /* Median toggle — only meaningful when PE or PB is among the visible metrics.
-     Visually disabled (no click effect) otherwise. */
+  /* Median + Median Bands toggles — mutually exclusive (clicking one off-toggles the other).
+     Both meaningful only when PE or PB is among the visible metrics; visually disabled otherwise.
+     Both can be off — produces a clean chart with no median context. */
   var oRow=document.getElementById('cm-overlay');
   var medApplies=(CM_STATE.metrics.indexOf('pe')>=0)||(CM_STATE.metrics.indexOf('pb')>=0);
-  var medChecked=CM_STATE.showMedian && medApplies;
+  var medChecked   = CM_STATE.showMedian && medApplies;
+  var bandsChecked = CM_STATE.showBands  && medApplies;
   oRow.innerHTML=
-    '<label class="cm-checkbox'+(medChecked?' checked':'')+(medApplies?'':' disabled')+'" data-overlay="median" title="Weighted reference: 30% × 3yr + 60% × 5yr + 10% × 10yr median">'
-    +'<span class="cm-checkbox-dash"></span>Median'
+    '<label class="cm-checkbox'+(medChecked?' checked':'')+(medApplies?'':' disabled')+'" data-overlay="median" title="Rolling weighted reference: 30% × 3yr + 60% × 5yr + 10% × 10yr median">'
+      +'<span class="cm-checkbox-dash"></span>Median'
+    +'</label>'
+    +'<label class="cm-checkbox'+(bandsChecked?' checked':'')+(medApplies?'':' disabled')+'" data-overlay="bands" title="Rolling 3yr · 5yr · 10yr medians shown separately — let the trajectory tell the story">'
+      +'<span class="cm-checkbox-bands"></span>Median bands'
     +'</label>';
-  oRow.querySelectorAll('[data-overlay="median"]').forEach(function(el){
+  oRow.querySelectorAll('[data-overlay]').forEach(function(el){
     el.addEventListener('click',function(){
       if(!medApplies) return;
-      CM_STATE.showMedian=!CM_STATE.showMedian;
+      var which=this.dataset.overlay;
+      if(which==='median'){
+        CM_STATE.showMedian=!CM_STATE.showMedian;
+        if(CM_STATE.showMedian) CM_STATE.showBands=false;  /* mutex */
+      } else {
+        CM_STATE.showBands=!CM_STATE.showBands;
+        if(CM_STATE.showBands) CM_STATE.showMedian=false;  /* mutex */
+      }
       cmRenderControls();
       cmRenderChart();
     });
@@ -4183,11 +4230,13 @@ function cmRollingRef(sectorName, field){
   var rows=dataCache[sectorName]||[];
   if(!rows.length){ CM_REF_CACHE[key]=[]; return []; }
 
-  /* Pre-extract timestamps + values, dropping rows where the metric is missing. */
+  /* Pre-extract timestamps + values. Drop rows where the metric is missing,
+     non-finite, or non-positive. Negative P/E (possible when a sector has
+     negative trailing earnings) would skew the median and shouldn't enter the pool. */
   var pts=[];
   for(var i=0;i<rows.length;i++){
     var v=rows[i][field];
-    if(v==null || isNaN(v)) continue;
+    if(v==null || isNaN(v) || !isFinite(v) || v<=0) continue;
     pts.push({ t:new Date(rows[i].date).getTime(), v:+v });
   }
   if(pts.length<30){ CM_REF_CACHE[key]=[]; return []; }
@@ -4220,11 +4269,18 @@ function cmRollingRef(sectorName, field){
     for(var k=h5s;  k<=i; k++) w5.push(pts[k].v);
     for(var k=h10s; k<=i; k++) w10.push(pts[k].v);
 
-    var m3 =w3.length ?median(w3) :NaN;
-    var m5 =w5.length ?median(w5) :NaN;
-    var m10=w10.length?median(w10):NaN;
+    /* Winsorise each window at 1%/99% before taking the median, matching
+       computeStats and the backtest paths so all "weighted reference"
+       computations across the app produce identical numbers. */
+    var m3 =w3.length ?median(winsorise(w3)) :NaN;
+    var m5 =w5.length ?median(winsorise(w5)) :NaN;
+    var m10=w10.length?median(winsorise(w10)):NaN;
     var ref=weightedRef(m3,m5,m10);
-    if(!isNaN(ref)) out.push({d:T, v:ref});
+    /* Skip points where the weighted ref couldn't be computed at all
+       (all three windows empty). m3/m5/m10 may individually still be valid
+       and used by Median Bands toggle, so check those before pushing too. */
+    if(isNaN(ref) && isNaN(m3) && isNaN(m5) && isNaN(m10)) continue;
+    out.push({d:T, weighted:ref, m3:m3, m5:m5, m10:m10});
   }
   CM_REF_CACHE[key]=out;
   return out;
@@ -4380,42 +4436,62 @@ function cmDrawCanvas(canvas, rows){
   drawLine(leftPts,  isLight?CM_METRICS[leftKey].cLight :CM_METRICS[leftKey].cDark,  yLeftPx, 1.8);
   if(rightKey) drawLine(rightPts, isLight?CM_METRICS[rightKey].cLight:CM_METRICS[rightKey].cDark, yRightPx, 1.6);
 
-  /* ── Weighted-median overlay — rolling reference curve.
-     Drawn for PE and/or PB if visible AND the user has Median toggled on.
-     The curve is the 30/60/10 weighted blend of 3y/5y/10y medians, computed
-     at each historical date using sliding windows ending at that date.
-     Plus-gated: skipped entirely for non-Plus users (they see a blurred
-     chart behind the paywall, no point computing 250 medians). */
-  if(CM_STATE.showMedian && userIsSubscribed()){
-    function drawRollingRef(metricKey, mapY, axisRng, col){
+  /* ── Median overlays — Plus-gated, mutually exclusive ──
+     showMedian: single rolling weighted reference (30/60/10 blend) — solid dashed
+     showBands:  three rolling medians (3yr · 5yr · 10yr) — different dash patterns
+     Both read from the same cache (cmRollingRef returns all four per stride point). */
+  if((CM_STATE.showMedian || CM_STATE.showBands) && userIsSubscribed()){
+    /* Helper: draw a single rolling curve. `field` selects the cached value:
+       'weighted' | 'm3' | 'm5' | 'm10'. dashPattern is a Canvas setLineDash array. */
+    function drawMedianCurve(metricKey, field, mapY, axisRng, col, dashPattern, lineWidth){
       if(metricKey!=='pe' && metricKey!=='pb') return;
       var series=cmRollingRef(CM_STATE.sector, metricKey);
       if(!series.length) return;
       ctx.save();
       ctx.strokeStyle=col;
-      ctx.lineWidth=1.4;
-      ctx.setLineDash([5,4]);
-      ctx.globalAlpha=0.75;
+      ctx.lineWidth=lineWidth||1.4;
+      ctx.setLineDash(dashPattern);
+      ctx.globalAlpha=0.85;
       ctx.lineJoin='round';
+      ctx.lineCap='round';
       ctx.beginPath();
       var moved=false;
       for(var i=0;i<series.length;i++){
         var p=series[i];
+        var v=p[field];
+        if(v==null || isNaN(v)) continue;
         if(p.d < xMin || p.d > xMax) continue;          /* outside visible window */
-        if(p.v < axisRng[0] || p.v > axisRng[1]) continue; /* outside visible Y range */
-        var x=xPx(p.d), y=mapY(p.v);
+        if(v < axisRng[0] || v > axisRng[1]) continue;  /* outside visible Y range */
+        var x=xPx(p.d), y=mapY(v);
         if(!moved){ ctx.moveTo(x,y); moved=true; }
         else      { ctx.lineTo(x,y); }
       }
       if(moved) ctx.stroke();
       ctx.restore();
     }
-    if(leftKey==='pe' || leftKey==='pb'){
-      drawRollingRef(leftKey, yLeftPx, leftRng, isLight?CM_METRICS[leftKey].cLight:CM_METRICS[leftKey].cDark);
+    /* Dash patterns mirror the checkbox icon: dotted (3yr) / small-dash (5yr) / big-dash (10yr).
+       The Median (weighted) toggle uses a moderate dash pattern distinct from all three. */
+    var DASH_WEIGHTED=[6,4];
+    var DASH_3YR     =[1,4];   /* dotted */
+    var DASH_5YR     =[5,4];   /* small dashes */
+    var DASH_10YR    =[12,5];  /* bigger dashes */
+
+    function drawForMetric(metricKey, mapY, axisRng){
+      if(metricKey!=='pe' && metricKey!=='pb') return;
+      var col=document.documentElement.classList.contains('light')
+        ? CM_METRICS[metricKey].cLight : CM_METRICS[metricKey].cDark;
+      if(CM_STATE.showMedian){
+        drawMedianCurve(metricKey, 'weighted', mapY, axisRng, col, DASH_WEIGHTED, 1.4);
+      } else if(CM_STATE.showBands){
+        /* Order matters for legibility — draw 10yr first (faintest visual weight via
+           biggest gap), then 5yr, then 3yr on top. */
+        drawMedianCurve(metricKey, 'm10', mapY, axisRng, col, DASH_10YR, 1.2);
+        drawMedianCurve(metricKey, 'm5',  mapY, axisRng, col, DASH_5YR,  1.2);
+        drawMedianCurve(metricKey, 'm3',  mapY, axisRng, col, DASH_3YR,  1.4);
+      }
     }
-    if(rightKey==='pe' || rightKey==='pb'){
-      drawRollingRef(rightKey, yRightPx, rightRng, isLight?CM_METRICS[rightKey].cLight:CM_METRICS[rightKey].cDark);
-    }
+    drawForMetric(leftKey,  yLeftPx,  leftRng);
+    if(rightKey) drawForMetric(rightKey, yRightPx, rightRng);
   }
 
   /* Save params on the canvas so the hover handler can map mouse-X back to data points. */
