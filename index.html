@@ -4,9 +4,18 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>SectorScope</title>
-<link rel="icon" type="image/svg+xml" href="/favicon.svg">
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="description" content="Track P/E and P/B percentile rankings across 10 NSE sectors plus Nifty 50. Spot cheap and expensive sectors at a glance.">
+<meta property="og:title" content="SectorScope — Indian sector valuations">
+<meta property="og:description" content="Track P/E and P/B percentile rankings across 10 NSE sectors plus Nifty 50. Spot cheap and expensive sectors at a glance.">
+<meta property="og:image" content="https://sectorscope.in/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://sectorscope.in">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -5464,7 +5473,7 @@ function showUpgradeFlow(){
       subscription_id  : data.subscription_id,
       name             : 'SectorScope',
       description      : 'Pro · ₹99/month',
-      image            : 'https://sectorscope.in/favicon.ico',
+      image            : 'https://sectorscope.in/assets/favicon.ico',
       prefill          : { email: currentUser.email },
       theme            : { color: '#6366f1' },
       handler          : function(response){
@@ -5915,7 +5924,7 @@ async function ppStartUpgrade(){
     var rzp=new Razorpay({
       key:data.key_id, subscription_id:data.subscription_id,
       name:'SectorScope', description:'Plus \u00b7 \u20b999/month',
-      image:'https://sectorscope.in/favicon.ico',
+      image:'https://sectorscope.in/assets/favicon.ico',
       prefill:{email:currentUser.email}, theme:{color:'#6366f1'},
       handler:async function(response){
         var vres=await fetch(WORKER_BASE+'/verify-payment',{
