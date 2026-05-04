@@ -149,6 +149,12 @@ html.light .s-card:hover .card-face{box-shadow:0 6px 24px rgba(0,0,0,.10)}
 /* cf-price hosts the price number AND (optionally) divergence capsules inline,
    so the capsules no longer add a separate row that shifts everything below. */
 .cf-price{font-family:var(--mono);font-size:.88rem;font-weight:600;color:var(--sub);margin-top:3px;letter-spacing:.2px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:20px}
+/* Intraday price change badge — sits inline next to the index price.
+   Sign + percentage only, color-driven (green up / red down). */
+.price-chg{font-family:var(--mono);font-size:.7rem;font-weight:700;letter-spacing:.2px;line-height:1}
+.price-chg.up  {color:var(--vchp-c)}
+.price-chg.down{color:var(--exp-c)}
+.price-chg.flat{color:var(--sub)}
 .pills-col{display:flex;flex-direction:column;gap:3px;align-items:flex-end;flex-shrink:0}
 /* pill-row packs the band pill + percentile badge onto the same line so dual
    cards show 2 rows total (not 4), and single-metric cards show 1 row. */
@@ -177,7 +183,6 @@ html.light .cf-chart{background:rgba(0,0,0,.03)}
 .chart-legend{position:absolute;top:4px;left:7px;display:flex;align-items:center;gap:8px;z-index:1}
 .cl-item{display:flex;align-items:center;gap:3px;font-family:var(--mono);font-size:.48rem;color:var(--sub)}
 .cl-line{width:14px;height:2px;border-radius:1px;flex-shrink:0}
-.cl-dash{width:14px;height:0;border-top:1.5px dashed rgba(180,180,180,.45);flex-shrink:0}
 .cf-foot{margin-top:6px;display:flex;align-items:center;justify-content:flex-end;flex-shrink:0}
 .flip-hint{font-family:var(--mono);font-size:.48rem;color:var(--ghost);letter-spacing:.3px;transition:color .2s}
 .s-card:hover .flip-hint{color:var(--sub)}
@@ -665,6 +670,8 @@ html.light .hp-c{background:rgba(0,0,0,.06)}
 .hp-mock-pill{font-size:.52rem;font-weight:700;padding:2px 8px;border-radius:13px;border:1px solid var(--chp-bd);color:var(--chp-c);background:var(--chp-tl);white-space:nowrap}
 .hp-mock-pill-sub{font-size:.42rem;color:var(--ghost);font-family:var(--mono)}
 .hp-mock-cap{display:inline-flex;align-items:center;gap:3px;font-size:.47rem;color:var(--neu-c);background:var(--neu-tl);border:1px solid var(--neu-bd);border-radius:9px;padding:2px 7px;margin-bottom:7px}
+.hp-mock-price{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:.7rem;font-weight:600;color:var(--sub);margin-bottom:7px}
+.hp-mock-price .chg{font-size:.54rem;font-weight:700;color:var(--vchp-c)}
 .hp-mock-tiles{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:7px}
 .hp-mock-tile{background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.06);border-radius:7px;padding:7px 9px}
 html.light .hp-mock-tile{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.07)}
@@ -678,20 +685,6 @@ html.light .hp-mock-tile{background:rgba(0,0,0,.05);border-color:rgba(0,0,0,.07)
 html.light .hp-mock-chart{background:rgba(0,0,0,.04);border-color:rgba(0,0,0,.07)}
 .hp-mock-foot{display:flex;justify-content:flex-end;margin-top:6px}
 .hp-mock-flip{font-size:.46rem;color:var(--ghost);font-family:var(--mono)}
-
-/* ── Annotation list (numbered callouts) ── */
-.hp-ann-list{display:flex;flex-direction:column;gap:10px;padding:6px 0}
-.hp-ann-item{display:flex;align-items:flex-start;gap:10px}
-.hp-ann-badge{flex-shrink:0;width:22px;height:22px;border-radius:50%;font-family:var(--mono);font-size:.6rem;font-weight:700;display:flex;align-items:center;justify-content:center;color:#fff;margin-top:1px}
-.hp-ann-badge.n1{background:#6366f1}
-.hp-ann-badge.n2{background:var(--chp-c);color:#003}
-.hp-ann-badge.n3{background:var(--neu-c);color:#321}
-.hp-ann-badge.n4{background:#38bdf8;color:#003}
-.hp-ann-badge.n5{background:var(--sub);color:var(--bg)}
-.hp-ann-badge.n6{background:var(--exp-c);color:#fff}
-.hp-ann-body{font-family:var(--body);font-size:.82rem;color:var(--txt);line-height:1.5;flex:1}
-.hp-ann-body strong{display:block;font-size:.84rem;margin-bottom:1px}
-.hp-ann-body span{color:var(--sub);font-size:.78rem}
 
 /* ── Weighted ref calculation box ── */
 .hp-calc{background:var(--bg3);border:1px solid var(--bdr);border-radius:10px;overflow:hidden;margin:12px 0}
@@ -1128,55 +1121,111 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <div class="hp-hero">
     <div class="hp-hero-ttl">How this works</div>
-    <div class="hp-hero-sub">A visual walkthrough of every number on every card, and how to use the Backtest page to check if history backs up today's signal. Start at section 1 and work down — it takes about five minutes.</div>
+    <div class="hp-hero-sub">A friendly walkthrough — no jargon assumed. We'll start with what each number on a card means, then build up to how the signals are calculated and how to use the Backtest page to sanity-check today's call against history. Takes about ten minutes start to finish.</div>
   </div>
 
   <div class="hp-toc">
     <div class="hp-toc-ttl">On this page</div>
     <div class="hp-toc-list">
       <a href="#h-quickstart">1 · Quick start</a>
-      <a href="#h-card">2 · Reading a card</a>
-      <a href="#h-bands">3 · Valuation bands</a>
-      <a href="#h-eps">4 · EPS metrics</a>
-      <a href="#h-chart">5 · Sparkline chart</a>
-      <a href="#h-backtest">6 · Backtest page</a>
+      <a href="#h-basics">2 · Valuation basics</a>
+      <a href="#h-card">3 · The dashboard</a>
+      <a href="#h-bands">4 · How signals work</a>
+      <a href="#h-detail">5 · The detail page</a>
+      <a href="#h-backtest">6 · Backtest</a>
       <a href="#h-plus">7 · SectorScope Plus</a>
-      <a href="#h-limits">8 · Limits &amp; caveats</a>
+      <a href="#h-limits">8 · Limits &amp; honest caveats</a>
     </div>
   </div>
 
   <!-- ══ 1. QUICK START ══ -->
   <div class="hp-sec" id="h-quickstart">
     <div class="hp-sec-h">1 · Quick start</div>
-    <div class="hp-p">This tool answers one question: <strong>which Indian sectors are attractively priced right now, relative to their own history?</strong> It doesn't pick stocks — it tells you whether an entire sector is trading cheap or expensive compared to what it has historically traded at.</div>
-    <div class="hp-p">Each sector gets a card. <span style="color:var(--vchp-c);font-weight:700">Green</span> = cheap vs history. <span style="color:var(--vexp-c);font-weight:700">Red</span> = expensive vs history. Cards are sorted cheapest-first.</div>
+    <div class="hp-p">SectorScope answers one question: <strong>which Indian sectors are cheap or expensive right now, compared to how they've traded over the past several years?</strong> It doesn't pick stocks. It looks at whole sectors — IT, Banks, Pharma, Auto, and so on — and tells you whether each one is trading at an unusual discount or premium to its own history.</div>
+    <div class="hp-p">Every sector gets a coloured card. <span style="color:var(--vchp-c);font-weight:700">Green</span> means cheap vs history; <span style="color:var(--vexp-c);font-weight:700">red</span> means expensive vs history. Cards are sorted with the cheapest on top, so the most interesting names always rise to the front.</div>
 
     <div class="hp-card tip">
-      <div class="hp-card-ttl">Three-step workflow</div>
+      <div class="hp-card-ttl">A typical workflow</div>
       <div class="hp-step">
         <div class="hp-step-num">1</div>
-        <div class="hp-step-body"><strong>Scan the Dashboard.</strong> Green cards at the top are candidates. Red cards at the bottom are sectors to be cautious on — or to consider reducing. Look for green cards where the EPS number is also healthy (not declining).</div>
+        <div class="hp-step-body"><strong>Scan the Dashboard.</strong> Green cards at the top are sectors trading below their historical anchor. Red cards at the bottom are stretched. Don't act on the colour alone — the next two steps tell you whether the cheapness is genuine or a trap.</div>
       </div>
       <div class="hp-step">
         <div class="hp-step-num">2</div>
-        <div class="hp-step-body"><strong>Tap any card to flip it.</strong> The back shows the full valuation breakdown: current P/E or P/B, the weighted historical reference, and how today compares to the 3yr / 5yr / 10yr medians side-by-side.</div>
+        <div class="hp-step-body"><strong>Open the Detail page.</strong> Tap the <em>↗ Detail</em> button at the bottom of any card. The detail page shows an AI-written summary of the situation, a snapshot of the current numbers, how today compares to the 3-year, 5-year, and 10-year medians side by side, and bar charts of the sector's earnings history. This is where you check whether earnings are healthy (good cheap) or collapsing (bad cheap).</div>
       </div>
       <div class="hp-step">
         <div class="hp-step-num">3</div>
-        <div class="hp-step-body"><strong>Verify on the Backtest page.</strong> For any sector that looks interesting, go to Backtest → pick the sector → Run. You'll see every past time the sector was at this valuation level and what happened to prices over the next 6 months and 1 year.</div>
+        <div class="hp-step-body"><strong>Check the Backtest page.</strong> For any sector that still looks interesting, go to <em>Backtest</em> → pick the sector → run it. You'll see every past time the sector was at this valuation level and what happened to prices over the next 6 months and 1 year. If the historical hit rate is poor, today's signal is probably a value trap.</div>
       </div>
     </div>
 
     <div class="hp-card warn">
-      <div class="hp-card-ttl">One thing to keep in mind before you start</div>
-      <div class="hp-p" style="margin-bottom:0"><strong>Cheap can get cheaper.</strong> A "Very Cheap" signal tells you the sector is unusually depressed vs its history. It is <em>not</em> a prediction of exactly when it will recover. These signals work best for patient investors with a 6–12 month horizon, not for next-week timing.</div>
+      <div class="hp-card-ttl">One thing to keep in mind</div>
+      <div class="hp-p" style="margin-bottom:0"><strong>Cheap can get cheaper.</strong> A "Very Cheap" signal tells you the sector is unusually depressed compared to its own history. It does <em>not</em> predict when the bounce will come. These signals are designed for patient investors with a 6 to 12 month horizon, not for next-week timing.</div>
     </div>
   </div>
 
-  <!-- ══ 2. READING A CARD ══ -->
+  <!-- ══ 2. VALUATION BASICS ══ -->
+  <div class="hp-sec" id="h-basics">
+    <div class="hp-sec-h">2 · Valuation basics</div>
+    <div class="hp-p">If you're already comfortable with P/E, P/B, percentiles and medians, skip to section 3. Otherwise — five minutes here will make everything that follows much easier to read.</div>
+
+    <div class="hp-sub-h">What's a sector index?</div>
+    <div class="hp-p">The Indian stock market is divided into sectors by the kind of business each company runs — software companies form the IT sector, banks form the Banking sector, drug companies form the Pharma sector, and so on. NSE (the National Stock Exchange) publishes a single number for each sector that tracks the combined market value of the largest companies in it. That number is the <strong>sector index</strong>. When you read "Nifty Bank is up 1.2% today," it means the average bank in that index moved up 1.2%.</div>
+    <div class="hp-p">SectorScope tracks ten sector indices: <strong>IT, Bank, PSU Bank, Auto, FMCG, Pharma, Realty, Metal, Energy, Infra</strong>. Plus the broad Nifty 50, used as a benchmark inside the Backtest engine.</div>
+
+    <div class="hp-sub-h">P/E — Price to Earnings</div>
+    <div class="hp-p">If a stock trades at ₹100 and the underlying business earns ₹5 per share each year, the <strong>P/E</strong> is 100 ÷ 5 = <strong>20</strong>. Read it as "investors are paying ₹20 for every ₹1 of yearly profit." Lower P/E generally means cheaper; higher P/E generally means richer (often because the market expects growth).</div>
+    <div class="hp-p">Sector P/E works the same way, but uses the sector's combined earnings instead of a single company's. The same sector can have a wildly different P/E at different points in history — Nifty IT was at P/E 18 in 2020 and over 35 in 2021. SectorScope's job is to tell you where today's P/E sits inside that historical range.</div>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">Why P/E isn't the whole story for every sector</div>
+      <div class="hp-p" style="margin-bottom:0">Banks earn from lending — and reported earnings get distorted by provisioning cycles (when banks set aside money for expected bad loans). In a stressed quarter, a bank's earnings can collapse temporarily even if the underlying business is fine, which makes P/E look misleadingly high. For Bank and PSU Bank, we use P/B instead.</div>
+    </div>
+
+    <div class="hp-sub-h">P/B — Price to Book</div>
+    <div class="hp-p"><strong>Book value</strong> is what the company would be worth on paper if you summed up all its assets and subtracted all its debts. P/B compares today's stock price to that book value. A P/B of 1 means you're paying exactly what the company is "worth on paper." A P/B of 3 means you're paying three times that.</div>
+    <div class="hp-p">P/B is the right lens for banks because their book value moves smoothly even when earnings are noisy. It's also useful for asset-heavy sectors like Realty, Energy, Metals, and Infra — where we use <em>both</em> P/E and P/B and look for both to agree before calling a sector cheap.</div>
+
+    <div class="hp-sub-h">EPS — Earnings Per Share</div>
+    <div class="hp-p"><strong>EPS</strong> is just the "E" in P/E, looked at on its own. It's how much profit each share is generating — for a sector, it's the combined earnings divided by the index unit. Tracking EPS over time tells you whether the underlying earnings story is healthy, growing, or breaking down. A sector that looks "cheap" because price has fallen is very different from one that looks "cheap" because earnings have collapsed faster than price.</div>
+
+    <div class="hp-sub-h">Median &amp; percentile — the "vs history" comparison</div>
+    <div class="hp-p">Throughout the app you'll see numbers like "P/E is 18% below the 5-year median" or "ranked at the 12th percentile." These are two different ways of comparing today to the past — both useful, both need a one-line definition.</div>
+
+    <dl class="hp-kv">
+      <dt>Median</dt><dd>The middle value of a sorted list. If you take all of Nifty Bank's daily P/B values over the past 5 years, sort them, and pick the one in the exact middle, that's the 5-year median P/B. It's the "typical" valuation over that window. We compare today's value to this number — if today is well below the median, the sector is unusually cheap.</dd>
+      <dt>Percentile</dt><dd>A ranking from 0 to 100. If today's P/E is at the 12th percentile of the last 5 years, it means today's P/E is lower than 88% of the daily values from the last 5 years — only 12% of the time was P/E this cheap. The lower the number, the rarer the cheapness.</dd>
+      <dt>Why we use both</dt><dd>Median tells you <em>how far</em> below the typical value you are. Percentile tells you <em>how often</em> the sector has been this cheap before. They usually agree — a sector that's well below median is also low on percentile rank. When they disagree, we surface a small warning capsule so you don't take the cheap label at face value.</dd>
+    </dl>
+
+    <div class="hp-sub-h">"Weighted reference" — putting it together</div>
+    <div class="hp-p">Rather than picking one history window and sticking with it, we compute three medians — the 3-year, 5-year, and 10-year — and blend them: <strong>30% weight on the 3-year, 60% on the 5-year, 10% on the 10-year</strong>. The result is what we call the <strong>weighted reference</strong>, and it's the single number we compare today against to assign a band (Very Cheap, Cheap, Neutral, Expensive, Very Expensive).</div>
+    <div class="hp-p">Why this blend? The 5-year median is the workhorse — long enough to absorb a couple of cycles, short enough to still be relevant. The 3-year medium adds responsiveness so a sector that has structurally re-rated higher (or lower) gets credit for its more recent regime. The 10-year is a small safety anchor that pulls in deep history so we don't lose context entirely.</div>
+
+    <div class="hp-card tip">
+      <div class="hp-card-ttl">If you only remember one thing</div>
+      <div class="hp-p" style="margin-bottom:0">Every signal in this tool is built on the same comparison: <strong>today's value vs the sector's own past values</strong>. We never compare Nifty IT to Nifty Bank, or to S&amp;P 500. Each sector is judged against its own history. That's what makes the bands meaningful — a P/E of 20 is rich for one sector and cheap for another.</div>
+    </div>
+  </div>
+
+  <!-- ══ 3. THE DASHBOARD ══ -->
   <div class="hp-sec" id="h-card">
-    <div class="hp-sec-h">2 · Reading a card</div>
-    <div class="hp-p">Each card has two sides. Here's an annotated example of <strong>Nifty Auto</strong> — every element explained.</div>
+    <div class="hp-sec-h">3 · The dashboard</div>
+    <div class="hp-p">The dashboard is the home screen — one card per sector, all visible at once. This section walks through everything that's on a card, plus the order they appear in.</div>
+
+    <div class="hp-sub-h">Sort order — why the green ones are on top</div>
+    <div class="hp-p">Cards are sorted by <strong>how cheap each sector is right now relative to its own history</strong>. The cheapest sit on top, the richest at the bottom. Specifically, the sort key is each sector's current valuation expressed as a percentage of its weighted reference (the blended median we covered in section 2).</div>
+    <div class="hp-p">For sectors where we track <em>both</em> P/E and P/B, we use whichever metric is showing as <strong>more expensive</strong>. The reasoning: we only want to flag a sector as cheap when both lenses agree. If P/E says cheap but P/B says expensive, that's a yellow flag worth surfacing rather than burying.</div>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">Concrete example</div>
+      <div class="hp-p" style="margin-bottom:0">If Nifty IT is at 78% of its weighted reference (very cheap) and Nifty Auto is at 92% (slightly cheap), IT lands above Auto on the dashboard. If Nifty Realty (a dual-metric sector) is at 75% on P/E but 110% on P/B, we use the 110% — so it sorts as if it were Neutral, not Very Cheap. The colour and band on the card reflect the same logic.</div>
+    </div>
+
+    <div class="hp-sub-h">Anatomy of a card</div>
+    <div class="hp-p">Each card packs a lot into a small footprint. Here's an annotated example of <strong>Nifty Auto</strong> — every element explained.</div>
 
     <div class="hp-mock-outer">
 
@@ -1187,22 +1236,26 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
           <!-- top bar (::before) -->
           <div class="hp-mock-top">
             <div>
-              <div style="font-family:var(--mono);font-size:.46rem;color:var(--ghost);margin-bottom:3px">① sector name</div>
+              <div style="font-family:var(--mono);font-size:.46rem;color:var(--ghost);margin-bottom:3px">1 sector name</div>
               <div class="hp-mock-name">Auto</div>
             </div>
             <div class="hp-mock-pills">
-              <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);text-align:right;margin-bottom:2px">② band · ③ signals</div>
+              <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);text-align:right;margin-bottom:2px">2 band · 3 signals</div>
               <div class="hp-mock-pill">Cheap</div>
               <div class="hp-mock-pill-sub">P18 · 82% of ref</div>
             </div>
           </div>
 
           <!-- caution capsule -->
-          <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);margin-bottom:3px">④ caution capsule (when shown)</div>
+          <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);margin-bottom:3px">4 caution capsule (when shown)</div>
           <div class="hp-mock-cap">⚠ often this cheap</div>
 
+          <!-- price + intraday change -->
+          <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);margin-bottom:3px">5 index price · change vs previous close</div>
+          <div class="hp-mock-price">25,905<span class="chg">+0.83%</span></div>
+
           <!-- tiles -->
-          <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);margin-bottom:4px">⑤ metric tiles</div>
+          <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);margin-bottom:4px">6 metric tiles</div>
           <div class="hp-mock-tiles">
             <div class="hp-mock-tile tinted">
               <div class="hp-mock-tlbl">P / E</div>
@@ -1212,12 +1265,12 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
             <div class="hp-mock-tile">
               <div class="hp-mock-tlbl">EPS</div>
               <div class="hp-mock-tval">312</div>
-              <div class="hp-mock-tsub">87% of peak<br><span class="yoy-green">▲ +14.2% YoY</span></div>
+              <div class="hp-mock-tsub">87% of peak</div>
             </div>
           </div>
 
           <!-- chart -->
-          <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);margin-bottom:4px">⑥ sparkline (3yr P/E + median)</div>
+          <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);margin-bottom:4px">7 sparkline (3yr P/E + EPS)</div>
           <div class="hp-mock-chart">
             <svg viewBox="0 0 300 56" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">
               <defs><linearGradient id="hg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#69f0ae" stop-opacity=".25"/><stop offset="100%" stop-color="#69f0ae" stop-opacity="0"/></linearGradient></defs>
@@ -1225,13 +1278,13 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
               <path d="M0,35 L30,30 L60,26 L90,32 L120,28 L150,22 L180,18 L210,24 L240,28 L270,26 L300,22 L300,56 L0,56 Z" fill="url(#hg)"/>
               <!-- PE line -->
               <path d="M0,35 L30,30 L60,26 L90,32 L120,28 L150,22 L180,18 L210,24 L240,28 L270,26 L300,22" fill="none" stroke="#69f0ae" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
-              <!-- 3yr median dashed line -->
-              <line x1="0" y1="30" x2="300" y2="30" stroke="rgba(255,255,255,.3)" stroke-width=".9" stroke-dasharray="4,3" vector-effect="non-scaling-stroke"/>
+              <!-- EPS line (secondary, dimmer) -->
+              <path d="M0,40 L30,38 L60,36 L90,34 L120,32 L150,30 L180,29 L210,28 L240,26 L270,24 L300,22" fill="none" stroke="#38bdf8" stroke-width="1.1" opacity=".72" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
               <!-- legend -->
               <rect x="6" y="5" width="8" height="2" rx="1" fill="#69f0ae"/>
               <text x="17" y="8" font-family="monospace" font-size="5" fill="rgba(255,255,255,.5)">3yr P/E</text>
-              <line x1="60" y1="6" x2="68" y2="6" stroke="rgba(255,255,255,.3)" stroke-width=".9" stroke-dasharray="3,2" vector-effect="non-scaling-stroke"/>
-              <text x="71" y="8" font-family="monospace" font-size="5" fill="rgba(255,255,255,.5)">3yr median</text>
+              <rect x="50" y="5" width="8" height="2" rx="1" fill="#38bdf8"/>
+              <text x="61" y="8" font-family="monospace" font-size="5" fill="rgba(255,255,255,.5)">EPS</text>
             </svg>
           </div>
 
@@ -1242,36 +1295,52 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </div>
 
       <!-- Annotation list -->
-      <div class="hp-ann-list">
-        <div class="hp-ann-item">
-          <div class="hp-ann-badge n1">①</div>
-          <div class="hp-ann-body"><strong>Sector name</strong><span>Which Nifty sectoral index this card represents. The coloured top border and card background tint both match the band verdict.</span></div>
+      <div>
+        <div class="hp-step">
+          <div class="hp-step-num">1</div>
+          <div class="hp-step-body"><strong>Sector name.</strong> Which Nifty sectoral index this card represents. The coloured top border and card background tint both match the band verdict.</div>
         </div>
-        <div class="hp-ann-item">
-          <div class="hp-ann-badge n2">②</div>
-          <div class="hp-ann-body"><strong>Band verdict</strong><span>The headline signal — Very Cheap / Cheap / Neutral / Expensive / Very Exp. Driven by how today's P/E (or P/B) compares to its weighted historical median. See section 3.</span></div>
+        <div class="hp-step">
+          <div class="hp-step-num">2</div>
+          <div class="hp-step-body"><strong>Band verdict.</strong> The headline signal — Very Cheap / Cheap / Neutral / Expensive / Very Exp. Driven by how today's P/E (or P/B) compares to its weighted historical median. See section 3.</div>
         </div>
-        <div class="hp-ann-item">
-          <div class="hp-ann-badge n3">③</div>
-          <div class="hp-ann-body"><strong>Two signals: P18 · 82% of ref</strong><span><code class="hp-c">P18</code> = 18th percentile of its own last 5 years (cheap end). <code class="hp-c">82% of ref</code> = current P/E is 18% below its historical anchor. The second number drives the band. See section 3 for why.</span></div>
+        <div class="hp-step">
+          <div class="hp-step-num">3</div>
+          <div class="hp-step-body"><strong>Two signals: P18 · 82% of ref.</strong> <code class="hp-c">P18</code> = 18th percentile of its own last 5 years (cheap end). <code class="hp-c">82% of ref</code> = current P/E is 18% below its historical anchor. The second number drives the band. See section 3 for why.</div>
         </div>
-        <div class="hp-ann-item">
-          <div class="hp-ann-badge n3">④</div>
-          <div class="hp-ann-body"><strong>Caution capsule (only appears when signals disagree)</strong><span>"often this cheap" means: yes, the sector is 18% below its anchor — but it has also spent a lot of the last 5 years at this level. Less contrarian than it looks. If there's no capsule, both signals agree.</span></div>
+        <div class="hp-step">
+          <div class="hp-step-num">4</div>
+          <div class="hp-step-body"><strong>Caution capsule (only when signals disagree).</strong> "often this cheap" means: yes, the sector is 18% below its anchor — but it has also spent a lot of the last 5 years at this level. Less contrarian than it looks. If there's no capsule, both signals agree.</div>
         </div>
-        <div class="hp-ann-item">
-          <div class="hp-ann-badge n4">⑤</div>
-          <div class="hp-ann-body"><strong>Metric tiles</strong><span>Left tile (tinted with band color): the current P/E or P/B. Right tile: current EPS, % of its all-time peak, and year-on-year growth. See section 4.</span></div>
+        <div class="hp-step">
+          <div class="hp-step-num">5</div>
+          <div class="hp-step-body"><strong>Index price + change.</strong> Current index value, with a small green/red badge showing the percentage change vs the previous trading day's close. During market hours this updates live; after-hours it shows the day's full move. Green for positive, red for negative.</div>
         </div>
-        <div class="hp-ann-item">
-          <div class="hp-ann-badge n5">⑥</div>
-          <div class="hp-ann-body"><strong>Sparkline</strong><span>Three years of daily P/E (or P/B) as a line, with the 3yr median as a dashed horizontal. A quick visual to spot whether we're at the top or bottom of the recent range. See section 5.</span></div>
+        <div class="hp-step">
+          <div class="hp-step-num">6</div>
+          <div class="hp-step-body"><strong>Metric tiles.</strong> Left tile (tinted with band color): the current P/E or P/B. Right tile: current EPS and its % of all-time peak. The full year-on-year EPS history lives on the detail page — see section 4.</div>
+        </div>
+        <div class="hp-step">
+          <div class="hp-step-num">7</div>
+          <div class="hp-step-body"><strong>Sparkline.</strong> Three years of daily history at a glance — the primary metric (P/E or P/B) as a coloured line, plus an EPS line for sectors where we track both. The y-axis auto-scales to the actual range, so the line always uses the full vertical space. <strong>Tap any sparkline</strong> to open an expanded chart with date-range pills, additional metrics, and historical-median overlays. The expanded chart is a Plus feature — see section 7.</div>
         </div>
       </div>
     </div>
 
-    <div class="hp-sub-h">The card back (tap to flip)</div>
-    <div class="hp-p">Flipping the card reveals the detailed breakdown: the exact weighted reference, and how today's value compares to the 3yr, 5yr, and 10yr medians individually — each shown as a multiple (e.g. <code class="hp-c">0.82×</code> means current P/E is 82% of that window's median, or 18% below it).</div>
+    <div class="hp-sub-h">Three things you can do with a card</div>
+    <div class="hp-p" style="margin-bottom:8px">Beyond just reading the numbers, the card has three interactive elements:</div>
+    <div class="hp-card info">
+      <div class="hp-card-ttl">↗ Detail</div>
+      <div class="hp-p" style="margin-bottom:0">Tap the Detail button at the bottom-left to open a full-screen overlay with the AI-written summary, the current snapshot, historical medians, and EPS growth charts. The detail page is the deeper dive — <strong>section 5</strong> walks through every element on it.</div>
+    </div>
+    <div class="hp-card info">
+      <div class="hp-card-ttl">🔔 Alert</div>
+      <div class="hp-p" style="margin-bottom:0">Tap the Alert button at the bottom-right to flip the card and configure an email alert for that sector — for example, "ping me when Nifty Bank P/B drops below 2.0." <em>Alerts are a Plus feature.</em> Full walkthrough in <strong>section 7</strong>.</div>
+    </div>
+    <div class="hp-card info">
+      <div class="hp-card-ttl">⤢ Tap the sparkline</div>
+      <div class="hp-p" style="margin-bottom:0">Tap directly on the chart inside any card to open an expanded version — full-screen, with selectable metrics (P/E, P/B, EPS, Price, Dividend Yield), date-range pills, drag-to-zoom, and toggleable historical-median overlays. <em>Plus only.</em> Full walkthrough in <strong>section 7</strong>.</div>
+    </div>
 
     <div class="hp-sub-h">Which metric does each sector use?</div>
     <div class="hp-p">The tool picks the right metric automatically — you don't need to change anything.</div>
@@ -1281,20 +1350,174 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <dt>Both P/E + P/B</dt><dd>Infra, Energy, Realty, Metals — asset-heavy cyclicals where you want both an earnings lens and an asset-value lens.</dd>
     </dl>
 
-    <div class="hp-try">
-      <div class="hp-try-icon">💡</div>
-      <div>Try tapping a green card on the Dashboard now. On the back, find the <strong>3yr / 5yr / 10yr</strong> rows. If the 5yr median is significantly higher than the current value, that's the core signal.</div>
+  </div>
+
+  <!-- ══ 4. HOW SIGNALS WORK ══ -->
+  <div class="hp-sec" id="h-bands">
+    <div class="hp-sec-h">4 · How signals work</div>
+    <div class="hp-p">Every coloured band, percentile rank, and pill on a dashboard card comes from one of three signals: the <strong>band</strong> (how far below or above the historical anchor), the <strong>percentile</strong> cross-check (how often the sector has been at this level), and the <strong>EPS pill</strong> (whether the underlying earnings story supports the cheapness). This section walks through each, with concrete numbers.</div>
+    <div class="hp-p">A quick refresher: the <em>weighted reference</em> we'll keep referring to is a blend of three rolling medians (30% · 3-year, 60% · 5-year, 10% · 10-year). If that's already feeling fuzzy, jump back to <strong>section 2</strong> for the explanation.</div>
+
+    <div class="hp-sub-h">The band — your first read</div>
+    <div class="hp-p">The card colour is determined by a single number: <strong>current value ÷ weighted reference</strong>. Call this the <em>ratio</em>. Here's how each ratio maps to a verdict:</div>
+
+    <!-- Band spectrum -->
+    <div class="hp-spectrum">
+      <div class="hp-spec-seg vchp">Very Cheap<small>≤ 80%</small></div>
+      <div class="hp-spec-seg chp">Cheap<small>80–90%</small></div>
+      <div class="hp-spec-seg neu">Neutral<small>90–105%</small></div>
+      <div class="hp-spec-seg exp">Expensive<small>105–120%</small></div>
+      <div class="hp-spec-seg vexp">Very Exp.<small>&gt; 120%</small></div>
     </div>
 
-    <div class="hp-sub-h">The Detail overlay — deeper data for any sector</div>
-    <div class="hp-p">At the bottom-left of every card front there's a small button that looks like this:</div>
-    <div style="margin:8px 0 12px">
-      <span class="hp-expand-btn-demo">
-        <svg viewBox="0 0 12 12" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>
-        Detail
-      </span>
+    <div class="hp-p">The Neutral band is slightly wider on the right (up to 105%) rather than symmetric around 100%. This is because sectors naturally drift a little above their own long-run median over time as the underlying businesses scale — being 5% above your median is not yet a warning.</div>
+
+    <div class="hp-sub-h">Worked example — how the band is calculated</div>
+    <div class="hp-p">Nifty Auto's P/E today is <strong>24.5</strong>. Its historical medians over different windows are:</div>
+
+    <div class="hp-calc">
+      <div class="hp-calc-head">Weighted Reference · Nifty Auto (example)</div>
+      <div class="hp-calc-body">
+        <div class="hp-calc-row">
+          <div class="hp-calc-lbl">3-yr median</div>
+          <div class="hp-calc-track"><div class="hp-calc-fill" style="width:90%"></div></div>
+          <div class="hp-calc-wt">× 30%</div>
+          <div class="hp-calc-val">26.2 → 7.86</div>
+        </div>
+        <div class="hp-calc-row">
+          <div class="hp-calc-lbl">5-yr median</div>
+          <div class="hp-calc-track"><div class="hp-calc-fill" style="width:86%"></div></div>
+          <div class="hp-calc-wt">× 60%</div>
+          <div class="hp-calc-val">25.1 → 15.06</div>
+        </div>
+        <div class="hp-calc-row">
+          <div class="hp-calc-lbl">10-yr median</div>
+          <div class="hp-calc-track"><div class="hp-calc-fill" style="width:78%"></div></div>
+          <div class="hp-calc-wt">× 10%</div>
+          <div class="hp-calc-val">22.8 → 2.28</div>
+        </div>
+        <div class="hp-calc-divider"></div>
+        <div class="hp-calc-result">
+          <span class="hp-calc-res-lbl">Weighted reference &nbsp;=&nbsp; 7.86 + 15.06 + 2.28</span>
+          <span class="hp-calc-res-val neu">= 25.2</span>
+        </div>
+        <div class="hp-calc-result" style="margin-top:4px">
+          <span class="hp-calc-res-lbl">Ratio &nbsp;=&nbsp; 24.5 ÷ 25.2</span>
+          <span class="hp-calc-res-val cheap">= 97% → Neutral</span>
+        </div>
+      </div>
     </div>
-    <div class="hp-p">Tapping it opens a full-screen overlay with more detail than the card can fit. There are three sections inside it. Here's what each one contains and how to read it.</div>
+
+    <div class="hp-p">If the same sector had a P/E of <strong>20.7</strong> instead (say, after a sharp correction), the ratio would be 20.7 ÷ 25.2 = <strong>82% → Cheap</strong>. That's the number you see on the card as <code class="hp-c">82% of ref</code>.</div>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">Why 60% weight on the 5-year median?</div>
+      <div class="hp-p" style="margin-bottom:0">The 5-year window covers roughly one full business cycle in India — close enough to reflect today's regime, long enough to include both peaks and troughs. The 10-year leg gets only 10% weight so that sectors that have permanently re-rated (like IT after 2020, or PSU Banks after 2022) aren't forever compared against a baseline that no longer applies.</div>
+    </div>
+
+    <div class="hp-sub-h">The two signals on each card</div>
+    <div class="hp-p">Each card shows <em>two</em> valuation signals side-by-side, like <code class="hp-c">P18 · 82% of ref</code>. They measure different things and can sometimes disagree.</div>
+
+    <div class="hp-2sig">
+      <div class="hp-2sig-panel">
+        <div class="hp-2sig-ttl">% of ref (primary)</div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">What it asks</span><span class="hp-2sig-v" style="color:var(--txt)">How far is today from the anchor?</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Example</span><span class="hp-2sig-v">82% of ref</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Meaning</span><span class="hp-2sig-v">18% below the blended median</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Drives band?</span><span class="hp-2sig-v" style="color:var(--chp-c)">Yes — this sets the color</span></div>
+        <div class="hp-2sig-out agree">Measures <strong>magnitude</strong> — by how much is it cheap?</div>
+      </div>
+      <div class="hp-2sig-panel">
+        <div class="hp-2sig-ttl">Percentile rank (secondary)</div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">What it asks</span><span class="hp-2sig-v" style="color:var(--txt)">How rare is this level, last 5 years?</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Example</span><span class="hp-2sig-v">P18</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Meaning</span><span class="hp-2sig-v">Only 18% of last-5yr readings were lower</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Drives band?</span><span class="hp-2sig-v" style="color:var(--sub)">No — info only</span></div>
+        <div class="hp-2sig-out agree">Measures <strong>frequency</strong> — how often does it get this cheap?</div>
+      </div>
+    </div>
+
+    <div class="hp-sub-h">When the two signals disagree — the caution capsule</div>
+    <div class="hp-p">Sometimes a sector looks cheap vs its anchor (% of ref says Cheap) but is <em>not unusual at all</em> in its recent 5-year distribution (percentile says P45 — it's been here half the time). That's a much weaker signal than a sector that is both below its anchor <em>and</em> historically unusual.</div>
+
+    <div class="hp-2sig">
+      <div class="hp-2sig-panel">
+        <div class="hp-2sig-ttl">Clean signal — no capsule</div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">% of ref</span><span class="hp-2sig-v" style="color:var(--chp-c)">82% → Cheap</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Percentile</span><span class="hp-2sig-v" style="color:var(--chp-c)">P14 → also Cheap</span></div>
+        <div class="hp-2sig-out agree">✓ Both signals agree. Sector is genuinely depressed — it's both below its anchor AND near a 5-year low.</div>
+      </div>
+      <div class="hp-2sig-panel">
+        <div class="hp-2sig-ttl">Conflicted — capsule appears</div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">% of ref</span><span class="hp-2sig-v" style="color:var(--chp-c)">83% → Cheap</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Percentile</span><span class="hp-2sig-v" style="color:var(--neu-c)">P44 → Neutral</span></div>
+        <div class="hp-2sig-out caution">⚠ "often this cheap" — it IS below the anchor, but the sector has spent nearly half the last 5 years at this level. Less contrarian than the Cheap label suggests.</div>
+      </div>
+    </div>
+
+    <div class="hp-sub-h">The EPS pill — the third signal</div>
+    <div class="hp-p">The band tells you whether the sector is cheap on multiples. The percentile tells you whether that cheapness is unusual. But neither tells you <em>why</em> it's cheap — and a sector trading at a discount because its earnings are collapsing is very different from one trading at a discount because price has dropped while earnings hold steady.</div>
+    <div class="hp-p">That's where the EPS pill comes in. It's a small badge that appears on the EPS tile of the dashboard card, and it fires only when EPS is currently <em>low</em> compared to the sector's own all-time peak — meaning the cheapness on multiples might be a genuine opportunity (price has fallen but earnings will recover) or might be a value trap (earnings keep falling and price hasn't caught down yet). The pill tells you which.</div>
+
+    <dl class="hp-kv">
+      <dt><span style="color:var(--vchp-c);font-weight:700">▲ LOW · RISING</span></dt><dd><strong>Green pill — the strongest cheap-sector signal.</strong> Fires when (a) EPS is currently "low" — median EPS across the last three quarters is at or below 80% of the all-time peak, AND latest EPS is at or below 90% of peak — AND (b) the two most recent quarter-on-quarter growth readings are both positive. Meaning: earnings are at a depressed base AND actively recovering. Pair this with a Cheap or Very Cheap valuation band and you have a high-conviction setup.</dd>
+      <dt><span style="color:var(--exp-c);font-weight:700">▼ LOW · FALLING</span></dt><dd><strong>Red pill — explicit warning.</strong> Same "low" gate as above, but both QoQ readings are negative — earnings are low <em>and still falling</em>. The cheapness on multiples is being driven by collapsing earnings; the sector will keep looking cheap as long as earnings keep dropping. Do not act on a cheap valuation card with this pill showing.</dd>
+      <dt><span style="color:var(--neu-c);font-weight:700">◆ LOW · MIXED</span></dt><dd><strong>Amber pill — wait and see.</strong> Gate passes (EPS is low), but the two QoQ readings disagree — one positive, one negative. No clear direction yet. Wait for the next quarterly data point before drawing a conclusion.</dd>
+      <dt><span style="color:var(--sub);font-weight:700">(no pill)</span></dt><dd><strong>Neutral.</strong> Either EPS isn't "low" versus its peak (the gate fails — earnings are healthy or near peak), or there's insufficient quarterly history to compute the signal. Absence of a pill means <em>use the valuation band on its own</em> — it's not a warning.</dd>
+    </dl>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">When does the pill <em>not</em> appear?</div>
+      <div class="hp-p" style="margin-bottom:0">On defensive sectors like FMCG, Pharma, and IT, EPS rarely falls far below its peak — these businesses earn through cycles. So the "low" gate fails most of the time, and the pill stays absent. That's not a bug; it just means the EPS signal isn't applicable. For these sectors, the valuation band alone carries the weight.</div>
+    </div>
+
+    <div class="hp-sub-h">Three scenarios — putting the signals together</div>
+    <div class="hp-p">A sector can look cheap for very different reasons. The combination of valuation band, % of peak EPS, and the EPS pill tells you which scenario you're looking at:</div>
+
+    <div class="hp-eps-scen">
+      <!-- Best setup -->
+      <div class="hp-scen good">
+        <div class="hp-scen-badge">Best setup</div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">Valuation band</span><span class="hp-scen-val g">Very Cheap</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">% of peak EPS</span><span class="hp-scen-val">68%</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">YoY growth</span><span class="hp-scen-val r">−6%</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">EPS pill</span><span class="hp-scen-val g">▲ LOW · RISING</span></div>
+        <div class="hp-scen-verdict"><strong>Early-cycle turnaround</strong>Earnings are well below peak and the last two quarterly-growth readings have flipped positive. YoY is still red because the year-ago base was higher — but the damage has stopped and recovery is underway. Sector is also cheap on multiples. Highest-conviction setup. Classic Metals / PSU Bank early-cycle entry.</div>
+      </div>
+
+      <!-- Watch out -->
+      <div class="hp-scen caution">
+        <div class="hp-scen-badge">Watch out</div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">Valuation band</span><span class="hp-scen-val a">Cheap</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">% of peak EPS</span><span class="hp-scen-val">94%</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">YoY growth</span><span class="hp-scen-val g">+12%</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">EPS pill</span><span class="hp-scen-val" style="color:var(--sub)">— (gate fails, EPS near peak)</span></div>
+        <div class="hp-scen-verdict"><strong>Confirmed recovery, less upside</strong>Earnings are near all-time peak and growing. Sector is cheap on multiples — but because earnings are already strong, the "low base to recover from" catalyst is gone. Still a valid setup, just more symmetrical. Absence of a pill here means things are fine, not bad.</div>
+      </div>
+
+      <!-- Value trap -->
+      <div class="hp-scen trap">
+        <div class="hp-scen-badge">Value trap</div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">Valuation band</span><span class="hp-scen-val g">Very Cheap</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">% of peak EPS</span><span class="hp-scen-val">41%</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">YoY growth</span><span class="hp-scen-val r">−28%</span></div>
+        <div class="hp-scen-row"><span class="hp-scen-lbl">EPS pill</span><span class="hp-scen-val r">▼ LOW · FALLING</span></div>
+        <div class="hp-scen-verdict"><strong>Falling knife — do not catch</strong>Earnings are low and still dropping. P/E looks low because E is contracting faster than P. The sector will keep looking cheap as long as E keeps falling. The red pill is an explicit warning: do not act on the valuation signal until the pill flips to MIXED or RISING, or YoY stabilises.</div>
+      </div>
+    </div>
+
+    <div class="hp-card tip">
+      <div class="hp-card-ttl">If you only remember one combination</div>
+      <div class="hp-p" style="margin-bottom:0"><strong>Cheap or Very Cheap band + ▲ LOW · RISING pill + YoY still negative.</strong> This is the early-cycle inflection: valuation is in the bottom tier, EPS is depressed vs its own peak, two consecutive quarters of positive growth confirm a turn, and YoY hasn't caught up yet so the rear-view comparison still looks ugly. Works best on cyclicals — Metals, Auto, PSU Bank, Realty. On defensive sectors, the pill rarely fires, and the valuation band alone is the primary signal.</div>
+    </div>
+  </div>
+
+
+  <!-- ══ 5. THE DETAIL PAGE ══ -->
+  <div class="hp-sec" id="h-detail">
+    <div class="hp-sec-h">5 · The detail page</div>
+    <div class="hp-p">When you tap the <em>↗ Detail</em> button on any card, a full-screen overlay opens with everything that didn't fit on the card. There's an AI-written summary at the top (Plus only — covered in <strong>section 7</strong>), then three big information sections: a current snapshot of the key numbers, a side-by-side view of how today compares to historical medians at three time horizons, and a pair of bar charts showing the sector's earnings trajectory.</div>
+    <div class="hp-p">This is where you go after the dashboard tells you a sector is interesting and you want to confirm whether the cheapness is genuine or a trap.</div>
 
     <!-- 3 sections -->
     <div class="hp-overlay-sections">
@@ -1326,10 +1549,9 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
               <div class="hp-snap-sub" style="color:var(--sub)">87% of peak</div>
             </div>
           </div>
-          <div class="hp-p" style="margin-top:10px;margin-bottom:0;font-size:.8rem;color:var(--sub)">P/E and P/B show their individual band labels — useful when a dual-metric sector has one expensive and one cheap, which the card-level verdict averages over.</div>
+          <div class="hp-p" style="margin-top:10px;margin-bottom:0;font-size:.8rem;color:var(--sub)">P/E and P/B show their individual band labels — useful when a dual-metric sector has one expensive and one cheap, which the card-level verdict averages over. The EPS YoY % shown here is the more granular cousin of the EPS pill on the card — useful for seeing the precise rate of growth or contraction.</div>
         </div>
       </div>
-
       <!-- Section B: Historical Medians -->
       <div class="hp-ov-section">
         <div class="hp-ov-head">② Historical Medians</div>
@@ -1474,251 +1696,14 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     </div>
 
     <div class="hp-p"><span class="muted">Close the overlay with the <strong>✕</strong> button in the top-right corner, or press <strong>Escape</strong> on a keyboard.</span></div>
-
-    <div class="hp-try">
-      <div class="hp-try-icon">💡</div>
-      <div>Try tapping a green card on the Dashboard now. On the back, find the <strong>3yr / 5yr / 10yr</strong> rows. If the 5yr median is significantly higher than the current value, that's the core signal.</div>
-    </div>
   </div>
 
-  <!-- ══ 3. VALUATION BANDS ══ -->
-  <div class="hp-sec" id="h-bands">
-    <div class="hp-sec-h">3 · Valuation bands &amp; signals</div>
-    <div class="hp-p">The band (card color) is determined by one number: <strong>current P/E ÷ weighted historical reference</strong>. Call this the <em>ratio</em>. Here's how each ratio maps to a verdict:</div>
-
-    <!-- Band spectrum -->
-    <div class="hp-spectrum">
-      <div class="hp-spec-seg vchp">Very Cheap<small>≤ 80%</small></div>
-      <div class="hp-spec-seg chp">Cheap<small>80–90%</small></div>
-      <div class="hp-spec-seg neu">Neutral<small>90–105%</small></div>
-      <div class="hp-spec-seg exp">Expensive<small>105–120%</small></div>
-      <div class="hp-spec-seg vexp">Very Exp.<small>&gt; 120%</small></div>
-    </div>
-
-    <div class="hp-p">The Neutral band is slightly wider on the right side (up to 105% instead of a symmetric 100%) because sectors naturally drift slightly above their own median over long time periods. Being 5% above your median is not yet a warning.</div>
-
-    <div class="hp-sub-h">Worked example — how the band is calculated</div>
-    <div class="hp-p">Nifty Auto's P/E today is <strong>24.5</strong>. Its historical medians over different windows are:</div>
-
-    <div class="hp-calc">
-      <div class="hp-calc-head">Weighted Reference · Nifty Auto (example)</div>
-      <div class="hp-calc-body">
-        <div class="hp-calc-row">
-          <div class="hp-calc-lbl">3-yr median</div>
-          <div class="hp-calc-track"><div class="hp-calc-fill" style="width:90%"></div></div>
-          <div class="hp-calc-wt">× 30%</div>
-          <div class="hp-calc-val">26.2 → 7.86</div>
-        </div>
-        <div class="hp-calc-row">
-          <div class="hp-calc-lbl">5-yr median</div>
-          <div class="hp-calc-track"><div class="hp-calc-fill" style="width:86%"></div></div>
-          <div class="hp-calc-wt">× 60%</div>
-          <div class="hp-calc-val">25.1 → 15.06</div>
-        </div>
-        <div class="hp-calc-row">
-          <div class="hp-calc-lbl">10-yr median</div>
-          <div class="hp-calc-track"><div class="hp-calc-fill" style="width:78%"></div></div>
-          <div class="hp-calc-wt">× 10%</div>
-          <div class="hp-calc-val">22.8 → 2.28</div>
-        </div>
-        <div class="hp-calc-divider"></div>
-        <div class="hp-calc-result">
-          <span class="hp-calc-res-lbl">Weighted reference &nbsp;=&nbsp; 7.86 + 15.06 + 2.28</span>
-          <span class="hp-calc-res-val neu">= 25.2</span>
-        </div>
-        <div class="hp-calc-result" style="margin-top:4px">
-          <span class="hp-calc-res-lbl">Ratio &nbsp;=&nbsp; 24.5 ÷ 25.2</span>
-          <span class="hp-calc-res-val cheap">= 97% → Neutral</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="hp-p">If the same sector had a P/E of <strong>20.7</strong> instead (say, after a sharp correction), the ratio would be 20.7 ÷ 25.2 = <strong>82% → Cheap</strong>. That's the number you see on the card as <code class="hp-c">82% of ref</code>.</div>
-
-    <div class="hp-card info">
-      <div class="hp-card-ttl">Why 60% weight on the 5-year median?</div>
-      <div class="hp-p" style="margin-bottom:0">The 5-year window covers roughly one full business cycle in India — close enough to reflect today's regime, long enough to include both peaks and troughs. The 10-year leg gets only 10% weight so that sectors that have permanently re-rated (like IT after 2020, or PSU Banks after 2022) aren't forever compared against a baseline that no longer applies.</div>
-    </div>
-
-    <div class="hp-sub-h">The two signals on each card</div>
-    <div class="hp-p">Each card shows <em>two</em> valuation signals side-by-side, like <code class="hp-c">P18 · 82% of ref</code>. They measure different things and can sometimes disagree.</div>
-
-    <div class="hp-2sig">
-      <div class="hp-2sig-panel">
-        <div class="hp-2sig-ttl">% of ref (primary)</div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">What it asks</span><span class="hp-2sig-v" style="color:var(--txt)">How far is today from the anchor?</span></div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">Example</span><span class="hp-2sig-v">82% of ref</span></div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">Meaning</span><span class="hp-2sig-v">18% below the blended median</span></div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">Drives band?</span><span class="hp-2sig-v" style="color:var(--chp-c)">Yes — this sets the color</span></div>
-        <div class="hp-2sig-out agree">Measures <strong>magnitude</strong> — by how much is it cheap?</div>
-      </div>
-      <div class="hp-2sig-panel">
-        <div class="hp-2sig-ttl">Percentile rank (secondary)</div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">What it asks</span><span class="hp-2sig-v" style="color:var(--txt)">How rare is this level, last 5 years?</span></div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">Example</span><span class="hp-2sig-v">P18</span></div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">Meaning</span><span class="hp-2sig-v">Only 18% of last-5yr readings were lower</span></div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">Drives band?</span><span class="hp-2sig-v" style="color:var(--sub)">No — info only</span></div>
-        <div class="hp-2sig-out agree">Measures <strong>frequency</strong> — how often does it get this cheap?</div>
-      </div>
-    </div>
-
-    <div class="hp-sub-h">When the two signals disagree — the caution capsule</div>
-    <div class="hp-p">Sometimes a sector looks cheap vs its anchor (% of ref says Cheap) but is <em>not unusual at all</em> in its recent 5-year distribution (percentile says P45 — it's been here half the time). That's a much weaker signal than a sector that is both below its anchor <em>and</em> historically unusual.</div>
-
-    <div class="hp-2sig">
-      <div class="hp-2sig-panel">
-        <div class="hp-2sig-ttl">Clean signal — no capsule</div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">% of ref</span><span class="hp-2sig-v" style="color:var(--chp-c)">82% → Cheap</span></div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">Percentile</span><span class="hp-2sig-v" style="color:var(--chp-c)">P14 → also Cheap</span></div>
-        <div class="hp-2sig-out agree">✓ Both signals agree. Sector is genuinely depressed — it's both below its anchor AND near a 5-year low.</div>
-      </div>
-      <div class="hp-2sig-panel">
-        <div class="hp-2sig-ttl">Conflicted — capsule appears</div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">% of ref</span><span class="hp-2sig-v" style="color:var(--chp-c)">83% → Cheap</span></div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">Percentile</span><span class="hp-2sig-v" style="color:var(--neu-c)">P44 → Neutral</span></div>
-        <div class="hp-2sig-out caution">⚠ "often this cheap" — it IS below the anchor, but the sector has spent nearly half the last 5 years at this level. Less contrarian than the Cheap label suggests.</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ══ 4. EPS METRICS ══ -->
-  <div class="hp-sec" id="h-eps">
-    <div class="hp-sec-h">4 · EPS metrics</div>
-    <div class="hp-p">A sector can look cheap for two very different reasons: <strong>(A)</strong> price has corrected but earnings are healthy — a genuine opportunity. <strong>(B)</strong> earnings are collapsing and price is following — a value trap. The three EPS indicators help you tell them apart.</div>
-
-    <div class="hp-sub-h">The three indicators</div>
-    <dl class="hp-kv">
-      <dt>% of peak</dt><dd>Current EPS divided by the sector's all-time high EPS. <em>87% of peak</em> means earnings are 13% below their historical best, with room to recover. Above 100% = earnings at a new high.</dd>
-      <dt>YoY growth</dt><dd>Current EPS vs EPS one year ago. Color-coded: <span style="color:var(--exp-c);font-weight:700">red</span> below 0%, <span style="color:var(--neu-c);font-weight:700">amber</span> 0–10%, <span style="color:var(--chp-c);font-weight:700">green</span> above 10%.</dd>
-      <dt>▲ LOW · RISING</dt><dd>Green pill. Fires when (a) EPS is currently "low" — median EPS across the last three quarters is ≤ 80% of the winsorised all-time peak AND latest EPS is ≤ 90% of peak — AND (b) the two most recent QoQ median-growth readings are both positive. Meaning: earnings are at a depressed base and actively recovering. The strongest signal for pairing with a Cheap or Very Cheap valuation band.</dd>
-      <dt>▼ LOW · FALLING</dt><dd>Red pill. Same "low" gate as above, but both QoQ growth readings are negative — earnings are low <em>and still falling</em>. A classic falling-knife warning: the cheapness on the valuation card is being driven by collapsing earnings, and the sector will look even cheaper as E drops further. Do not act on a cheap card with this pill showing.</dd>
-      <dt>◆ LOW · MIXED</dt><dd>Amber pill. Gate passes (EPS is low), but the two QoQ growth readings disagree — one positive, one negative. No clear direction yet. Wait for the next quarterly data point before drawing a conclusion.</dd>
-      <dt>(no pill)</dt><dd>Either EPS isn't "low" versus its winsorised peak (gate fails), or there's insufficient quarterly history to compute the signal. Absence of a pill means <em>use the valuation band and YoY number on their own</em>, not that the earnings picture is bad.</dd>
-    </dl>
-
-    <div class="hp-sub-h">Three scenarios — what to look for</div>
-
-    <div class="hp-eps-scen">
-      <!-- Best setup -->
-      <div class="hp-scen good">
-        <div class="hp-scen-badge">Best setup</div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">Valuation band</span><span class="hp-scen-val g">Very Cheap</span></div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">% of peak EPS</span><span class="hp-scen-val">68%</span></div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">YoY growth</span><span class="hp-scen-val r">−6%</span></div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">EPS pill</span><span class="hp-scen-val g">▲ LOW · RISING</span></div>
-        <div class="hp-scen-verdict"><strong>Early-cycle turnaround</strong>Earnings are well below peak and the last two quarterly-growth readings have flipped positive. YoY is still red because the year-ago base was higher — but the damage has stopped and recovery is underway. Sector is also cheap on valuation. Highest-conviction setup. Classic Metals / PSU Bank early-cycle entry.</div>
-      </div>
-
-      <!-- Watch out -->
-      <div class="hp-scen caution">
-        <div class="hp-scen-badge">Watch out</div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">Valuation band</span><span class="hp-scen-val a">Cheap</span></div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">% of peak EPS</span><span class="hp-scen-val">94%</span></div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">YoY growth</span><span class="hp-scen-val g">+12%</span></div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">EPS pill</span><span class="hp-scen-val" style="color:var(--sub)">— (gate fails, EPS near peak)</span></div>
-        <div class="hp-scen-verdict"><strong>Confirmed recovery, less upside</strong>Earnings are near all-time peak and growing. Sector is cheap on multiples — but because earnings are already strong, the "low base to recover from" catalyst is gone. Still a valid setup, just more symmetrical. Absence of a pill here means things are fine, not bad.</div>
-      </div>
-
-      <!-- Value trap -->
-      <div class="hp-scen trap">
-        <div class="hp-scen-badge">Value trap</div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">Valuation band</span><span class="hp-scen-val g">Very Cheap</span></div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">% of peak EPS</span><span class="hp-scen-val">41%</span></div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">YoY growth</span><span class="hp-scen-val r">−28%</span></div>
-        <div class="hp-scen-row"><span class="hp-scen-lbl">EPS pill</span><span class="hp-scen-val r">▼ LOW · FALLING</span></div>
-        <div class="hp-scen-verdict"><strong>Falling knife — do not catch</strong>Earnings are low and still dropping. P/E looks low because E is contracting faster than P. The sector will keep looking cheap as long as E keeps falling. The red pill is an explicit warning: do not act on the valuation signal until the pill flips to MIXED or RISING, or YoY stabilises.</div>
-      </div>
-    </div>
-
-    <div class="hp-card tip">
-      <div class="hp-card-ttl">The most powerful combination</div>
-      <div class="hp-p" style="margin-bottom:0"><strong>Cheap/Very Cheap band + ▲ LOW · RISING pill + YoY still negative.</strong> This is the early-cycle inflection: valuation is in the bottom tier, EPS is depressed vs its own winsorised peak, two consecutive quarters of positive median-growth confirm a turn, and YoY hasn't caught up yet so the broader market's rear-view comparison still looks ugly. Works best on cyclicals: Metals, Auto, PSU Bank, Realty. On defensive sectors (FMCG, Pharma, IT), the pill often stays absent because EPS rarely drops far below peak — there the valuation band alone is the primary signal.</div>
-    </div>
-  </div>
-
-  <!-- ══ 5. SPARKLINE CHART ══ -->
-  <div class="hp-sec" id="h-chart">
-    <div class="hp-sec-h">5 · Sparkline chart</div>
-    <div class="hp-p">The small chart on each card front shows <strong>three years of daily P/E (or P/B)</strong>. Three things to read from it:</div>
-
-    <div class="hp-spark-wrap">
-      <div class="hp-spark-head">Annotated sparkline — Nifty Auto (example)</div>
-      <div class="hp-spark-body">
-        <div>
-          <svg viewBox="0 0 360 90" style="width:100%;height:90px;display:block" preserveAspectRatio="none">
-            <defs>
-              <linearGradient id="hsg" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stop-color="#69f0ae" stop-opacity=".2"/>
-                <stop offset="100%" stop-color="#69f0ae" stop-opacity="0"/>
-              </linearGradient>
-            </defs>
-            <!-- grid lines -->
-            <line x1="0" y1="80" x2="360" y2="80" stroke="rgba(255,255,255,.05)" stroke-width=".5" vector-effect="non-scaling-stroke"/>
-            <!-- area -->
-            <path d="M0,62 L36,55 L72,48 L108,58 L144,52 L180,40 L216,34 L252,44 L288,50 L324,46 L360,40 L360,80 L0,80 Z" fill="url(#hsg)"/>
-            <!-- PE line -->
-            <path d="M0,62 L36,55 L72,48 L108,58 L144,52 L180,40 L216,34 L252,44 L288,50 L324,46 L360,40" fill="none" stroke="#69f0ae" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>
-            <!-- EPS secondary -->
-            <path d="M0,72 L36,70 L72,65 L108,68 L144,62 L180,56 L216,50 L252,54 L288,56 L324,52 L360,48" fill="none" stroke="#38bdf8" stroke-width="1.1" opacity=".65" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>
-            <!-- 3yr median dashed -->
-            <line x1="0" y1="52" x2="360" y2="52" stroke="rgba(255,255,255,.35)" stroke-width="1" stroke-dasharray="5,3" vector-effect="non-scaling-stroke"/>
-            <!-- annotation A: current is below median -->
-            <circle cx="360" cy="40" r="3.5" fill="#69f0ae"/>
-            <line x1="360" y1="40" x2="330" y2="15" stroke="rgba(255,255,255,.3)" stroke-width=".8" stroke-dasharray="2,2" vector-effect="non-scaling-stroke"/>
-            <text x="290" y="13" font-family="monospace" font-size="7" fill="rgba(255,255,255,.55)" text-anchor="end">P/E right now</text>
-            <!-- annotation B: median label -->
-            <text x="5" y="50" font-family="monospace" font-size="7" fill="rgba(255,255,255,.45)">3yr median</text>
-            <!-- x-axis labels -->
-            <text x="0" y="88" font-family="monospace" font-size="6.5" fill="rgba(255,255,255,.3)">3yr ago</text>
-            <text x="160" y="88" font-family="monospace" font-size="6.5" fill="rgba(255,255,255,.3)" text-anchor="middle">2yr ago</text>
-            <text x="360" y="88" font-family="monospace" font-size="6.5" fill="rgba(255,255,255,.3)" text-anchor="end">Today</text>
-          </svg>
-        </div>
-        <div class="hp-spark-leg">
-          <div class="hp-spark-item">
-            <div class="hp-spark-sym"><svg viewBox="0 0 26 8" width="26" height="8"><path d="M0,4 L26,4" stroke="#69f0ae" stroke-width="2" stroke-linecap="round"/></svg></div>
-            <div><strong>P/E line</strong> — colored to match the sector. Watch its trend direction over the 3 years.</div>
-          </div>
-          <div class="hp-spark-item">
-            <div class="hp-spark-sym"><svg viewBox="0 0 26 8" width="26" height="8"><path d="M0,4 L26,4" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" opacity=".7"/></svg></div>
-            <div><strong>EPS line</strong> (P/E cards only) — on its own scale. When P/E falls but EPS rises, it means the sector is getting cheaper for the right reason: price fell while earnings grew.</div>
-          </div>
-          <div class="hp-spark-item">
-            <div class="hp-spark-sym"><svg viewBox="0 0 26 8" width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="rgba(200,200,200,.5)" stroke-width="1" stroke-dasharray="4,3"/></svg></div>
-            <div><strong>3yr median</strong> — the dashed line. The card's primary signal compares current P/E to the blended reference (not just the 3yr), but the dashed line gives you a fast visual anchor. Current below the dashes = cheap zone.</div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="hp-p">The shaded area under the main line is purely visual emphasis — it has no separate numeric meaning.</div>
-
-    <div class="hp-sub-h">Expanded chart <span class="plus-badge">PLUS</span></div>
-    <div class="hp-p"><strong>Click any sparkline</strong> to open a full-window chart with much more flexibility than the card view. The card sparkline is fixed at 3 years P/E + EPS (or P/B for bank sectors); the expanded view lets you choose what to plot, over what period, and inspect specific dates.</div>
-
-    <div class="hp-card info">
-      <div class="hp-card-ttl">What you can do in the expanded chart</div>
-      <ul class="hp-list" style="margin:0">
-        <li><strong>Overlay any two metrics</strong> — pick from P/E, P/B, EPS, or Price. They render on dual Y-axes (one on each side) so you can compare scales that differ wildly (P/E in the teens vs EPS in the thousands).</li>
-        <li><strong>Pick a time window</strong> — quick pills for 1W, 1M, 3M, 1Y, 3Y, 5Y, All. Or use the date pickers to set any custom range. Pickers always show the dates of whatever's currently displayed, even when you got there by clicking a pill.</li>
-        <li><strong>Drag to zoom</strong> — click and drag horizontally on the chart to zoom into that exact slice. Double-click anywhere to reset to the default 3Y view.</li>
-        <li><strong>Hover for exact values</strong> — move your mouse over the chart to see a vertical crosshair, dot markers on each visible series, and a tooltip showing the date and the exact value of each metric on that day.</li>
-        <li><strong>Rolling median overlays</strong> — two toggles, mutually exclusive (turning one on turns the other off; both can be off):
-          <ul style="margin-top:4px">
-            <li><strong>Median</strong> — single dashed curve at the weighted reference (30% × 3yr + 60% × 5yr + 10% × 10yr median). At every historical date this is recomputed using only data available before that date, so you see how the "typical" valuation level evolved over time. Same logic the backtest uses.</li>
-            <li><strong>Median bands</strong> — three separate rolling curves for 3yr, 5yr, and 10yr medians, each with a distinct dash pattern (dotted / small dash / big dash). Useful for spotting whether the multiple has been expanding, compressing, or stable over time. If the 3yr line sits well above the 10yr, the sector has been valued more richly recently than its long-term norm.</li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-
-    <div class="hp-p">The rolling-median curve uses the same weighted blend as the rest of the dashboard: 30% × 3yr median + 60% × 5yr median + 10% × 10yr median. Looking at the curve in 2018 shows you the reference value as it would have appeared in 2018 — using only data available before then. This is the same logic the backtest uses to evaluate signals at each historical date, so the chart and the backtest are now visually consistent.</div>
-  </div>
 
   <!-- ══ 6. BACKTEST ══ -->
   <div class="hp-sec" id="h-backtest">
-    <div class="hp-sec-h">6 · Backtest page</div>
-    <div class="hp-p">The Backtest page answers: <strong>"Every time this sector was at this valuation level in the past — what happened to prices next?"</strong> It runs through history, finds every matching date, and shows you the forward returns.</div>
+    <div class="hp-sec-h">6 · Backtest</div>
+    <div class="hp-p">The dashboard tells you which sectors look cheap right now. The Backtest page tells you whether <em>cheap-looking sectors have actually rewarded buyers in the past</em>. It's the historical sanity check before you act on today's signal.</div>
+    <div class="hp-p">The setup: pick a sector, pick a valuation threshold (e.g. "82% of reference — what the dashboard shows today"), and the engine walks through every day in history and finds matching dates. For each match, it shows you what the price did over the next 6 months and 1 year. If the historical hit rate at this threshold is good, today's signal is more credible. If it's bad, today's signal is probably a value trap — back away.</div>
 
     <div class="hp-card info">
       <div class="hp-card-ttl">The key connection to the dashboard</div>
@@ -1851,62 +1836,88 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   <!-- ══ 7. SECTORSCOPE PLUS ══ -->
   <div class="hp-sec" id="h-plus">
     <div class="hp-sec-h">7 · SectorScope Plus</div>
-    <div class="hp-p">SectorScope Plus unlocks four features designed for investors who want to act on signals — not just read them.</div>
+    <div class="hp-p">Plus unlocks four features layered on top of the free dashboard: <strong>expanded charts</strong>, <strong>AI sector summaries</strong>, <strong>email alerts</strong>, and <strong>vs-Nifty-50 alpha in backtests</strong>. This section walks through each one in the order you're likely to encounter it, with the concrete UI elements you'll see.</div>
+
+    <div class="hp-card tip">
+      <div class="hp-card-ttl">Currently free for signed-in users</div>
+      <div class="hp-p" style="margin-bottom:0">SectorScope Plus is in soft launch. Until <strong>31 October 2026</strong>, all four features are free for any signed-in user — no payment, no subscription required. Just sign in with Google from the top-right corner of any page. After 31 October, Plus moves to a paid tier; existing users will get advance notice and a grandfathered offer.</div>
+    </div>
+
+    <div class="hp-sub-h">Expanded chart — full historical view</div>
+    <div class="hp-p">Tap any sector's sparkline (the small chart on a card) to open the full-screen expanded chart for that sector. This is the most useful Plus feature for getting a feel for where a sector sits in its historical context — far more than the 3-year sparkline can show. The expanded view has four sets of controls:</div>
+    <dl class="hp-kv">
+      <dt>Metric checkboxes</dt><dd>Pick any combination of <strong>P/E, P/B, EPS, Price, Dividend Yield</strong> to overlay on the chart. P/E and P/B are on the left axis; EPS, Price, and Dividend Yield each get their own right-side scale when selected. The defaults match the sector's primary metrics — so Banks open with P/B+EPS already ticked, IT opens with P/E+EPS, dual-metric sectors open with both P/E and P/B.</dd>
+      <dt>Date-range pills</dt><dd>Quick presets sit above the chart: <strong>1W · 1M · 3M · 6M · 1Y · 3Y · 5Y · 10Y · All</strong>. Tap any pill to snap the chart to that window. Behind the scenes, the data goes back to whatever the underlying NSE history starts at for each sector — typically 2010 or earlier.</dd>
+      <dt>Drag-to-zoom</dt><dd>Click and drag horizontally on the chart itself to zoom into a custom date range. Useful for examining a specific event window — like "what did Pharma look like in March 2020 when COVID hit" or "how did Realty trade through the 2018 NBFC crisis." Double-click to reset to the active range pill.</dd>
+      <dt>Median &amp; bands toggles</dt><dd>Two toggles below the chart control historical-median overlays. <strong>Median</strong> draws the rolling weighted-reference curve at every historical date — the same blended 3yr/5yr/10yr median the dashboard uses, but plotted continuously through time so you can see how it evolved. <strong>Bands</strong> draws all three component medians (3yr, 5yr, 10yr) as separate dashed curves with a small legend, useful when you want to see how the windows differ.</dd>
+    </dl>
 
     <div class="hp-card info">
-      <div class="hp-card-ttl">What's included</div>
-      <ul class="hp-list" style="margin:0">
-        <li><strong>Custom email alerts</strong> — set a valuation threshold for any sector and get an email the moment the live P/E or P/B crosses it. You pick the metric, the level, and whether the alert fires once or recurs. Up to 2 alerts per sector.</li>
-        <li><strong>AI sector summaries</strong> — tap "Generate" on any sector's detail page to get a plain-language read on the current valuation and earnings position, powered by Claude. Limited to 30 summaries per day. No buy/sell recommendations — only facts derived from the same data you see on screen.</li>
-        <li><strong>Alpha vs Nifty 50 in backtest</strong> — the "vs Nifty 50" column in the results table shows how much the sector beat or lagged the Nifty 50 index over the same forward window. Positive values (green) mean the sector outperformed; negative (red) means it lagged. This lets you distinguish genuine sector alpha from returns that simply rode the broader market.</li>
-        <li><strong>Expanded charts</strong> — click any sector's sparkline to open a full-window chart. Overlay any two of P/E, P/B, EPS, or Price on dual axes. Pick any time window from 1W to All, or drag-to-zoom into a custom slice. Hover for exact values on any date. Includes the rolling weighted-median overlay (the actual reference at every historical date, not a flat line).</li>
-      </ul>
+      <div class="hp-card-ttl">Why the median is a curve, not a flat line</div>
+      <div class="hp-p" style="margin-bottom:0">A static "5-year median" line would be misleading on a 10-year chart — the median changes as the window slides forward. The expanded chart computes the median <em>at every historical date using only data available up to that point</em> and plots the result as a moving curve. Looking at the curve in 2018 shows you what the reference value would have looked like to a 2018 viewer — no look-ahead. This is the same logic the backtest uses to evaluate signals at each historical date.</div>
     </div>
 
-    <div class="hp-sub-h">Email alerts — how they work</div>
-    <div class="hp-p">Open any sector's detail page and scroll to the Alerts card. Set your threshold (a % of reference value), choose whether you want the alert to fire once or repeat after a 24-hour cooldown, and save. The system checks live NSE data every 15 minutes during market hours (9:15am–3:30pm IST, Mon–Fri) and sends an email to your registered address when the condition is met.</div>
-    <div class="hp-card warn">
-      <div class="hp-card-ttl">Alert thresholds explained</div>
-      <div class="hp-p" style="margin-bottom:0">The threshold is a <strong>% of the weighted reference</strong> — the same number shown as "% of ref" on the dashboard card. Setting an alert at <strong>85%</strong> means "notify me when the sector's P/E (or P/B) drops to 85% of its weighted historical median." This directly links alerts to the same valuation framework the whole dashboard uses, so a signal and an alert at the same level are measuring identical things.</div>
-    </div>
+    <div class="hp-sub-h">AI sector summary — plain-language read</div>
+    <div class="hp-p">At the top of every sector's detail page (tap any card's <em>↗ Detail</em> button) you'll see a "Generate AI Summary" button. Tap it to get a 4-5 sentence plain-English read on the sector's current situation, written by Claude. The summary covers four things: the current valuation band and what it means historically, the EPS trajectory (rising, falling, flat, near peak), any divergence between P/E and P/B for dual-metric sectors, and a one-line note on whether history backs the current signal (drawn from the same backtest engine described in section 6).</div>
 
-    <div class="hp-sub-h">AI summary — how to use it</div>
-    <div class="hp-p">The AI summary sits at the top of every sector's detail overlay. It does not load automatically — tap <strong>Generate</strong> when you want a read. The summary covers: current valuation band and what it means relative to history, the EPS trend (level and direction), and any notable divergence between P/E and P/B for dual-metric sectors.</div>
     <div class="hp-card tip">
       <div class="hp-card-ttl">What the AI does and doesn't do</div>
       <ul class="hp-list" style="margin:0">
-        <li><strong>Does:</strong> Summarises the valuation data in plain language. Identifies the signal band, the EPS trend pill, and whether the cheapness looks earnings-driven or price-driven.</li>
-        <li><strong>Does not:</strong> Access news, macro data, or anything outside the numbers on screen. It cannot tell you about RBI policy, recent results, or management changes. The summary is a structured reading of the existing data — not research.</li>
-        <li><strong>Daily limit:</strong> 30 summaries per account per day, resets at midnight.</li>
+        <li><strong>Does:</strong> Translate the on-screen numbers into a paragraph. Identifies the band, the EPS pill, the divergence (if any), and whether the historical hit rate at this threshold has been favourable.</li>
+        <li><strong>Doesn't:</strong> Access news, macro headlines, central bank policy, recent earnings releases, or anything outside the data shown on screen. The AI is a structured reader of the dashboard, not a research assistant.</li>
+        <li><strong>Doesn't recommend:</strong> No "buy this" or "sell that" calls. The summary is descriptive — it tells you what the data says, not what to do about it.</li>
+        <li><strong>Daily limit:</strong> 30 summaries per account per day, resets at midnight IST. The cap exists because each summary call costs a small amount on the backend; if you hit it, the button disables until midnight.</li>
       </ul>
     </div>
 
-    <div class="hp-sub-h">Alpha vs Nifty 50 — what it means</div>
-    <div class="hp-p">A sector earning +22% CAGR over 12 months sounds strong — but if Nifty 50 returned +20% in the same period, the sector only generated +2% of genuine alpha. The "vs Nifty 50" column does this comparison automatically for every signal row in the backtest. It uses the same forward period as the CAGR (6 months or 1 year) and anchors the Nifty 50 return to the exact same buy date, so you're comparing like for like.</div>
-    <div class="hp-p">A strong backtest setup should show not just a high hit rate and positive CAGR, but also consistently positive vs-Nifty values — confirming that the sector was genuinely beating the market during those windows, not just rising with it.</div>
+    <div class="hp-sub-h">Email alerts — get notified at your level</div>
+    <div class="hp-p">Tap the <em>🔔 Alert</em> button at the bottom-right of any card to flip the card and configure an alert. The form has four sections, top to bottom:</div>
+    <dl class="hp-kv">
+      <dt>Metric checkboxes — P/E, P/B</dt><dd>Pick which valuation metric should trigger the alert. For single-metric sectors (IT, Bank, etc.), the appropriate one is pre-ticked. For dual-metric sectors (Realty, Energy, Infra, Metal) both are pre-ticked by default — you can untick either if you want only one to fire.</dd>
+      <dt>Threshold sliders</dt><dd>One slider per ticked metric, ranging 50%–150% of the weighted reference. Drag to your threshold — for example, set the P/B slider to <strong>85%</strong> to mean "alert me when Nifty Bank P/B drops to 85% of its weighted historical median." The slider's default starts at the sector's <em>current</em> % of ref, so you can quickly anchor your alert to where things are right now.</dd>
+      <dt>AND / OR (dual-metric sectors only)</dt><dd>If you've ticked both P/E and P/B for a dual-metric sector, an AND/OR toggle appears: <strong>OR</strong> fires the alert if either metric crosses its threshold (looser, more alerts), <strong>AND</strong> fires only when both are crossed simultaneously (tighter, rarer alerts). OR is the default — it's the right pick for "tell me when this sector starts looking cheap." Switch to AND if you only want high-conviction signals where both lenses agree.</dd>
+      <dt>Trigger — Once or Recurring</dt><dd><strong>Once</strong> means the alert fires the first time the threshold is crossed and then disables itself. Use this for setting a buy target you'll act on immediately. <strong>Recurring</strong> means the alert re-fires every time the threshold is crossed, with a 24-hour cooldown so the same dip doesn't email you twenty times. Use this for monitoring — staying informed without committing to act on the first signal.</dd>
+    </dl>
 
     <div class="hp-card info">
-      <div class="hp-card-ttl">Upgrading</div>
-      <div class="hp-p" style="margin-bottom:0">Sign in with Google, then tap your name in the top-right corner. Plus features are enabled for all signed-in users.</div>
+      <div class="hp-card-ttl">Delivery</div>
+      <div class="hp-p" style="margin-bottom:0">The system checks live NSE data every 15 minutes during market hours (9:15am–3:30pm IST, Mon–Fri) and emails the address you signed in with. You'll get up to 2 active alerts per sector. Manage or delete existing alerts from the same flipped-card view — saved alerts appear as a list at the top of the form.</div>
+    </div>
+
+    <div class="hp-sub-h">Alpha vs Nifty 50 — in the backtest results table</div>
+    <div class="hp-p">In the Backtest results table (covered in section 6), each forward-return column has a sub-column labelled <strong>vs Nifty 50</strong>. This shows the sector's return <em>minus</em> the Nifty 50's return over the same forward window — the genuine alpha generated, separate from whatever the broader market did.</div>
+    <div class="hp-p">Why this matters: a sector earning +22% CAGR over 12 months sounds strong, but if Nifty 50 returned +20% over the same period, only +2% was sector-specific. The vs-Nifty column does this comparison automatically for every signal row. A robust backtest setup shows not just a high hit rate and positive CAGR, but consistently positive vs-Nifty values too — confirming the sector was beating the market, not just rising with it.</div>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">How to enable Plus</div>
+      <div class="hp-p" style="margin-bottom:0">Sign in with Google from the top-right corner. Plus features unlock automatically for all signed-in users until 31 October 2026. After that, Plus becomes a paid tier — sign-in alone won't unlock it.</div>
     </div>
   </div>
 
-  <!-- ══ 8. LIMITS ══ -->
+  <!-- ══ 8. LIMITS &amp; HONEST CAVEATS ══ -->
   <div class="hp-sec" id="h-limits">
-    <div class="hp-sec-h">8 · Limits &amp; caveats</div>
-    <div class="hp-p">This tool is designed to sharpen decisions, not replace judgement. Here are the honest limits:</div>
+    <div class="hp-sec-h">8 · Limits &amp; honest caveats</div>
+    <div class="hp-p">SectorScope is a <em>decision-sharpening tool</em>, not a forecasting engine. Before you act on what it shows, here's what to keep in mind:</div>
 
     <ul class="hp-list">
-      <li><strong>Valuation is not timing.</strong> A sector in the "Very Cheap" band can stay cheap — or get cheaper — for months before reversing. These signals are for patient capital with a 6–12 month horizon, not for predicting next week's move.</li>
-      <li><strong>Index composition changes over time.</strong> Nifty sectoral indices reconstitute periodically. The 10-year P/E series for Nifty IT in 2025 includes different companies than it did in 2014. Very long histories blend old and new compositions — treat them as approximate, not precise.</li>
-      <li><strong>No macro overlay.</strong> The model knows nothing about RBI rate cycles, the INR, global commodity prices, or credit cycles. A "Cheap" PSU Bank signal during a credit crisis is a different risk than a "Cheap" signal in a stable macro environment. Add your own macro read.</li>
-      <li><strong>EPS can be distorted.</strong> The EPS series uses NSE's reported TTM earnings methodology. One-off asset sales, accounting changes, or a single large provisioning quarter can make EPS look unusually high or low for a quarter or two. Cross-check with reported quarterly results if EPS looks surprising.</li>
-      <li><strong>Structural regime changes.</strong> The model puts only 10% weight on the 10-year median, so it adapts gradually to re-ratings. But if a sector undergoes a fundamental structural change — like PSU Banks after IBC/asset-quality clean-up — the new regime won't fully dominate the reference for another few years. During a transition, treat the signal as directional rather than precise.</li>
+      <li><strong>Valuation is not timing.</strong> A sector in the "Very Cheap" band can stay cheap — or get cheaper — for months before reversing. These signals are for patient capital with a 6 to 12 month horizon, not for predicting next week's move.</li>
+      <li><strong>Index composition changes over time.</strong> Nifty sectoral indices reconstitute periodically. The 10-year P/E series for Nifty IT in 2025 includes different companies than it did in 2015. Very long histories blend old and new compositions — treat them as approximate, not precise.</li>
+      <li><strong>No macro overlay.</strong> The model knows nothing about RBI rate cycles, the rupee, global commodity prices, or credit cycles. A "Cheap" PSU Bank signal during a credit crisis is a different risk than the same signal in a stable macro environment. Add your own macro read.</li>
+      <li><strong>EPS can be distorted.</strong> The EPS series uses NSE's reported trailing-twelve-month earnings methodology. One-off asset sales, accounting changes, or a single large provisioning quarter can make EPS look unusually high or low for a quarter or two. If the EPS bar charts on the detail page look surprising, cross-check with the actual quarterly results.</li>
+      <li><strong>Structural regime changes.</strong> The model puts only 10% weight on the 10-year median, so it adapts gradually to re-ratings. But if a sector undergoes a genuinely fundamental structural change — like PSU Banks after the IBC clean-up, or IT after the 2020 work-from-home re-rating — the new regime won't fully dominate the reference for another few years. During a transition, treat the signal as directional rather than precise.</li>
+      <li><strong>Backtest results are conditional, not predictive.</strong> A 75% hit rate over the last 10 years tells you what worked historically. It doesn't guarantee the next signal will work. Markets shift; sample sizes are small; tomorrow may not look like yesterday. Use the backtest as a sanity-check, not a guarantee.</li>
     </ul>
 
     <div class="hp-card tip">
-      <div class="hp-card-ttl">Best practice</div>
-      <div class="hp-p" style="margin-bottom:0">Use this as <strong>one structured input among several</strong>. The signals are most powerful when: (1) the valuation band is Very Cheap or Cheap, (2) the EPS pill shows ▲ LOW · RISING (or no pill with healthy YoY growth), (3) the backtest shows a strong historical hit rate at this threshold, and (4) your own fundamental/macro view doesn't contradict the signal. All four together is a high-conviction setup. A ▼ LOW · FALLING pill is a hard veto on points 1 and 2 — do not act regardless of how the others look.</div>
+      <div class="hp-card-ttl">How to use this tool well</div>
+      <div class="hp-p">Treat SectorScope as <strong>one structured input among several</strong>. The signals carry the most weight when all of these line up:</div>
+      <ol class="hp-list" style="margin:8px 0 0">
+        <li>The valuation band is <strong>Cheap</strong> or <strong>Very Cheap</strong>.</li>
+        <li>The EPS pill is showing <span style="color:var(--vchp-c);font-weight:700">▲ LOW · RISING</span> (or absent for sectors where EPS rarely drops far below peak).</li>
+        <li>The backtest shows a strong hit rate and positive vs-Nifty alpha at this threshold.</li>
+        <li>Your own fundamental view of the sector and the macro backdrop doesn't contradict the signal.</li>
+      </ol>
+      <div class="hp-p" style="margin:10px 0 0"><span style="color:var(--exp-c);font-weight:700">▼ LOW · FALLING</span> is a hard veto. Even if everything else looks favourable, a falling-knife pill means earnings are dragging price down and you're trying to catch a sector mid-collapse. Wait for the pill to flip before acting.</div>
     </div>
 
     <div class="hp-note">India Equity · NSE sector indices · Valuations based on trailing TTM earnings &amp; book value.</div>
@@ -2037,6 +2048,16 @@ var LIVE_NAME_MAP={
   /* NIFTY (Nifty50) is intentionally omitted — not one of our sectors */
 };
 var liveCache={};  /* keyed by our sector name: {price,pe,pb,asOf} */
+/* Cross-sector inference of whether the daily-append cron has run yet today.
+   'pre-append'  = live differs from last historical row in ≥1 sector
+                   → either market is open, or market closed but cron hasn't
+                   run yet. "previous close" = last historical row.
+   'post-append' = live matches last historical row across all sectors
+                   → cron has appended today's close.
+                   "previous close" = second-to-last historical row.
+   Set by detectAppendState() after live data is in. Default 'pre-append'
+   is safe — it never compares same-day to same-day. */
+var appendState='pre-append';
 
 /* Dual = show both PE and PB */
 var DUAL_S=['Infra','Energy','Realty','Metals'];
@@ -2373,8 +2394,34 @@ function computeStats(data,live){
     else epsPillState='mixed';
   })();
 
+  /* ═══ INTRADAY PRICE CHANGE ═══
+     Determine "previous close" using the global appendState flag set by
+     fetchLiveData / loadSector. Two cases:
+       'pre-append'  — live data differs from history's last row in at
+                       least one sector. Either market is live, or it
+                       closed but the 7-8pm cron hasn't run yet. In both
+                       cases, "today's price" = live (or last if no live)
+                       and "previous close" = last historical row.
+       'post-append' — live data matches history's last row across all
+                       sectors. Cron has appended today's close. So
+                       "today's close" = last row, "previous close" =
+                       second-to-last row.
+     Falls back to 'pre-append' if state is unknown (initial load before
+     cross-sector comparison has run) — this is the safer default since
+     it never compares same-day to same-day. */
+  var prevClose=NaN;
+  var stateForChange=(typeof appendState==='string')?appendState:'pre-append';
+  if(stateForChange==='post-append'&&data.length>=2){
+    var prevRow=data[data.length-2];
+    if(prevRow&&!isNaN(prevRow.price)&&prevRow.price>0) prevClose=prevRow.price;
+  }else if(data.length>=1){
+    if(!isNaN(last.price)&&last.price>0) prevClose=last.price;
+  }
+  var priceChange=(!isNaN(prevClose)&&prevClose>0&&!isNaN(curPrice))
+    ? (curPrice-prevClose)/prevClose : NaN;
+
   return{
-    curPE,curPB,curEPS,curPrice,
+    curPE,curPB,curEPS,curPrice,prevClose,priceChange,
     pe3,pe5,pe10,peRef,pePct,pePctRef,peBand,pePctBand,peDiv,
     pb3,pb5,pb10,pbRef,pbPct,pbPctRef,pbBand,pbPctBand,pbDiv,
     maxEPS, epsPctPeak, epsYoY, epsPillState,
@@ -2460,18 +2507,16 @@ function sparkSVG(rows,f1,c1,f2,c2,med3,isLight){
   var n=pts.length;
   var mn=pts.reduce(function(m,r){return Math.min(m,r[f1]);},Infinity);
   var mx=pts.reduce(function(m,r){return Math.max(m,r[f1]);}, -Infinity);
-  if(!isNaN(med3)&&isFinite(med3)){mn=Math.min(mn,med3);mx=Math.max(mx,med3);}
+  /* Note: med3 used to expand the y-range so the static 3yr median line
+     would always sit inside the plot. We've removed that line from the
+     dashboard sparkline (the expanded chart modal handles medians via
+     toggles), so the y-range now snaps tightly to the actual data. */
   var rng=mx-mn||1,P=9;
   function y1(v){return 100-P-((v-mn)/rng)*(100-2*P);}
   function xn(i,n){return(i/(n-1))*100;}
   var d='',area='';
   for(var i=0;i<n;i++){var x=xn(i,n).toFixed(1),y=y1(pts[i][f1]).toFixed(1);d+=(i?'L':'M')+x+','+y+' ';}
   area=d+'L100,100 L0,100 Z';
-  var mln='';
-  if(!isNaN(med3)&&isFinite(med3)){
-    var my=y1(med3).toFixed(1);
-    mln='<line x1="0" y1="'+my+'" x2="100" y2="'+my+'" stroke="'+(isLight?'rgba(0,0,0,.28)':'rgba(255,255,255,.28)')+'" stroke-width=".9" stroke-dasharray="3,2" vector-effect="non-scaling-stroke"/>';
-  }
   var d2='';
   if(f2&&c2){
     var pts2=rows.filter(function(r){return r[f2]&&!isNaN(r[f2])&&r[f2]>0;});
@@ -2485,7 +2530,6 @@ function sparkSVG(rows,f1,c1,f2,c2,med3,isLight){
   }
   return'<svg viewBox="0 0 100 100" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">'
     +'<path d="'+area+'" fill="'+c1+'" opacity="'+(isLight?.07:.12)+'"/>'
-    +mln
     +'<path d="'+d+'" fill="none" stroke="'+c1+'" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>'
     +(d2?'<path d="'+d2+'" fill="none" stroke="'+c2+'" stroke-width="1.1" opacity=".72" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>':'')
     +'</svg>';
@@ -2499,7 +2543,6 @@ function chartEl(rows,f1,c1,f2,c2,med3,isLight,lbl1,lbl2,sectorName){
     +'<div class="chart-legend">'
       +'<div class="cl-item"><div class="cl-line" style="background:'+c1+'"></div><span>'+lbl1+'</span></div>'
       +(f2?'<div class="cl-item"><div class="cl-line" style="background:'+c2+'"></div><span>'+lbl2+'</span></div>':'')
-      +'<div class="cl-item"><div class="cl-dash"></div><span>3yr median</span></div>'
     +'</div>'+svg+hint+'</div>';
 }
 
@@ -2552,18 +2595,28 @@ function yoyColor(yoy){
 }
 
 /* Front-tile EPS metrics: % of peak (small grey), YoY (colored), EPS-low pill */
+/* Intraday price change vs previous close. Empty string if no live data
+   or insufficient history. The rendering site decides where to place it;
+   the helper just returns the markup. */
+function priceChangeBadge(st){
+  if(isNaN(st.priceChange)) return '';
+  var pct=st.priceChange*100;
+  var cls=Math.abs(pct)<0.05?'flat':(pct>0?'up':'down');
+  var sign=pct>0?'+':(pct<0?'':''); // negative carries its own sign via toFixed
+  return '<span class="price-chg '+cls+'">'+sign+pct.toFixed(2)+'%</span>';
+}
+
 function epsMetricsHTML(st){
   var html='';
   if(!isNaN(st.epsPctPeak)){
     html+='<div class="eps-pct">'+Math.round(st.epsPctPeak*100)+'% of peak</div>';
   }
   var parts=[];
-  if(!isNaN(st.epsYoY)){
-    var pct=(st.epsYoY*100).toFixed(1),sign=st.epsYoY>=0?'+':'';
-    parts.push('<span class="eps-yoy" style="color:'+yoyColor(st.epsYoY)+'">'+sign+pct+'%</span>');
-  }
   /* Three-state pill: fires only when EPS is low vs winsorised peak.
-     Direction of the last two QoQ medians decides colour + glyph. */
+     Direction of the last two QoQ medians decides colour + glyph.
+     YoY % was previously shown here too, but it duplicated the same
+     metric that lives in the sector detail overlay (see epsBox); on
+     the dashboard cards it added clutter without new signal. */
   if(st.epsPillState==='rising'){
     parts.push('<span class="eps-pill rising">▲ LOW · RISING</span>');
   }else if(st.epsPillState==='falling'){
@@ -2638,6 +2691,7 @@ function buildCard(sec,st){
           +((!isNaN(st.curPrice)||st.peDiv.kind!=='none'||st.pbDiv.kind!=='none')
             ? '<div class="cf-price">'
                 +(!isNaN(st.curPrice)?f(st.curPrice,0):'')
+                +priceChangeBadge(st)
                 +(st.peDiv.kind!=='none'?divCapsule({kind:st.peDiv.kind,msg:'P/E · '+st.peDiv.msg}):'')
                 +(st.pbDiv.kind!=='none'?divCapsule({kind:st.pbDiv.kind,msg:'P/B · '+st.pbDiv.msg}):'')
               +'</div>'
@@ -2688,6 +2742,7 @@ function buildCard(sec,st){
         +((!isNaN(st.curPrice)||st.pbDiv.kind!=='none')
           ? '<div class="cf-price">'
               +(!isNaN(st.curPrice)?f(st.curPrice,0):'')
+              +priceChangeBadge(st)
               +(st.pbDiv.kind!=='none'?divCapsule(st.pbDiv):'')
             +'</div>'
           : '')
@@ -2728,6 +2783,7 @@ function buildCard(sec,st){
       +((!isNaN(st.curPrice)||st.peDiv.kind!=='none')
         ? '<div class="cf-price">'
             +(!isNaN(st.curPrice)?f(st.curPrice,0):'')
+            +priceChangeBadge(st)
             +(st.peDiv.kind!=='none'?divCapsule(st.peDiv):'')
           +'</div>'
         : '')
@@ -2832,6 +2888,30 @@ function setStatus(msg,cls){
   }
 }
 
+/* Cross-sector inference: has today's daily-append cron run yet?
+   Compares each sector's live.price to its last historical row's price.
+   Tolerance of 0.01 absorbs floating-point drift from sheet rounding.
+   Skips sectors with no live data (e.g. NSE intermittently dropped one)
+   so a single fetch failure doesn't false-flag the global state.
+   Sets the appendState global and returns it. */
+function detectAppendState(){
+  var anyDiffer=false, compared=0;
+  Object.keys(dataCache).forEach(function(name){
+    var hist=dataCache[name];
+    var live=liveCache[name];
+    if(!hist||!hist.length||!live||isNaN(live.price)||live.price<=0) return;
+    var lastPrice=hist[hist.length-1].price;
+    if(isNaN(lastPrice)||lastPrice<=0) return;
+    compared++;
+    if(Math.abs(live.price-lastPrice)>0.01) anyDiffer=true;
+  });
+  /* If we couldn't compare anything (cold load, all live missing), keep
+     the safe default. Don't flip to post-append on zero evidence. */
+  if(compared===0) return appendState;
+  appendState=anyDiffer?'pre-append':'post-append';
+  return appendState;
+}
+
 /* ════════════════════════════════════════
    LIVE FEED — fetch, parse, populate liveCache
    Called once at startup and on every reloadAll().
@@ -2898,6 +2978,9 @@ async function fetchLiveData(){
     if(loaded>0){
       var chip=document.getElementById('live-chip');
       if(chip){chip.textContent='LIVE '+asOf;chip.classList.add('visible');}
+      /* Detect append state across all sectors BEFORE re-rendering, so
+         each card's computeStats reads the correct global flag. */
+      detectAppendState();
       /* Re-render any sectors that already loaded before live data arrived */
       Object.keys(dataCache).forEach(function(name){
         if(!liveCache[name]) return;
@@ -2916,6 +2999,9 @@ async function loadSector(sec){
   try{
     var raw=await fetchWithRetry(sec.url);
     var data=normalise(raw);dataCache[sec.name]=data;
+    /* Re-evaluate append state — this sector's history just arrived,
+       which may change the cross-sector live-vs-last comparison. */
+    detectAppendState();
     var st=computeStats(data,liveCache[sec.name]||null);loadedCount++;
     if(st) renderCard(sec,st); else showErr(sec,'No usable data');
   }catch(e){failedCount++;showErr(sec,e.message);}
@@ -2931,6 +3017,7 @@ async function loadAllStaggered(){
 }
 function reloadAll(){
   loadedCount=0;failedCount=0;statCache={};dataCache={};liveCache={};
+  appendState='pre-append';
   var chip=document.getElementById('live-chip');
   if(chip) chip.classList.remove('visible');
   setStatus('⏳ Connecting…');initPlaceholders();
