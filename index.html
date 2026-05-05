@@ -162,6 +162,9 @@ html.light .s-card:hover .card-face{box-shadow:0 6px 24px rgba(0,0,0,.10)}
 .bpill{display:inline-flex;align-items:center;gap:4px;font-family:var(--mono);font-size:.54rem;font-weight:700;letter-spacing:.4px;padding:3px 8px;border-radius:16px;border:1px solid;white-space:nowrap}
 /* divergence capsule — amber, sits next to band pills on the front header */
 .div-cap{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:.48rem;font-weight:600;letter-spacing:.2px;padding:2px 7px;border-radius:12px;border:1px solid var(--neu-bd);background:var(--neu-tl);color:var(--neu-c);white-space:nowrap}
+/* Limited-history capsule — informational tone (sub-color) to distinguish from
+   the amber divergence capsule. Shown on cards for sectors with <10yr history. */
+.hist-cap{display:inline-flex;align-items:center;gap:3px;font-family:var(--mono);font-size:.48rem;font-weight:600;letter-spacing:.2px;padding:2px 7px;border-radius:12px;border:1px solid var(--bdr);background:var(--bg2);color:var(--sub);white-space:nowrap}
 /* tiles */
 .tiles{display:grid;gap:7px;margin-top:9px;flex-shrink:0}
 .t1{grid-template-columns:1fr}.t2{grid-template-columns:1fr 1fr}.t3{grid-template-columns:1fr 1fr 1fr}
@@ -1025,6 +1028,9 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
             <option value="Energy">Nifty Energy</option>
             <option value="Metals">Nifty Metals</option>
             <option value="Pharma">Nifty Pharma</option>
+            <option value="Fin Services">Nifty Fin Services</option>
+            <option value="Defence">Nifty Defence</option>
+            <option value="Healthcare">Nifty Healthcare</option>
           </select>
         </div>
         <div class="bt-field">
@@ -1173,7 +1179,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
     <div class="hp-sub-h">What's a sector index?</div>
     <div class="hp-p">The Indian stock market is divided into sectors by the kind of business each company runs — software companies form the IT sector, banks form the Banking sector, drug companies form the Pharma sector, and so on. NSE (the National Stock Exchange) publishes a single number for each sector that tracks the combined market value of the largest companies in it. That number is the <strong>sector index</strong>. When you read "Nifty Bank is up 1.2% today," it means the average bank in that index moved up 1.2%.</div>
-    <div class="hp-p">SectorScope tracks ten sector indices: <strong>IT, Bank, PSU Bank, Auto, FMCG, Pharma, Realty, Metal, Energy, Infra</strong>. Plus the broad Nifty 50, used as a benchmark inside the Backtest engine.</div>
+    <div class="hp-p">SectorScope tracks multiple sector indices: <strong>IT, Bank, PSU Bank, Auto, FMCG, Pharma, Realty, Metal, Energy, Infra, Fin Services, Defence, Healthcare</strong>. Plus the broad Nifty 50, used as a benchmark inside the Backtest engine.</div>
 
     <div class="hp-sub-h">P/E — Price to Earnings</div>
     <div class="hp-p">If a stock trades at ₹100 and the underlying business earns ₹5 per share each year, the <strong>P/E</strong> is 100 ÷ 5 = <strong>20</strong>. Read it as "investors are paying ₹20 for every ₹1 of yearly profit." Lower P/E generally means cheaper; higher P/E generally means richer (often because the market expects growth).</div>
@@ -1203,6 +1209,11 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <div class="hp-sub-h">"Weighted reference" — putting it together</div>
     <div class="hp-p">Rather than picking one history window and sticking with it, we compute three medians — the 3-year, 5-year, and 10-year — and blend them: <strong>30% weight on the 3-year, 60% on the 5-year, 10% on the 10-year</strong>. The result is what we call the <strong>weighted reference</strong>, and it's the single number we compare today against to assign a band (Very Cheap, Cheap, Neutral, Expensive, Very Expensive).</div>
     <div class="hp-p">Why this blend? The 5-year median is the workhorse — long enough to absorb a couple of cycles, short enough to still be relevant. The 3-year medium adds responsiveness so a sector that has structurally re-rated higher (or lower) gets credit for its more recent regime. The 10-year is a small safety anchor that pulls in deep history so we don't lose context entirely.</div>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">Newer sectors — alternate blend</div>
+      <div class="hp-p" style="margin-bottom:0">A few sector indices launched relatively recently — Defence (Jan 2022), Healthcare (Nov 2020). For any sector with less than five years of history, the standard blend doesn't work because the 5-year and 10-year medians don't have enough data behind them. We switch to a simpler alternate: <strong>40% all-time + 60% × 3-year</strong>. Cards from sectors with less than 10 years of history get a small <em>"N yrs history"</em> badge so you can see at a glance that the reference is computed on a shorter base than the established sectors. Hover the badge for details.</div>
+    </div>
 
     <div class="hp-card tip">
       <div class="hp-card-ttl">If you only remember one thing</div>
@@ -1345,8 +1356,8 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <div class="hp-sub-h">Which metric does each sector use?</div>
     <div class="hp-p">The tool picks the right metric automatically — you don't need to change anything.</div>
     <dl class="hp-kv">
-      <dt>P/E only</dt><dd>IT, Auto, FMCG, Pharma — stable, earnings-driven businesses where P/E is the primary lens.</dd>
-      <dt>P/B only</dt><dd>Bank, PSU Bank — for banks, earnings are distorted by provisioning cycles, so book value is the more reliable anchor.</dd>
+      <dt>P/E only</dt><dd>IT, Auto, FMCG, Pharma, Defence, Healthcare — stable, earnings-driven businesses where P/E is the primary lens.</dd>
+      <dt>P/B only</dt><dd>Bank, PSU Bank, Fin Services — for financial-sector indices, earnings are distorted by provisioning cycles, so book value is the more reliable anchor.</dd>
       <dt>Both P/E + P/B</dt><dd>Infra, Energy, Realty, Metals — asset-heavy cyclicals where you want both an earnings lens and an asset-value lens.</dd>
     </dl>
 
@@ -1356,7 +1367,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   <div class="hp-sec" id="h-bands">
     <div class="hp-sec-h">4 · How signals work</div>
     <div class="hp-p">Every coloured band, percentile rank, and pill on a dashboard card comes from one of three signals: the <strong>band</strong> (how far below or above the historical anchor), the <strong>percentile</strong> cross-check (how often the sector has been at this level), and the <strong>EPS pill</strong> (whether the underlying earnings story supports the cheapness). This section walks through each, with concrete numbers.</div>
-    <div class="hp-p">A quick refresher: the <em>weighted reference</em> we'll keep referring to is a blend of three rolling medians (30% · 3-year, 60% · 5-year, 10% · 10-year). If that's already feeling fuzzy, jump back to <strong>section 2</strong> for the explanation.</div>
+    <div class="hp-p">A quick refresher: the <em>weighted reference</em> we'll keep referring to is a blend of three rolling medians (30% · 3-year, 60% · 5-year, 10% · 10-year). Newer sectors with less than 5 years of history use a different blend (40% all-time + 60% × 3-year) and get a small "N yrs history" badge on the card. If that's already feeling fuzzy, jump back to <strong>section 2</strong> for the full explanation.</div>
 
     <div class="hp-sub-h">The band — your first read</div>
     <div class="hp-p">The card colour is determined by a single number: <strong>current value ÷ weighted reference</strong>. Call this the <em>ratio</em>. Here's how each ratio maps to a verdict:</div>
@@ -2019,32 +2030,38 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 var WORKER_BASE='https://sectorscope.prashant-06f.workers.dev';
 
 var SECTORS=[
-  {name:'Infra',   abbr:'INF',color:'#818cf8',url:WORKER_BASE+'/sector/Infra'},
-  {name:'Realty',  abbr:'REL',color:'#f472b6',url:WORKER_BASE+'/sector/Realty'},
-  {name:'Bank',    abbr:'BNK',color:'#60a5fa',url:WORKER_BASE+'/sector/Bank'},
-  {name:'PSU Bank',abbr:'PSU',color:'#22d3ee',url:WORKER_BASE+'/sector/'+encodeURIComponent('PSU Bank')},
-  {name:'IT',      abbr:'IT', color:'#a78bfa',url:WORKER_BASE+'/sector/IT'},
-  {name:'Auto',    abbr:'AUT',color:'#fbbf24',url:WORKER_BASE+'/sector/Auto'},
-  {name:'FMCG',    abbr:'FMC',color:'#34d399',url:WORKER_BASE+'/sector/FMCG'},
-  {name:'Energy',  abbr:'ENE',color:'#fb923c',url:WORKER_BASE+'/sector/Energy'},
-  {name:'Metals',  abbr:'MET',color:'#94a3b8',url:WORKER_BASE+'/sector/Metals'},
-  {name:'Pharma',  abbr:'PHR',color:'#2dd4bf',url:WORKER_BASE+'/sector/Pharma'}
+  {name:'Infra',       color:'#818cf8',url:WORKER_BASE+'/sector/Infra'},
+  {name:'Realty',      color:'#f472b6',url:WORKER_BASE+'/sector/Realty'},
+  {name:'Bank',        color:'#60a5fa',url:WORKER_BASE+'/sector/Bank'},
+  {name:'PSU Bank',    color:'#22d3ee',url:WORKER_BASE+'/sector/'+encodeURIComponent('PSU Bank')},
+  {name:'IT',          color:'#a78bfa',url:WORKER_BASE+'/sector/IT'},
+  {name:'Auto',        color:'#fbbf24',url:WORKER_BASE+'/sector/Auto'},
+  {name:'FMCG',        color:'#34d399',url:WORKER_BASE+'/sector/FMCG'},
+  {name:'Energy',      color:'#fb923c',url:WORKER_BASE+'/sector/Energy'},
+  {name:'Metals',      color:'#94a3b8',url:WORKER_BASE+'/sector/Metals'},
+  {name:'Pharma',      color:'#2dd4bf',url:WORKER_BASE+'/sector/Pharma'},
+  {name:'Fin Services',color:'#fde047',url:WORKER_BASE+'/sector/'+encodeURIComponent('Fin Services')},
+  {name:'Defence',     color:'#10b981',url:WORKER_BASE+'/sector/Defence'},
+  {name:'Healthcare',  color:'#f9a8d4',url:WORKER_BASE+'/sector/Healthcare'}
 ];
 
 /* ── Live intraday feed (updates every 20 min) ── */
 var LIVE_FEED_URL=WORKER_BASE+'/live';
 /* Maps live feed sector names → our internal sector names */
 var LIVE_NAME_MAP={
-  'NIFTY BANK':    'Bank',
-  'NIFTY AUTO':    'Auto',
-  'NIFTY IT':      'IT',
-  'NIFTY INFRA':   'Infra',
-  'NIFTY PHARMA':  'Pharma',
-  'NIFTY FMCG':    'FMCG',
-  'NIFTY PSU BANK':'PSU Bank',
-  'NIFTY REALTY':  'Realty',
-  'NIFTY METAL':   'Metals',
-  'NIFTY ENERGY':  'Energy'
+  'NIFTY BANK':           'Bank',
+  'NIFTY AUTO':           'Auto',
+  'NIFTY IT':             'IT',
+  'NIFTY INFRA':          'Infra',
+  'NIFTY PHARMA':         'Pharma',
+  'NIFTY FMCG':           'FMCG',
+  'NIFTY PSU BANK':       'PSU Bank',
+  'NIFTY REALTY':         'Realty',
+  'NIFTY METAL':          'Metals',
+  'NIFTY ENERGY':         'Energy',
+  'NIFTY FIN SERVICES':   'Fin Services',
+  'NIFTY INDIA DEFENCE':  'Defence',
+  'NIFTY HEALTHCARE':     'Healthcare'
   /* NIFTY (Nifty50) is intentionally omitted — not one of our sectors */
 };
 var liveCache={};  /* keyed by our sector name: {price,pe,pb,asOf} */
@@ -2062,8 +2079,8 @@ var appendState='pre-append';
 /* Dual = show both PE and PB */
 var DUAL_S=['Infra','Energy','Realty','Metals'];
 /* PB only */
-var PURE_PB=['Bank','PSU Bank'];
-/* All others (IT/Auto/FMCG/Pharma) are PE only */
+var PURE_PB=['Bank','PSU Bank','Fin Services'];
+/* All others (IT/Auto/FMCG/Pharma/Defence/Healthcare) are PE only */
 function cardType(n){ return DUAL_S.indexOf(n)>=0?'dual':PURE_PB.indexOf(n)>=0?'pb':'pe'; }
 
 var BAND={
@@ -2156,11 +2173,28 @@ function divergence(refBand,pctBand){
   if(expensive[refBand] && !expensive[pctBand]) return {kind:'expensive',msg:'often this expensive'};
   return {kind:'none',msg:''};
 }
-function weightedRef(m3,m5,m10){
-  /* Weighted median: 30% × 3y + 60% × 5y + 10% × 10y.
-     Low 10y weight lets the reference reflect the current regime without needing
-     a regime flag. If any window is missing, its weight is redistributed
-     proportionally across the surviving windows. */
+function weightedRef(m3,m5,m10,mAll,hasFullHistory){
+  /* Standard blend (≥5 years of history): 30% × 3yr + 60% × 5yr + 10% × 10yr.
+     Low 10y weight lets the reference reflect the current regime without
+     needing a regime flag. If any window is missing, its weight is
+     redistributed proportionally across the surviving windows.
+
+     Alternate blend (<5 years of history): 40% × all-time + 60% × 3yr.
+     Activated when hasFullHistory is explicitly false. The 5yr and 10yr
+     windows in this case are technically computable (any data in the
+     window passes the ok5/ok10 checks) but the resulting medians are
+     based on too little data to be trusted, so we ignore them and use
+     the all-time median as the long-horizon anchor instead.
+
+     Backwards-compatible: callers that don't pass mAll/hasFullHistory
+     fall through to the standard blend. */
+  if(hasFullHistory===false){
+    var okA=!isNaN(mAll)&&mAll>0, ok3=!isNaN(m3)&&m3>0;
+    if(!okA&&!ok3) return NaN;
+    var na=0,da=0;
+    if(ok3){na+=.60*m3;da+=.60;} if(okA){na+=.40*mAll;da+=.40;}
+    return na/da;
+  }
   var ok3=!isNaN(m3)&&m3>0,ok5=!isNaN(m5)&&m5>0,ok10=!isNaN(m10)&&m10>0;
   if(!ok3&&!ok5&&!ok10) return NaN;
   var n=0,d=0;
@@ -2269,6 +2303,32 @@ function computeStats(data,live){
   var last=data[data.length-1];
   var s3=sliceYrs(data,3),s5=sliceYrs(data,5),s10=sliceYrs(data,10);
 
+  /* ═══ DATA HISTORY LENGTH ═══
+     Years of history available, computed from earliest to latest data row.
+     Two thresholds derive from this:
+       hasFullHistory (≥5yr) — controls which weightedRef blend is used
+       isShortHistory (<10yr) — controls whether to show the warning badge
+     A new sector with only 2 years of data needs the alternate blend AND
+     the warning. A 7-year-old sector still uses the standard blend (5yr
+     is well-formed) but should still show the warning so users know the
+     10yr anchor isn't fully trusted. */
+  var dataYears=NaN;
+  if(data.length>=2){
+    var firstDate=new Date(data[0].date),lastDate=new Date(last.date);
+    if(!isNaN(firstDate)&&!isNaN(lastDate)){
+      dataYears=(lastDate-firstDate)/(365.25*86400000);
+    }
+  }
+  var hasFullHistory=!isNaN(dataYears)&&dataYears>=5;
+  var isShortHistory=!isNaN(dataYears)&&dataYears<10;
+
+  /* All-time medians, used as the long-horizon anchor in the alternate
+     blend for sectors with <5 years of history. Computed from the full
+     data array (not a sliced window) — same winsorisation as the other
+     medians for consistency. */
+  var peWAll=winsorise(vv(data,'pe')),pbWAll=winsorise(vv(data,'pb'));
+  var peAll=median(peWAll),pbAll=median(pbWAll);
+
   /* winsorised series (5yr is the percentile reference now) */
   var peW5=winsorise(vv(s5,'pe')),peW3=winsorise(vv(s3,'pe')),peW10=winsorise(vv(s10,'pe'));
   var pbW5=winsorise(vv(s5,'pb')),pbW3=winsorise(vv(s3,'pb')),pbW10=winsorise(vv(s10,'pb'));
@@ -2276,9 +2336,9 @@ function computeStats(data,live){
   var pe3=median(peW3),pe5=median(peW5),pe10=median(peW10);
   var pb3=median(pbW3),pb5=median(pbW5),pb10=median(pbW10);
 
-  /* weighted reference — 30% × 3y + 60% × 5y + 10% × 10y */
-  var peRef=weightedRef(pe3,pe5,pe10);
-  var pbRef=weightedRef(pb3,pb5,pb10);
+  /* weighted reference — picks the right blend based on hasFullHistory */
+  var peRef=weightedRef(pe3,pe5,pe10,peAll,hasFullHistory);
+  var pbRef=weightedRef(pb3,pb5,pb10,pbAll,hasFullHistory);
 
   /* percentile rank in 5-year winsorised history */
   /* Use live intraday Price/PE/PB/EPS when available; fall back to last historical row.
@@ -2426,7 +2486,8 @@ function computeStats(data,live){
     pb3,pb5,pb10,pbRef,pbPct,pbPctRef,pbBand,pbPctBand,pbDiv,
     maxEPS, epsPctPeak, epsYoY, epsPillState,
     isLive:!!(live&&(live.pe||live.pb)), liveAsOf:live?live.asOf:null,
-    data3yr:s3
+    data3yr:s3,
+    dataYears:dataYears, isShortHistory:isShortHistory
   };
 }
 
@@ -2579,6 +2640,17 @@ function divCapsule(div){
   if(!div||div.kind==='none') return '';
   return'<span class="div-cap" title="The band says '+(div.kind==='cheap'?'cheap':'expensive')+' vs the weighted median, but the sector has been at this level often in the last 5 years">⚠ '+div.msg+'</span>';
 }
+/* Limited-history badge for newer sectors. Shown when total history is <10 years.
+   Returns empty string when sector has full 10+ year history. */
+function histCapsule(st){
+  if(!st||!st.isShortHistory||isNaN(st.dataYears)) return '';
+  var yrs=Math.floor(st.dataYears);
+  var label=yrs<2?'<2 yrs history':yrs+' yrs history';
+  var tip=st.dataYears<5
+    ? 'Limited history: only '+yrs+' years of data. The weighted reference uses an alternate blend (40% all-time + 60% × 3yr) until 5+ years accumulate.'
+    : 'Limited history: '+yrs+' years of data. Standard 5yr median is well-formed but the 10yr anchor is incomplete.';
+  return '<span class="hist-cap" title="'+tip+'">◷ '+label+'</span>';
+}
 function cbrows(field,m3,m5,m10,cur){
   function r(lbl,med){
     var mult=(!isNaN(cur)&&!isNaN(med)&&med>0)?cur/med:NaN;
@@ -2688,10 +2760,11 @@ function buildCard(sec,st){
           /* Price row: holds the index price AND (when present) divergence
              capsules inline — avoids a separate capsule row that would shift
              tiles/chart down on only some cards. */
-          +((!isNaN(st.curPrice)||st.peDiv.kind!=='none'||st.pbDiv.kind!=='none')
+          +((!isNaN(st.curPrice)||st.peDiv.kind!=='none'||st.pbDiv.kind!=='none'||st.isShortHistory)
             ? '<div class="cf-price">'
                 +(!isNaN(st.curPrice)?f(st.curPrice,0):'')
                 +priceChangeBadge(st)
+                +histCapsule(st)
                 +(st.peDiv.kind!=='none'?divCapsule({kind:st.peDiv.kind,msg:'P/E · '+st.peDiv.msg}):'')
                 +(st.pbDiv.kind!=='none'?divCapsule({kind:st.pbDiv.kind,msg:'P/B · '+st.pbDiv.msg}):'')
               +'</div>'
@@ -2739,10 +2812,11 @@ function buildCard(sec,st){
         +'<div class="cf-top"><span class="cf-name">'+fullName+'</span>'
           +'<div class="pills-col">'+pillRow(st.pbBand,null,st.pbPct,st.pbPctRef)+'</div>'
         +'</div>'
-        +((!isNaN(st.curPrice)||st.pbDiv.kind!=='none')
+        +((!isNaN(st.curPrice)||st.pbDiv.kind!=='none'||st.isShortHistory)
           ? '<div class="cf-price">'
               +(!isNaN(st.curPrice)?f(st.curPrice,0):'')
               +priceChangeBadge(st)
+              +histCapsule(st)
               +(st.pbDiv.kind!=='none'?divCapsule(st.pbDiv):'')
             +'</div>'
           : '')
@@ -2780,10 +2854,11 @@ function buildCard(sec,st){
       +'<div class="cf-top"><span class="cf-name">'+fullName+'</span>'
         +'<div class="pills-col">'+pillRow(st.peBand,null,st.pePct,st.pePctRef)+'</div>'
       +'</div>'
-      +((!isNaN(st.curPrice)||st.peDiv.kind!=='none')
+      +((!isNaN(st.curPrice)||st.peDiv.kind!=='none'||st.isShortHistory)
         ? '<div class="cf-price">'
             +(!isNaN(st.curPrice)?f(st.curPrice,0):'')
             +priceChangeBadge(st)
+            +histCapsule(st)
             +(st.peDiv.kind!=='none'?divCapsule(st.peDiv):'')
           +'</div>'
         : '')
@@ -3182,8 +3257,16 @@ async function btOnSectorChange(){
   function defPct(fld){
     var last=btData[btData.length-1],cur=last[fld];
     if(!cur||isNaN(cur)||cur<=0) return 90;
+    /* Match computeStats: alternate blend when total span <5 years */
+    var span=NaN;
+    if(btData.length>=2){
+      var fd=new Date(btData[0].date),ld=new Date(last.date);
+      if(!isNaN(fd)&&!isNaN(ld)) span=(ld-fd)/(365.25*86400000);
+    }
+    var hasFull=!isNaN(span)&&span>=5;
     var s3v=sliceYrs(btData,3),s5v=sliceYrs(btData,5),s10v=sliceYrs(btData,10);
-    var ref=weightedRef(median(winsorise(vv(s3v,fld))),median(winsorise(vv(s5v,fld))),median(winsorise(vv(s10v,fld))));
+    var mAll=median(winsorise(vv(btData,fld)));
+    var ref=weightedRef(median(winsorise(vv(s3v,fld))),median(winsorise(vv(s5v,fld))),median(winsorise(vv(s10v,fld))),mAll,hasFull);
     var p=(!isNaN(ref)&&ref>0)?Math.round((cur/ref)*100):90;
     return Math.max(50,Math.min(150,p));
   }
@@ -3404,19 +3487,26 @@ function _btCompute(){
     const isLastRow=(i===data.length-1);
     if((i % STRIDE)!==0 && !isLastRow) continue;
 
-    /* weighted reference — 30% × 3y + 60% × 5y + 10% × 10y.
+    /* weighted reference — picks the right blend based on history available
+       AS OF THIS HISTORICAL DATE. A 2024 backtest of Defence (which started
+       Jan 2022) had ~2yr of history at that point — alternate blend used.
+       Same for any past dates where the sector hadn't yet accumulated 5yr.
        Each window is winsorised at 1%/99% before the median so backtest
        references match what the cards display (computeStats does the same). */
+    const elapsedYrs=(tMs - new Date(data[0].date).getTime())/(365.25*86400000);
+    const hasFullHistoryAtT = elapsedYrs >= 5;
     let peRef=NaN, pbRef=NaN;
     if(usePE){
       const h3sl=data.slice(h3s,i+1), h5sl=data.slice(h5s,i+1), h10sl=data.slice(h10s,i+1);
       const pe3=median(winsorise(vv(h3sl,'pe'))),pe5=median(winsorise(vv(h5sl,'pe'))),pe10=median(winsorise(vv(h10sl,'pe')));
-      peRef=weightedRef(pe3,pe5,pe10);
+      const peAllH=hasFullHistoryAtT?NaN:median(winsorise(vv(data.slice(0,i+1),'pe')));
+      peRef=weightedRef(pe3,pe5,pe10,peAllH,hasFullHistoryAtT);
     }
     if(usePB){
       const h3slb=data.slice(h3s,i+1), h5slb=data.slice(h5s,i+1), h10slb=data.slice(h10s,i+1);
       const pb3=median(winsorise(vv(h3slb,'pb'))),pb5=median(winsorise(vv(h5slb,'pb'))),pb10=median(winsorise(vv(h10slb,'pb')));
-      pbRef=weightedRef(pb3,pb5,pb10);
+      const pbAllH=hasFullHistoryAtT?NaN:median(winsorise(vv(data.slice(0,i+1),'pb')));
+      pbRef=weightedRef(pb3,pb5,pb10,pbAllH,hasFullHistoryAtT);
     }
 
     /* remember the last valid ref for the end-of-window summary */
@@ -3564,12 +3654,20 @@ function btComputeHeadless(opts){
     var cur=row[field];  if(!cur||isNaN(cur)||cur<=0) continue;
 
     /* Compute weighted ref at this date.
-       Each window winsorised at 1%/99% before median, matching computeStats and _btCompute. */
+       Each window winsorised at 1%/99% before median, matching computeStats and _btCompute.
+       Picks alternate blend (40% all-time + 60% × 3yr) when sector had <5yr at this date. */
     var w3=[],w5=[],w10=[];
     for(var k=h3s;  k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w3.push(v); }
     for(var k=h5s;  k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w5.push(v); }
     for(var k=h10s; k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w10.push(v); }
-    var ref=weightedRef(median(winsorise(w3)),median(winsorise(w5)),median(winsorise(w10)));
+    var elapsedYrs=(tMs - new Date(data[0].date).getTime())/(365.25*86400000);
+    var hasFullAtT=elapsedYrs>=5;
+    var wAll=[];
+    if(!hasFullAtT){
+      for(var k=0; k<=i; k++){ var v=data[k][field]; if(v>0&&!isNaN(v)) wAll.push(v); }
+    }
+    var ref=weightedRef(median(winsorise(w3)),median(winsorise(w5)),median(winsorise(w10)),
+                        hasFullAtT?NaN:median(winsorise(wAll)),hasFullAtT);
     if(isNaN(ref)||ref<=0) continue;
 
     var ratio=cur/ref;
@@ -4402,12 +4500,22 @@ function cmRollingRef(sectorName, field){
     var m3 =w3.length ?median(winsorise(w3)) :NaN;
     var m5 =w5.length ?median(winsorise(w5)) :NaN;
     var m10=w10.length?median(winsorise(w10)):NaN;
-    var ref=weightedRef(m3,m5,m10);
+    /* Pick the right blend at this point in time. Same threshold as
+       computeStats — <5yr of data → alternate blend (40% all-time + 60% × 3yr). */
+    var elapsedAtPt=(T - pts[0].t)/MS_YR;
+    var hasFullAtPt=elapsedAtPt>=5;
+    var mAll=NaN;
+    if(!hasFullAtPt){
+      var wAll=[];
+      for(var k=0;k<=i;k++) wAll.push(pts[k].v);
+      mAll=median(winsorise(wAll));
+    }
+    var ref=weightedRef(m3,m5,m10,mAll,hasFullAtPt);
     /* Skip points where the weighted ref couldn't be computed at all
-       (all three windows empty). m3/m5/m10 may individually still be valid
-       and used by Median Bands toggle, so check those before pushing too. */
-    if(isNaN(ref) && isNaN(m3) && isNaN(m5) && isNaN(m10)) continue;
-    out.push({d:T, weighted:ref, m3:m3, m5:m5, m10:m10});
+       (all four windows empty). m3/m5/m10/mAll may individually still be
+       valid and used by Median Bands toggle, so check before pushing too. */
+    if(isNaN(ref) && isNaN(m3) && isNaN(m5) && isNaN(m10) && isNaN(mAll)) continue;
+    out.push({d:T, weighted:ref, m3:m3, m5:m5, m10:m10, mAll:mAll});
   }
   CM_REF_CACHE[key]=out;
   return out;
