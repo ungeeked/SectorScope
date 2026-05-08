@@ -5268,7 +5268,7 @@ function renderSubscriptionUI(){
       nameEl.parentNode.insertBefore(badge, nameEl.nextSibling);
     }
   } else {
-    upgradeBtn.style.display='none';
+    upgradeBtn.style.display='flex';
     cancelBtn && (cancelBtn.style.display='none');
     subStatus.textContent='';
     subStatus.style.color='';
@@ -5832,8 +5832,8 @@ async function loadAISummary(sectorName, st){
       pe3       :st.pe3,       pe5       :st.pe5,       pe10      :st.pe10,
       pb3       :st.pb3,       pb5       :st.pb5,       pb10      :st.pb10,
       curEPS    :st.curEPS,    maxEPS    :st.maxEPS,
-      epsPctPeak:st.epsPctPeak,epsYoY   :st.epsYoY,    epsPill   :st.epsPill,
-      divergence:st.divergence||false,
+      epsPctPeak:st.epsPctPeak,epsYoY   :st.epsYoY,    epsPill   :st.epsPillState,
+      divergence:(st.peDiv&&st.peDiv.kind!=='none')||(st.pbDiv&&st.pbDiv.kind!=='none'),
       backtest  :btForAI       /* may be null if not applicable */
     };
 
