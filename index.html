@@ -16,10 +16,16 @@
 <meta property="og:url" content="https://sectorscope.in">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
+<!-- Set theme class before any CSS is parsed to kill the dark→light flash on cold load. -->
+<script>(function(){try{var t=localStorage.getItem('theme');if(t!=='dark') document.documentElement.classList.add('light');}catch(e){}})();</script>
+<!-- Warm TCP+TLS to the origins we hit on cold load so the handshakes overlap with HTML/CSS parse. -->
+<link rel="preconnect" href="https://sectorscope.prashant-06f.workers.dev">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://accounts.google.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<script src="https://checkout.razorpay.com/v1/checkout.js" defer></script>
+<!-- Razorpay checkout.js is loaded on demand (see loadRazorpay) — saves ~30KB on cold load for users who never upgrade. -->
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "54b7012add694a9f98e8e37d89605df2"}'></script><!-- End Cloudflare Web Analytics -->
 <style>
 :root{
@@ -922,6 +928,22 @@ html.light .cm-tooltip{background:rgba(255,255,255,.96);box-shadow:0 8px 24px rg
 .cm-tt-label{display:inline-flex;align-items:center;gap:6px;color:var(--sub);font-size:.7rem}
 .cm-tt-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 .cm-tt-val{font-family:var(--mono);font-weight:600;color:var(--txt);font-size:.74rem}
+/* Drag-to-measure panel — appears after dragging a range across the chart, shows
+   % change of each displayed metric between the dragged endpoints. Pointer-events:auto
+   so the close button is clickable; tooltip's pointer-events:none stays as-is. */
+.cm-delta-panel{position:absolute;display:none;z-index:5;padding:10px 30px 10px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--bdr2);box-shadow:0 12px 32px rgba(0,0,0,.5);font-family:var(--body);font-size:.7rem;color:var(--txt);min-width:172px;pointer-events:auto;backdrop-filter:blur(8px)}
+html.light .cm-delta-panel{background:rgba(255,255,255,.98);box-shadow:0 12px 32px rgba(0,0,0,.18)}
+.cm-delta-dates{font-family:var(--mono);font-size:.62rem;color:var(--ghost);letter-spacing:.3px;margin-bottom:6px;text-transform:uppercase}
+.cm-delta-row{display:flex;align-items:center;justify-content:space-between;gap:14px;line-height:1.5}
+.cm-delta-row + .cm-delta-row{margin-top:3px}
+.cm-delta-label{display:inline-flex;align-items:center;gap:6px;color:var(--sub);font-size:.72rem}
+.cm-delta-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.cm-delta-val{font-family:var(--mono);font-weight:600;font-size:.78rem;letter-spacing:.3px;color:var(--txt)}
+.cm-delta-val.pos{color:var(--vchp-c)}
+.cm-delta-val.neg{color:var(--exp-c)}
+.cm-delta-val.na{color:var(--ghost)}
+.cm-delta-close{position:absolute;top:6px;right:6px;width:22px;height:22px;border:0;background:transparent;color:var(--ghost);font-size:.78rem;cursor:pointer;line-height:1;padding:0;border-radius:4px;display:flex;align-items:center;justify-content:center}
+.cm-delta-close:hover{background:var(--bdr2);color:var(--txt)}
 
 @media(max-width:680px){
   .cm-header{padding:10px 14px}
@@ -1350,7 +1372,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     </div>
     <div class="hp-card info">
       <div class="hp-card-ttl">⤢ Tap the sparkline</div>
-      <div class="hp-p" style="margin-bottom:0">Tap directly on the chart inside any card to open an expanded version — full-screen, with selectable metrics (P/E, P/B, EPS, Price, Dividend Yield), date-range pills, drag-to-zoom, and toggleable historical-median overlays. <em>Plus only.</em> Full walkthrough in <strong>section 7</strong>.</div>
+      <div class="hp-p" style="margin-bottom:0">Tap directly on the chart inside any card to open an expanded version — full-screen, with selectable metrics (P/E, P/B, EPS, Price, Dividend Yield), date-range pills, drag-to-measure, and toggleable historical-median overlays. <em>Plus only.</em> Full walkthrough in <strong>section 7</strong>.</div>
     </div>
 
     <div class="hp-sub-h">Which metric does each sector use?</div>
@@ -1667,6 +1689,8 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
           </dl>
 
           <div class="hp-p" style="margin-top:8px;margin-bottom:0;font-size:.8rem;color:var(--sub)">Y-axis auto-scales to the biggest absolute value in the chart — so a quiet sector with ±8% moves shows the same visual weight as a volatile one swinging ±40%. Compare <em>shape and sign</em>, not bar heights across two sectors. Each bar also has its exact percentage printed above (or below, for negatives).</div>
+
+          <div class="hp-p" style="margin-top:14px;margin-bottom:0;font-size:.82rem"><strong>USD growth charts — IT and Pharma only.</strong> On the IT and Pharma sector detail pages, two additional charts appear beneath the INR ones — <em>USD EPS YoY Growth</em> and <em>USD EPS QoQ Growth</em>. Same shape and same green/red palette as the INR charts, but the underlying EPS series is converted to USD: each EPS data point uses the USD/INR rate that was in effect on <em>its own historical date</em>, not today's rate, and the % growth is calculated on that derived USD series. Reading the two YoY charts side-by-side tells you the cumulative currency effect: when INR growth substantially exceeds USD growth in a given year, the rupee depreciated; when they roughly match, the rupee was steady. For sectors like IT (~90% USD-billed revenue) and Pharma (~30–50% from US generics), the USD chart is arguably the cleaner read of underlying business performance — it strips out the rupee-tailwind that's flattered INR earnings growth across the last decade. Years where FX coverage isn't sufficient on both endpoints render as empty slots in the USD chart so x-axis years stay aligned with the INR chart above.</div>
         </div>
       </div>
 
@@ -1858,8 +1882,9 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <div class="hp-p">Tap any sector's sparkline (the small chart on a card) to open the full-screen expanded chart for that sector. This is the most useful Plus feature for getting a feel for where a sector sits in its historical context — far more than the 3-year sparkline can show. The expanded view has four sets of controls:</div>
     <dl class="hp-kv">
       <dt>Metric checkboxes</dt><dd>Pick any combination of <strong>P/E, P/B, EPS, Price, Dividend Yield</strong> to overlay on the chart. P/E and P/B are on the left axis; EPS, Price, and Dividend Yield each get their own right-side scale when selected. The defaults match the sector's primary metrics — so Banks open with P/B+EPS already ticked, IT opens with P/E+EPS, dual-metric sectors open with both P/E and P/B.</dd>
+      <dt>EPS (USD) — IT and Pharma only</dt><dd>An additional metric toggle that appears only on IT and Pharma. When enabled, it draws the EPS line in USD terms — every historical EPS data point is converted at the USD/INR rate that was in effect on <em>its own date</em>, not at today's rate. So a 2010 EPS uses 2010's ~₹46/USD; a 2025 EPS uses 2025's ~₹83/USD. The shape of the resulting line is the underlying USD-denominated earnings trajectory net of currency effects — substantially flatter than the INR series for these sectors, because rupee depreciation has accounted for a meaningful chunk of the headline INR growth. Off by default. For sectors with mostly domestic INR revenue (Bank, FMCG, Realty, etc.) this toggle isn't shown — converting their INR earnings to USD would just impose FX-shaped noise on a series whose underlying drivers have nothing to do with the rupee.</dd>
       <dt>Date-range pills</dt><dd>Quick presets sit above the chart: <strong>1W · 1M · 3M · 6M · 1Y · 3Y · 5Y · 10Y · All</strong>. Tap any pill to snap the chart to that window. Behind the scenes, the data goes back to whatever the underlying NSE history starts at for each sector — typically 2010 or earlier.</dd>
-      <dt>Drag-to-zoom</dt><dd>Click and drag horizontally on the chart itself to zoom into a custom date range. Useful for examining a specific event window — like "what did Pharma look like in March 2020 when COVID hit" or "how did Realty trade through the 2018 NBFC crisis." Double-click to reset to the active range pill.</dd>
+      <dt>Drag-to-measure</dt><dd>Click and drag horizontally across any portion of the chart to measure how much each displayed metric changed between the two endpoints. A panel appears with the % change for each visible line — useful for quantifying event windows like "how much did Pharma's P/E re-rate from the COVID lows to mid-2021" or "how much did IT's EPS grow over the FY24-25 cycle". Direction-agnostic — drag left-to-right or right-to-left, the result is the same. Click anywhere outside the panel (or tap the ✕) to dismiss. Double-click to reset to the default 3Y window. Use the range pills or date pickers above the chart to actually zoom.</dd>
       <dt>Median &amp; bands toggles</dt><dd>Two toggles below the chart control historical-median overlays. <strong>Median</strong> draws the rolling weighted-reference curve at every historical date — the same blended 3yr/5yr/10yr median the dashboard uses, but plotted continuously through time so you can see how it evolved. <strong>Bands</strong> draws all three component medians (3yr, 5yr, 10yr) as separate dashed curves with a small legend, useful when you want to see how the windows differ.</dd>
     </dl>
 
@@ -1869,7 +1894,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     </div>
 
     <div class="hp-sub-h">AI sector summary — plain-language read</div>
-    <div class="hp-p">At the top of every sector's detail page (tap any card's <em>↗ Detail</em> button) you'll see a "Generate AI Summary" button. Tap it to get a 4-5 sentence plain-English read on the sector's current situation, written by Claude. The summary covers four things: the current valuation band and what it means historically, the EPS trajectory (rising, falling, flat, near peak), any divergence between P/E and P/B for dual-metric sectors, and a one-line note on whether history backs the current signal (drawn from the same backtest engine described in section 6).</div>
+    <div class="hp-p">At the top of every sector's detail page (tap any card's <em>↗ Detail</em> button) you'll see a "Generate AI Summary" button. Tap it to get a 4-5 sentence plain-English read on the sector's current situation, written by Claude. The summary covers four things: the current valuation band and what it means historically, the EPS trajectory (rising, falling, flat, near peak), any divergence between P/E and P/B for dual-metric sectors, and a one-line note on whether history backs the current signal (drawn from the same backtest engine described in section 6). On IT and Pharma — where USD revenue dominates — the summary may also briefly flag the currency-effect angle, comparing INR earnings growth to USD-denominated growth, but only when the two diverge meaningfully (≳3 percentage points). When INR and USD growth are roughly aligned, the currency note is omitted to keep the summary concise.</div>
 
     <div class="hp-card tip">
       <div class="hp-card-ttl">What the AI does and doesn't do</div>
@@ -1999,6 +2024,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="cm-dot cm-dot-left"  id="cm-dot-left"></div>
       <div class="cm-dot cm-dot-right" id="cm-dot-right"></div>
       <div class="cm-tooltip" id="cm-tooltip"></div>
+      <div class="cm-delta-panel" id="cm-delta-panel"></div>
       <div class="cm-bands-legend" id="cm-bands-legend">
         <div class="cm-bands-legend-row">
           <svg class="cm-bands-legend-dash" viewBox="0 0 26 8"><line x1="0" y1="4" x2="26" y2="4" stroke="currentColor" stroke-width="1.4" stroke-dasharray="1 4"/></svg>
@@ -2559,6 +2585,75 @@ function epsWindowAvg(data,daysAgo,halfWindow){
   return n?sum/n:NaN;
 }
 
+/* USD-frame context for the AI summary — IT and Pharma only.
+
+   Computes three numbers parallel to the existing INR fields in the AI
+   payload (curEPS, epsYoY, epsPctPeak) but in USD-frame: each per-row
+   INR EPS is converted at the FX rate from its own historical date.
+   Same ±7-day windowed-average methodology as the EPS (USD) chart line
+   and the USD growth bars on the detail page, so numbers stay
+   consistent across surfaces.
+
+   Returns null for non-USD sectors or when FX_SERIES isn't loaded —
+   caller in that case sends an INR-only payload and the worker prompt
+   skips the USD block. The worker reads field names: currentEpsUsd,
+   epsYoYUsd, epsPctPeakUsd. */
+function computeUsdEpsContextForAI(sectorName){
+  if(!sectorName || !EPS_USD_SECTORS[sectorName] || !FX_SERIES) return null;
+  var data=dataCache[sectorName];
+  if(!data || !data.length) return null;
+  var lastDate=new Date(data[data.length-1].date);
+  if(isNaN(lastDate)) return null;
+
+  /* ±7-day windowed average of (eps_row / fxRateAt(row.date)) — same
+     smoothing as the chart bars use, applied to the USD-frame series. */
+  function usdAvgAt(daysAgo){
+    var target=new Date(lastDate);
+    target.setDate(target.getDate()-daysAgo);
+    var loMs=target.getTime()-7*86400000;
+    var hiMs=target.getTime()+7*86400000;
+    var sum=0,n=0;
+    for(var k=0;k<data.length;k++){
+      var dt=new Date(data[k].date);
+      if(isNaN(dt)) continue;
+      var ms=dt.getTime();
+      if(ms<loMs) continue;
+      if(ms>hiMs) break;
+      var v=data[k].eps;
+      if(v==null||isNaN(v)||!isFinite(v)||v<=0) continue;
+      var fx=fxRateAt(ms);
+      if(!fx) continue;
+      sum+=(v/fx); n++;
+    }
+    return n?sum/n:NaN;
+  }
+
+  var curUsd=usdAvgAt(0);
+  var yrAgoUsd=usdAvgAt(365);
+  if(isNaN(curUsd)) return null;
+
+  /* USD-frame all-time-high — single pass over the full history.
+     Different date than INR all-time-high in general; rupee was
+     stronger in earlier years so peak USD EPS may predate peak INR EPS. */
+  var peakUsd=0;
+  for(var i=0;i<data.length;i++){
+    var v=data[i].eps;
+    if(v==null||isNaN(v)||!isFinite(v)||v<=0) continue;
+    var dt=new Date(data[i].date);
+    if(isNaN(dt)) continue;
+    var fx=fxRateAt(dt.getTime());
+    if(!fx) continue;
+    var u=v/fx;
+    if(u>peakUsd) peakUsd=u;
+  }
+
+  return {
+    currentEpsUsd : curUsd,
+    epsYoYUsd     : (!isNaN(yrAgoUsd) && yrAgoUsd>0) ? (curUsd/yrAgoUsd-1) : null,
+    epsPctPeakUsd : (peakUsd>0) ? (curUsd/peakUsd) : null
+  };
+}
+
 /* ════════════════════════════════════════
    SPARKLINE  (3yr data, 3yr median reference)
 ════════════════════════════════════════ */
@@ -3084,11 +3179,11 @@ async function loadSector(sec){
   if(done<tot){setStatus('⏳ '+done+' / '+tot);}
   else{setStatus('✓ '+loadedCount+'/'+tot+' · '+new Date().toLocaleTimeString(),'done');sortCards();}
 }
-async function loadAllStaggered(){
-  for(var i=0;i<SECTORS.length;i++){
-    loadSector(SECTORS[i]);
-    if(i<SECTORS.length-1) await new Promise(function(r){setTimeout(r,300);});
-  }
+function loadAllStaggered(){
+  /* Fire all sector requests in parallel. Each sector hits a different Apps
+     Script URL via the Worker, so there's no shared upstream bottleneck.
+     HTTP/2 to the Worker multiplexes the 13 requests over one connection. */
+  for(var i=0;i<SECTORS.length;i++) loadSector(SECTORS[i]);
 }
 function reloadAll(){
   loadedCount=0;failedCount=0;statCache={};dataCache={};liveCache={};
@@ -3953,10 +4048,29 @@ function buildQuarterlyTable(data){
 /* ════════════════════════════════════════
    EPS GROWTH CHARTS — sector detail overlay
    Annual YoY: last 10 years  |  QoQ: last 4 quarters
+
+   For sectors in EPS_USD_SECTORS (IT, Pharma) we render two additional
+   charts beneath the INR ones — USD YoY and USD QoQ — instead of
+   grouping bars within a single chart. Separate charts read cleaner
+   when value labels are dense (the grouped version had overlapping
+   labels at similar magnitudes).
+
+   The USD series converts each underlying EPS data point at the rate
+   that was in effect on its own date, not at today's rate, so the
+   resulting growth bars decompose into "rupee earnings change" vs
+   "dollar earnings change net of currency effect."
+
+   USD bars are only computed when FX_SERIES is loaded AND both endpoints
+   of a given period have FX coverage within the staleness window. If
+   the FX series hasn't loaded yet, we render the INR-only pair first and
+   openSectorDetail re-runs this builder once it resolves. Slots without
+   FX coverage on both endpoints render as empty bars (x-axis label
+   only) so alignment with the INR chart is preserved.
 ════════════════════════════════════════ */
-function buildEpsGrowthCharts(data, secColor){
+function buildEpsGrowthCharts(data, secColor, sectorName){
   if(!data||!data.length) return '';
   var isLight=document.documentElement.classList.contains('light');
+  var grouped=!!(sectorName && EPS_USD_SECTORS[sectorName] && FX_SERIES);
 
   /* Windowed EPS average for annual YoY bars — mirrors the global
      epsWindowAvg() so chart bars and the tile YoY use consistent
@@ -3982,20 +4096,54 @@ function buildEpsGrowthCharts(data, secColor){
     return n?sum/n:NaN;
   }
 
+  /* Same window as epsBack but converts each EPS to USD at *its own date's*
+     rate before averaging. Returns NaN if FX coverage for the window is
+     insufficient — caller treats that as "no USD bar for this period." */
+  function epsUsdBack(daysAgo){
+    if(!FX_SERIES) return NaN;
+    var last=new Date(data[data.length-1].date);
+    if(isNaN(last)) return NaN;
+    var target=new Date(last);
+    target.setDate(target.getDate()-daysAgo);
+    var loMs=target.getTime()-7*86400000;
+    var hiMs=target.getTime()+7*86400000;
+    var sum=0,n=0;
+    for(var k=0;k<data.length;k++){
+      var dt=new Date(data[k].date);
+      if(isNaN(dt)) continue;
+      var ms=dt.getTime();
+      if(ms<loMs) continue;
+      if(ms>hiMs) break;
+      var v=data[k].eps;
+      if(v==null||isNaN(v)||!isFinite(v)||v<=0) continue;
+      var fx=fxRateAt(ms);
+      if(!fx) continue;
+      sum+=(v/fx); n++;
+    }
+    return n?sum/n:NaN;
+  }
+
   var lastDate=new Date(data[data.length-1].date);
 
   /* ── Annual YoY: up to 10 years ── */
-  var yoyBars=[];
+  var yoyBars=[], yoyBarsUsd=[];
   for(var yr=1;yr<=10;yr++){
     var epsEnd=epsBack((yr-1)*365);
     var epsStart=epsBack(yr*365);
     if(!isNaN(epsEnd)&&!isNaN(epsStart)&&epsStart>0){
       var labelYear=lastDate.getFullYear()-(yr-1);
-      yoyBars.unshift({label:String(labelYear),val:epsEnd/epsStart-1});
+      yoyBars.unshift({label:String(labelYear), val:epsEnd/epsStart-1});
+      if(grouped){
+        var uEnd=epsUsdBack((yr-1)*365), uStart=epsUsdBack(yr*365);
+        var uVal=(!isNaN(uEnd)&&!isNaN(uStart)&&uStart>0) ? (uEnd/uStart-1) : NaN;
+        yoyBarsUsd.unshift({label:String(labelYear), val:uVal});
+      }
     }
   }
 
-  /* ── Quarterly QoQ: last ~2 years, 4 QoQ values ── */
+  /* ── Quarterly QoQ: last ~2 years, 4 QoQ values ──
+     Per-quarter buckets carry both INR sums and USD sums (USD pre-converted
+     at each row's date) so we can produce both QoQ series from one data pass. */
   var qBuckets={};
   var cutoff=new Date(lastDate.getTime()-730*86400000);
   for(var ri=0;ri<data.length;ri++){
@@ -4004,21 +4152,38 @@ function buildEpsGrowthCharts(data, secColor){
     if(isNaN(rd)||rd<cutoff) continue;
     var qyr=rd.getFullYear(),qq=Math.floor(rd.getMonth()/3)+1;
     var qk=qyr*10+qq;
-    if(!qBuckets[qk]) qBuckets[qk]={sort:qk,label:fiscalQLabel(qyr,rd.getMonth()),sum:0,n:0};
-    if(r.eps&&!isNaN(r.eps)&&r.eps>0){qBuckets[qk].sum+=r.eps;qBuckets[qk].n++;}
+    if(!qBuckets[qk]) qBuckets[qk]={sort:qk,label:fiscalQLabel(qyr,rd.getMonth()),sum:0,n:0,sumUsd:0,nUsd:0};
+    if(r.eps&&!isNaN(r.eps)&&r.eps>0){
+      qBuckets[qk].sum+=r.eps; qBuckets[qk].n++;
+      if(grouped){
+        var fx=fxRateAt(rd.getTime());
+        if(fx){ qBuckets[qk].sumUsd+=(r.eps/fx); qBuckets[qk].nUsd++; }
+      }
+    }
   }
   var qKeys=Object.keys(qBuckets).map(Number).sort(function(a,b){return a-b;});
   var qAvgs=qKeys.map(function(k){
     var b=qBuckets[k];
-    return{label:b.label,avg:b.n?b.sum/b.n:NaN};
+    return{label:b.label, avg:b.n?b.sum/b.n:NaN, avgUsd:b.nUsd?b.sumUsd/b.nUsd:NaN};
   }).filter(function(q){return!isNaN(q.avg);});
-  var qoqBars=[];
+  var qoqBars=[], qoqBarsUsd=[];
   for(var qi=Math.max(1,qAvgs.length-4);qi<qAvgs.length;qi++){
-    var prev=qAvgs[qi-1].avg,cur2=qAvgs[qi].avg;
-    if(!isNaN(prev)&&prev>0) qoqBars.push({label:qAvgs[qi].label,val:cur2/prev-1});
+    var prev=qAvgs[qi-1].avg, cur2=qAvgs[qi].avg;
+    if(!isNaN(prev)&&prev>0){
+      qoqBars.push({label:qAvgs[qi].label, val:cur2/prev-1});
+      if(grouped){
+        var prevU=qAvgs[qi-1].avgUsd, curU=qAvgs[qi].avgUsd;
+        var uVal=(!isNaN(prevU)&&prevU>0&&!isNaN(curU)) ? (curU/prevU-1) : NaN;
+        qoqBarsUsd.push({label:qAvgs[qi].label, val:uVal});
+      }
+    }
   }
 
-  /* ── SVG bar chart ── */
+  /* ── SVG bar chart ──
+     Bars: array of {label, val}. Slots where val is NaN render the x-axis
+     label but no rect/value — used by the USD growth charts to preserve
+     year-by-year alignment with the INR chart even when an FX-coverage
+     gap means a particular year's USD growth couldn't be computed. */
   function buildChart(bars,title,sub){
     if(!bars.length) return '<div class="sd-eps-chart-wrap">'
       +'<div class="sd-eps-chart-head">'+title+'<span class="sd-eps-chart-sub">'+sub+'</span></div>'
@@ -4027,7 +4192,10 @@ function buildEpsGrowthCharts(data, secColor){
     var W=480,H=130,PL=42,PR=12,PT=14,PB=32;
     var CW=W-PL-PR,CH=H-PT-PB;
     var maxAbs=0;
-    for(var bi=0;bi<bars.length;bi++){var av=Math.abs(bars[bi].val);if(av>maxAbs)maxAbs=av;}
+    for(var bi=0;bi<bars.length;bi++){
+      if(isNaN(bars[bi].val)) continue;
+      var av=Math.abs(bars[bi].val); if(av>maxAbs) maxAbs=av;
+    }
     if(maxAbs<0.001) maxAbs=0.1;
     var scale=Math.ceil(maxAbs*10)/10; /* round up to nearest 10% */
     var ppu=CH/2/scale;
@@ -4035,12 +4203,12 @@ function buildEpsGrowthCharts(data, secColor){
     var gap=CW/bars.length;
     var bw=Math.max(6,Math.floor(gap*0.58));
 
-    var posC=isLight?'rgba(5,150,105,.75)':'rgba(0,200,83,.72)';
-    var negC=isLight?'rgba(194,65,12,.75)':'rgba(255,82,82,.72)';
-    var axC=isLight?'rgba(0,0,0,.13)':'rgba(255,255,255,.11)';
-    var lblC=isLight?'rgba(0,0,0,.40)':'rgba(255,255,255,.36)';
-    var valC=isLight?'rgba(0,0,0,.68)':'rgba(255,255,255,.72)';
-    var zC=isLight?'rgba(0,0,0,.22)':'rgba(255,255,255,.22)';
+    var posC=isLight?'rgba(5,150,105,.78)':'rgba(0,200,83,.74)';
+    var negC=isLight?'rgba(194,65,12,.78)':'rgba(255,82,82,.74)';
+    var axC =isLight?'rgba(0,0,0,.13)'    :'rgba(255,255,255,.11)';
+    var lblC=isLight?'rgba(0,0,0,.40)'    :'rgba(255,255,255,.36)';
+    var valC=isLight?'rgba(0,0,0,.68)'    :'rgba(255,255,255,.72)';
+    var zC  =isLight?'rgba(0,0,0,.22)'    :'rgba(255,255,255,.22)';
 
     var svg='';
     /* axis */
@@ -4057,17 +4225,18 @@ function buildEpsGrowthCharts(data, secColor){
     for(var bi2=0;bi2<bars.length;bi2++){
       var b=bars[bi2];
       var cx=PL+gap*bi2+gap/2;
+      /* x-axis label always rendered (preserves alignment across paired charts) */
+      svg+='<text x="'+Math.round(cx)+'" y="'+(H-PB+13)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.5" fill="'+lblC+'">'+b.label+'</text>';
+      /* Skip rect + value label for NaN slots (no FX coverage etc.) */
+      if(isNaN(b.val)) continue;
       var px=Math.max(Math.round(Math.abs(b.val)*ppu),2);
       var pos=b.val>=0;
       var rx=Math.round(cx-bw/2);
       var ry=pos?Math.round(zY-px):Math.round(zY);
       svg+='<rect x="'+rx+'" y="'+ry+'" width="'+bw+'" height="'+px+'" rx="2" fill="'+(pos?posC:negC)+'"/>';
-      /* value */
       var vy=pos?(ry-4):(ry+px+10);
       var vsign=b.val>=0?'+':'';
       svg+='<text x="'+Math.round(cx)+'" y="'+vy+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="600" fill="'+valC+'">'+vsign+(b.val*100).toFixed(1)+'%</text>';
-      /* x label */
-      svg+='<text x="'+Math.round(cx)+'" y="'+(H-PB+13)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.5" fill="'+lblC+'">'+b.label+'</text>';
     }
     return '<div class="sd-eps-chart-wrap">'
       +'<div class="sd-eps-chart-head">'+title+'<span class="sd-eps-chart-sub">'+sub+'</span></div>'
@@ -4076,8 +4245,13 @@ function buildEpsGrowthCharts(data, secColor){
       +svg+'</svg></div></div>';
   }
 
-  return buildChart(yoyBars,'EPS YoY Growth','Annual · last 10 years')
-        +buildChart(qoqBars,'EPS QoQ Growth','Last 4 quarters');
+  var out='<div id="sd-eps-charts-section">';
+  out+=buildChart(yoyBars,'EPS YoY Growth','Annual · last 10 years');
+  if(grouped) out+=buildChart(yoyBarsUsd,'USD EPS YoY Growth','Annual · last 10 years · USD-converted');
+  out+=buildChart(qoqBars,'EPS QoQ Growth','Last 4 quarters');
+  if(grouped) out+=buildChart(qoqBarsUsd,'USD EPS QoQ Growth','Last 4 quarters · USD-converted');
+  out+='</div>';
+  return out;
 }
 
 function buildSectorDetailHTML(sec, st, data){
@@ -4133,7 +4307,7 @@ function buildSectorDetailHTML(sec, st, data){
   /* ── Quarterly table ── */
   const qtbl=buildQuarterlyTable(data);
 
-  const epsGrowthCharts=buildEpsGrowthCharts(data,sec.color);
+  const epsGrowthCharts=buildEpsGrowthCharts(data,sec.color,sec.name);
 
   var claudeLogo='<svg viewBox="0 0 41 41" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="Claude">'
     +'<path d="M19.254 7.033l-7.71 22.05h3.028l1.58-4.74h7.91l1.58 4.74h3.029l-7.71-22.05h-1.707zm-.854 4.93l2.987 8.93h-5.974l2.987-8.93z" fill="currentColor"/>'
@@ -4185,6 +4359,26 @@ function openSectorDetail(name){
   overlay.classList.add('open');
   document.body.style.overflow='hidden';
   document.getElementById('sd-close').focus();
+
+  /* For sectors where EPS (USD) is meaningful, ensure the FX series is
+     loaded so the EPS growth chart can show grouped INR+USD bars. If the
+     series isn't cached yet, load it and re-render just the charts
+     section once it resolves. Guards against the overlay having closed
+     or switched sectors during the fetch. */
+  if(EPS_USD_SECTORS[name]){
+    if(!FX_SERIES){
+      loadFxSeries().then(function(){
+        var overlay=document.getElementById('sector-detail');
+        var section=document.getElementById('sd-eps-charts-section');
+        if(!section || !overlay || !overlay.classList.contains('open')) return;
+        /* Confirm we're still on the same sector before swapping HTML in. */
+        var current=document.getElementById('sd-title').textContent;
+        if(current!=='Nifty '+name) return;
+        var rebuilt=buildEpsGrowthCharts(dataCache[name]||[], sec.color, name);
+        if(rebuilt) section.outerHTML=rebuilt;
+      }).catch(function(){ /* INR-only stays rendered; warning already logged */ });
+    }
+  }
 }
 
 function closeSectorDetail(){
@@ -4205,18 +4399,102 @@ document.addEventListener('keydown',function(e){
    - Default range 3Y
    - Dual Y-axis on canvas
 ════════════════════════════════════════ */
+/* USD/INR series for the EPS (USD) chart line. The Apps Script returns a
+   full historical time series ([["Date","INR"], [ISO_date, rate], ...]) so
+   we convert each EPS data point at the rate in effect on its own date —
+   a 2010 EPS gets 2010's rate, today's EPS gets today's. Lazy-loaded on
+   first toggle of the EPS (USD) metric and cached for the session. */
+var FX_URL='https://script.google.com/macros/s/AKfycbx59MeaNlmFMZWCRnFl50XCLNnkhDzjtPuUHPefW7KpEb55oL1HpK5btymiDBiFXZ17/exec';
+var FX_SERIES=null;       /* sorted array of {t:msSinceEpoch, r:INRperUSD} */
+var FX_LOADING=null;
+function loadFxSeries(){
+  if(FX_SERIES) return Promise.resolve(FX_SERIES);
+  if(FX_LOADING) return FX_LOADING;
+  FX_LOADING=fetch(FX_URL,{redirect:'follow'})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(function(txt){
+      var raw;
+      try{ raw=JSON.parse(txt); }
+      catch(e){ throw new Error('Non-JSON response: '+String(txt).slice(0,120)); }
+      if(!Array.isArray(raw) || !raw.length) throw new Error('Empty FX response');
+      /* Skip a header row like ["Date","INR"] if the second column isn't numeric. */
+      var startIdx = (Array.isArray(raw[0]) && (typeof raw[0][1]!=='number' || isNaN(raw[0][1]))) ? 1 : 0;
+      var series=[];
+      for(var i=startIdx;i<raw.length;i++){
+        var row=raw[i];
+        if(!Array.isArray(row) || row.length<2) continue;
+        var t=new Date(row[0]).getTime();
+        var rate=parseFloat(row[1]);
+        if(isNaN(t) || isNaN(rate) || rate<10 || rate>500) continue;
+        series.push({t:t, r:rate});
+      }
+      if(!series.length) throw new Error('No valid FX rows parsed');
+      /* Defensive sort — Apps Script usually returns ascending but don't trust it. */
+      series.sort(function(a,b){ return a.t - b.t; });
+      FX_SERIES=series;
+      return series;
+    })
+    .catch(function(e){
+      FX_LOADING=null;  /* allow retry on next click */
+      console.warn('[fx] USD/INR fetch failed:', e.message);
+      throw e;
+    });
+  return FX_LOADING;
+}
+/* If the nearest FX entry is more than this far from a row's date, we
+   refuse to convert and drop the point — protects against a stale or
+   broken feed silently rendering wrong values. 5 days handles a normal
+   weekend + a public holiday or two; anything longer points at a
+   feed problem the user should investigate. */
+var FX_STALENESS_MS=5*24*60*60*1000;
+
+/* Return the INR-per-USD rate as-of the given timestamp. Floor semantics:
+   uses the most recent series entry with t ≤ timestamp. Returns null if
+   the gap between the timestamp and the nearest series entry exceeds
+   FX_STALENESS_MS, regardless of which side of the series the timestamp
+   falls on. seriesFor sees null and skips the point so the chart renders
+   an honest gap rather than a clamped-stale line. */
+function fxRateAt(timestamp){
+  var s=FX_SERIES;
+  if(!s || !s.length) return null;
+  /* Before series start — only return if first entry is within staleness window. */
+  if(timestamp <= s[0].t){
+    return (s[0].t - timestamp) <= FX_STALENESS_MS ? s[0].r : null;
+  }
+  /* After series end — only return if last entry is within staleness window. */
+  if(timestamp >= s[s.length-1].t){
+    return (timestamp - s[s.length-1].t) <= FX_STALENESS_MS ? s[s.length-1].r : null;
+  }
+  /* Within range — binary search for floor entry, then check the gap. */
+  var lo=0, hi=s.length-1;
+  while(lo<hi){
+    var mid=(lo+hi+1)>>1;          /* ceil — biased toward the upper half */
+    if(s[mid].t<=timestamp) lo=mid; else hi=mid-1;
+  }
+  return (timestamp - s[lo].t) <= FX_STALENESS_MS ? s[lo].r : null;
+}
+
 var CM_STATE={sector:null,metrics:[],range:'3Y',from:null,to:null,showMedian:true,showBands:false};
 var CM_DRAW=null;  /* set by cmDrawCanvas, consumed by hover handler */
 var CM_DRAG=null;  /* { active, startX, currentX } during a zoom drag */
 
 var CM_METRICS={
   /* field, label, colourLight, colourDark */
-  pe : {field:'pe' , label:'P/E', cLight:'#0ea5e9', cDark:'#38bdf8'},
-  eps: {field:'eps', label:'EPS', cLight:'#10b981', cDark:'#34d399'},
-  pb : {field:'pb' , label:'P/B', cLight:'#f97316', cDark:'#fb923c'},
-  cls: {field:'price', label:'Price', cLight:'#ec4899', cDark:'#f472b6'}
+  pe    : {field:'pe' ,   label:'P/E',       cLight:'#0ea5e9', cDark:'#38bdf8'},
+  eps   : {field:'eps',   label:'EPS',       cLight:'#10b981', cDark:'#34d399'},
+  /* epsUsd is a virtual metric — uses the same `eps` field but seriesFor
+     divides by the cached USD/INR rate. Cyan to differentiate from green EPS. */
+  epsUsd: {field:'eps',   label:'EPS (USD)', cLight:'#0891b2', cDark:'#22d3ee'},
+  pb    : {field:'pb' ,   label:'P/B',       cLight:'#f97316', cDark:'#fb923c'},
+  cls   : {field:'price', label:'Price',     cLight:'#ec4899', cDark:'#f472b6'}
 };
-var CM_METRIC_ORDER=['pe','eps','pb','cls']; /* render order in checkbox row */
+var CM_METRIC_ORDER=['pe','eps','epsUsd','pb','cls']; /* render order in checkbox row */
+
+/* Sectors where EPS (USD) is genuinely informative: IT bills ~90%+ in USD,
+   Pharma earns 30-50% from US/exports. For domestic INR-driven sectors
+   (banks, FMCG, realty, etc.) the toggle just imposes FX-shaped noise on
+   an INR earnings series, so we hide the checkbox there entirely. */
+var EPS_USD_SECTORS={'IT':1, 'Pharma':1};
 
 var CM_RANGES=['1W','1M','3M','1Y','3Y','5Y','All'];
 function cmRangeDays(r){
@@ -4255,12 +4533,16 @@ function openChartModal(sectorName){
   requestAnimationFrame(function(){
     cmRenderChart();
     cmAttachHover();
-    cmAttachDragZoom();
+    cmAttachDragMeasure();
     /* Kick off idle-time prefetch of rolling medians so toggling Median or
        Median Bands later feels instant. Both PE and PB are prefetched
        regardless of which is currently visible — covers metric switches too.
        Plus-gated to match what the toggles actually do. */
     if(userIsSubscribed()) cmPrefetchMedians(sectorName);
+    /* Prefetch USD/INR (fire-and-forget) so toggling EPS (USD) feels instant.
+       Only relevant for sectors where the toggle is actually shown.
+       loadFxSeries is idempotent — repeat opens make at most one network call. */
+    if(EPS_USD_SECTORS[sectorName]) loadFxSeries().catch(function(){});
   });
 }
 
@@ -4296,6 +4578,8 @@ function cmRenderControls(){
   var mRow=document.getElementById('cm-metrics');
   var html='';
   CM_METRIC_ORDER.forEach(function(k){
+    /* Hide EPS (USD) for sectors where USD-converted EPS is just FX noise. */
+    if(k==='epsUsd' && !EPS_USD_SECTORS[CM_STATE.sector]) return;
     var m=CM_METRICS[k];
     var checked=CM_STATE.metrics.indexOf(k)>=0;
     var col=isLight?m.cLight:m.cDark;
@@ -4319,6 +4603,15 @@ function cmRenderControls(){
       }
       cmRenderControls();
       cmRenderChart();
+      /* epsUsd is virtual — needs the USD/INR series. If toggled on and we
+         don't have one cached yet, kick off the fetch and re-render once
+         it resolves so the line appears. */
+      if(k==='epsUsd' && CM_STATE.metrics.indexOf('epsUsd')>=0 && !FX_SERIES){
+        loadFxSeries().then(function(){
+          cmRenderControls();
+          cmRenderChart();
+        }).catch(function(){ /* silent; warning already logged in loadFxSeries */ });
+      }
     });
   });
 
@@ -4523,6 +4816,11 @@ function cmRollingRef(sectorName, field){
 
 function cmRenderChart(){
   var wrap=document.getElementById('cm-canvas-wrap');
+  /* Clear any active measurement — it would point at the old window. */
+  var rect=document.getElementById('cm-drag-rect');
+  var panel=document.getElementById('cm-delta-panel');
+  if(rect){ rect.style.display='none'; rect.style.width='0'; }
+  if(panel){ panel.style.display='none'; }
   /* Remove any prior paywall/empty overlays */
   wrap.querySelectorAll('.cm-paywall,.cm-empty').forEach(function(n){n.remove();});
 
@@ -4539,7 +4837,7 @@ function cmRenderChart(){
     pw.innerHTML=
       '<div class="cm-paywall-card">'
       +'<div class="cm-paywall-title">Expanded charts <span class="plus-tag">PLUS</span></div>'
-      +'<div class="cm-paywall-desc">Multi-metric overlay, custom date ranges, drag-to-zoom, hover values, and rolling-median reference. All data already loaded — Plus unlocks the full chart.</div>'
+      +'<div class="cm-paywall-desc">Multi-metric overlay, custom date ranges, drag-to-measure, hover values, and rolling-median reference. All data already loaded — Plus unlocks the full chart.</div>'
       +(currentUser
         ? '<button class="cm-paywall-btn" onclick="closeChartModal();openPlusPane();">Upgrade to Plus</button>'
         : '<button class="cm-paywall-btn" onclick="closeChartModal();openSignInPrompt&&openSignInPrompt();">Sign in to continue</button>')
@@ -4591,13 +4889,22 @@ function cmDrawCanvas(canvas, rows){
 
   /* For each metric, compute filtered series and min/max */
   function seriesFor(key){
+    /* epsUsd is a virtual metric — eps divided by the USD/INR rate as-of
+       each row's own date (not today's rate). Returns no points until the
+       FX series has loaded; the toggle's click handler kicks off the fetch. */
+    if(key==='epsUsd' && !FX_SERIES) return [];
     var f=CM_METRICS[key].field;
     var pts=[];
     for(var i=0;i<rows.length;i++){
       var v=rows[i][f];
-      if(v!=null && !isNaN(v)){
-        pts.push({d:new Date(rows[i].date).getTime(), v:+v});
+      if(v==null || isNaN(v)) continue;
+      var t=new Date(rows[i].date).getTime();
+      if(key==='epsUsd'){
+        var fx=fxRateAt(t);
+        if(!fx) continue;
+        v=+v / fx;
       }
+      pts.push({d:t, v:+v});
     }
     return pts;
   }
@@ -4779,6 +5086,7 @@ function cmAttachHover(){
   function fmt(key, v){
     if(v==null||isNaN(v)) return '—';
     if(key==='cls'||key==='eps') return Math.round(v).toLocaleString('en-IN');
+    if(key==='epsUsd') return '$'+v.toFixed(2);
     return v.toFixed(2);
   }
   function fmtDate(d){
@@ -4865,20 +5173,26 @@ function cmAttachHover(){
   wrap.addEventListener('mouseleave', onLeave);
 }
 
-/* ── Drag-to-zoom ──
-   Click-and-drag horizontally on the chart to zoom into that date range.
-   - Direction-agnostic (left→right or right→left both work)
-   - 5px threshold so a click doesn't accidentally trigger a zoom
-   - Double-click anywhere on the chart resets to default 3Y window
-   - Hover overlay is suppressed while dragging (see onMove guard)
+/* ── Drag-to-measure ──
+   Click-and-drag horizontally on the chart to measure the % change in
+   each displayed metric between the start and end of the dragged range.
+   Range pills + date pickers handle zoom; this gesture is for "how much
+   did P/E and EPS move between these two dates."
+   - Direction-agnostic (left→right and right→left measure the same thing)
+   - 5px threshold so a click doesn't trigger a measurement
+   - Double-click anywhere on the chart resets to the default 3Y window
+   - Click without drag dismisses any visible measurement panel
+   - The drag rect stays visible after release as a visual anchor for what's being measured
+   - Hover overlay is suppressed while dragging
    - Touch-friendly: pointer events cover mouse + touch + pen */
-function cmAttachDragZoom(){
+function cmAttachDragMeasure(){
   var wrap=document.getElementById('cm-canvas-wrap');
   if(!wrap || wrap._dragBound) return;
   wrap._dragBound=true;
 
   var rectEl=document.getElementById('cm-drag-rect');
-  var THRESHOLD=5; /* px the user must drag before we start showing the rectangle */
+  var panel =document.getElementById('cm-delta-panel');
+  var THRESHOLD=5;
 
   function getLocalX(e){
     var r=wrap.getBoundingClientRect();
@@ -4894,10 +5208,9 @@ function cmAttachDragZoom(){
     if(!CM_DRAW) return x;
     return Math.max(CM_DRAW.ml, Math.min(CM_DRAW.W-CM_DRAW.mr, x));
   }
-  function pxToDate(x){
+  function pxToTime(x){
     var d=CM_DRAW;
-    var t=d.xMin + ((x-d.ml)/d.pw)*(d.xMax-d.xMin);
-    return new Date(t);
+    return d.xMin + ((x-d.ml)/d.pw)*(d.xMax-d.xMin);
   }
   function showRect(){
     if(!CM_DRAW || !CM_DRAG) return;
@@ -4914,15 +5227,97 @@ function cmAttachDragZoom(){
     rectEl.style.display='none';
     rectEl.style.width='0';
   }
+  function hidePanel(){ panel.style.display='none'; }
+
+  /* Binary search for the data point nearest a given timestamp on a sorted
+     {d, v} series. Same logic as the hover handler's nearestPt. */
+  function nearestPt(pts, t){
+    if(!pts || !pts.length) return null;
+    var lo=0, hi=pts.length-1;
+    while(lo<hi){
+      var mid=(lo+hi)>>1;
+      if(pts[mid].d<t) lo=mid+1; else hi=mid;
+    }
+    if(lo>0 && (pts[lo].d-t) > (t-pts[lo-1].d)) lo=lo-1;
+    return pts[lo];
+  }
+
+  function fmtDateShort(d){
+    var dd=new Date(d);
+    var mons=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return dd.getDate()+' '+mons[dd.getMonth()]+' '+dd.getFullYear();
+  }
+  function fmtDuration(ms){
+    var days=Math.round(ms/86400000);
+    if(days<60) return days+'d';
+    var months=Math.round(days/30.4);
+    if(months<12) return months+'mo';
+    return (days/365.25).toFixed(1)+'y';
+  }
+  function pctDelta(v0, v1){
+    if(v0==null || v1==null || isNaN(v0) || isNaN(v1) || v0===0) return null;
+    return (v1-v0)/v0*100;
+  }
+  function fmtPct(p){
+    if(p==null) return {label:'\u2014', cls:'na'};
+    var sign = p>=0 ? '+' : '\u2212'; /* U+2212 minus, visually paired with + */
+    return {label: sign + Math.abs(p).toFixed(1) + '%', cls: p>=0 ? 'pos' : 'neg'};
+  }
+
+  function showPanel(startTime, endTime){
+    var d=CM_DRAW;
+    if(!d) return;
+    var t0=Math.min(startTime,endTime), t1=Math.max(startTime,endTime);
+    var isLight=d.isLight;
+
+    function rowFor(key, pts){
+      if(!pts || !pts.length) return '';
+      var p0=nearestPt(pts, t0), p1=nearestPt(pts, t1);
+      var col=isLight?CM_METRICS[key].cLight:CM_METRICS[key].cDark;
+      var f=fmtPct(pctDelta(p0&&p0.v, p1&&p1.v));
+      return '<div class="cm-delta-row">'
+        +'<span class="cm-delta-label"><span class="cm-delta-dot" style="background:'+col+'"></span>'+CM_METRICS[key].label+'</span>'
+        +'<span class="cm-delta-val '+f.cls+'">'+f.label+'</span>'
+      +'</div>';
+    }
+
+    var rows=rowFor(d.leftKey, d.leftPts);
+    if(d.rightKey) rows+=rowFor(d.rightKey, d.rightPts);
+
+    panel.innerHTML='<button class="cm-delta-close" aria-label="Dismiss">\u2715</button>'
+      +'<div class="cm-delta-dates">'+fmtDateShort(t0)+' \u2192 '+fmtDateShort(t1)+' \u00b7 '+fmtDuration(t1-t0)+'</div>'
+      +rows;
+    panel.style.display='block';
+
+    /* Position: centered horizontally on the rect midpoint, near the top
+       of the plot area. Clamp horizontally so it never overflows the wrap. */
+    var rectLeft=parseFloat(rectEl.style.left)||0;
+    var rectWidth=parseFloat(rectEl.style.width)||0;
+    var midX=rectLeft + rectWidth/2;
+    var pw=panel.offsetWidth;
+    var px=midX - pw/2;
+    if(px<8) px=8;
+    if(px+pw>d.W-8) px=d.W-8-pw;
+    panel.style.left=px+'px';
+    panel.style.top =(d.mt+8)+'px';
+
+    panel.querySelector('.cm-delta-close').addEventListener('click', function(ev){
+      ev.stopPropagation();
+      hideRect();
+      hidePanel();
+    });
+  }
 
   function onDown(e){
     if(!CM_DRAW) return;
+    /* Don't initiate drag when the press lands on the panel itself —
+       lets the close button receive its own click cleanly. */
+    if(panel.contains(e.target)) return;
     var x=getLocalX(e), y=getLocalY(e);
     var d=CM_DRAW;
-    /* Only start drag if the press began inside the plot area */
     if(x<d.ml || x>d.W-d.mr || y<d.mt || y>d.mt+d.ph) return;
     CM_DRAG={ active:false, startX:x, currentX:x };
-    e.preventDefault(); /* stop text-selection while dragging */
+    e.preventDefault();
   }
 
   function onUp(e){
@@ -4930,31 +5325,25 @@ function cmAttachDragZoom(){
     var wasActive=CM_DRAG.active;
     var startX=CM_DRAG.startX, endX=CM_DRAG.currentX;
     CM_DRAG=null;
-    hideRect();
     wrap.classList.remove('dragging');
-    if(!wasActive) return; /* below threshold — treated as click, no zoom */
 
-    /* Map pixel range to dates and apply as custom window */
+    if(!wasActive){
+      /* Click without drag — dismiss any existing measurement */
+      hideRect();
+      hidePanel();
+      return;
+    }
+
     var lo=Math.min(startX,endX), hi=Math.max(startX,endX);
     lo=clampX(lo); hi=clampX(hi);
-    if((hi-lo)<THRESHOLD) return;
-    var fromDate=pxToDate(lo), toDate=pxToDate(hi);
-
-    /* Reject if the selected window holds <2 data points to avoid empty charts */
-    var rows=dataCache[CM_STATE.sector]||[];
-    var f=fromDate.getTime(), t=toDate.getTime();
-    var ptsInRange=0;
-    for(var i=0;i<rows.length;i++){
-      var rd=new Date(rows[i].date).getTime();
-      if(rd>=f && rd<=t){ ptsInRange++; if(ptsInRange>=2) break; }
+    if((hi-lo)<THRESHOLD){
+      hideRect();
+      hidePanel();
+      return;
     }
-    if(ptsInRange<2) return;
-
-    CM_STATE.from=fromDate;
-    CM_STATE.to  =toDate;
-    CM_STATE.range=null; /* deactivate range pills */
-    cmRenderControls();
-    cmRenderChart();
+    /* Convert pixel range to timestamps and surface the measurement.
+       The rect stays visible to anchor the panel to the measured range. */
+    showPanel(pxToTime(lo), pxToTime(hi));
   }
 
   function onDrag(e){
@@ -4964,17 +5353,20 @@ function cmAttachDragZoom(){
     if(!CM_DRAG.active && Math.abs(x-CM_DRAG.startX)>=THRESHOLD){
       CM_DRAG.active=true;
       wrap.classList.add('dragging');
-      /* Hide hover overlay now that drag is starting */
+      /* Hide hover overlay AND any previous measurement panel as the new drag begins */
       document.getElementById('cm-crosshair').style.display='none';
       document.getElementById('cm-dot-left').style.display='none';
       document.getElementById('cm-dot-right').style.display='none';
       document.getElementById('cm-tooltip').style.display='none';
+      hidePanel();
     }
     if(CM_DRAG.active){ showRect(); e.preventDefault(); }
   }
 
-  /* Double-click to reset zoom */
+  /* Double-click resets to default 3Y window and clears the measurement */
   function onDblClick(){
+    hideRect();
+    hidePanel();
     CM_STATE.from=null;
     CM_STATE.to=null;
     CM_STATE.range='3Y';
@@ -5199,8 +5591,18 @@ document.addEventListener('click',function(e){
   }catch(e){}
 })();
 
-/* Init Google after GSI script loads */
-window.addEventListener('load',function(){ authInit(); });
+/* Init Google as soon as the DOM is ready. The GSI script is `async defer` so
+   it may not yet be parsed; in that case authInit no-ops on the missing
+   `google` global and we retry once the GSI script's load fires. */
+function _ssAuthInitWhenReady(){
+  if(typeof google!=='undefined'&&google.accounts&&google.accounts.id) authInit();
+  else {
+    var s=document.querySelector('script[src*="accounts.google.com/gsi/client"]');
+    if(s) s.addEventListener('load',authInit,{once:true});
+  }
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',_ssAuthInitWhenReady,{once:true});
+else _ssAuthInitWhenReady();
 
 /* ════════════════════════════════════════
    ALERTS
@@ -5653,6 +6055,23 @@ async function confirmCancelSubscription(){
   }
 }
 
+/* Lazy-load Razorpay's checkout.js. Removed from <head> because most visits
+   never reach the upgrade flow — saves ~30KB JS download/parse on cold load.
+   Idempotent: subsequent calls reuse the same promise (and resolve instantly
+   once the script is in the page). */
+function loadRazorpay(){
+  if(window.Razorpay) return Promise.resolve();
+  if(window._rzpLoading) return window._rzpLoading;
+  window._rzpLoading=new Promise(function(resolve,reject){
+    var s=document.createElement('script');
+    s.src='https://checkout.razorpay.com/v1/checkout.js';
+    s.onload=function(){ resolve(); };
+    s.onerror=function(){ window._rzpLoading=null; reject(new Error('Razorpay script failed to load')); };
+    document.head.appendChild(s);
+  });
+  return window._rzpLoading;
+}
+
 function showUpgradeFlow(){
   if(!currentUser||!currentUser.token){
     authSignIn();
@@ -5708,8 +6127,11 @@ function showUpgradeFlow(){
       }
     };
 
-    var rzp=new Razorpay(options);
-    rzp.open();
+    var rzp;
+    return loadRazorpay().then(function(){
+      rzp=new Razorpay(options);
+      rzp.open();
+    });
   })
   .catch(function(e){
     console.error('Upgrade flow error:', e);
@@ -5729,12 +6151,21 @@ function escapeHtml(s){
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
-function triggerAISummary(sectorName){
+async function triggerAISummary(sectorName){
   var st=statCache[sectorName];
   if(!st) return;
   /* Switch the block body to a loading state immediately */
   var blockBody=document.getElementById('ai-summary-block-body');
   if(blockBody) blockBody.innerHTML='<div id="ai-summary-content" class="ai-loading">Generating summary…</div>';
+
+  /* For IT/Pharma, ensure FX is loaded so USD context can be included in
+     the payload. loadFxSeries is idempotent — instant if cached, ~200ms
+     if not. If it fails, we proceed with INR-only payload (the worker
+     prompt's USD block is conditional on the fields being present). */
+  if(EPS_USD_SECTORS[sectorName] && !FX_SERIES){
+    try { await loadFxSeries(); } catch(e) { /* fall through, USD block skipped */ }
+  }
+
   loadAISummary(sectorName, st);
 }
 
@@ -5836,6 +6267,17 @@ async function loadAISummary(sectorName, st){
       divergence:(st.peDiv&&st.peDiv.kind!=='none')||(st.pbDiv&&st.pbDiv.kind!=='none'),
       backtest  :btForAI       /* may be null if not applicable */
     };
+
+    /* For IT/Pharma when FX is loaded, fold in USD-frame earnings context.
+       Worker uses isUsdSector flag to gate the USD prompt block. Field
+       names match the worker's expectations in admin.js. */
+    var usdCtx=computeUsdEpsContextForAI(sectorName);
+    if(usdCtx){
+      payload.isUsdSector   = true;
+      payload.currentEpsUsd = usdCtx.currentEpsUsd;
+      payload.epsYoYUsd     = usdCtx.epsYoYUsd;
+      payload.epsPctPeakUsd = usdCtx.epsPctPeakUsd;
+    }
 
     var res=await fetch(WORKER_BASE+'/ai-summary',{
       method :'POST',
@@ -6011,7 +6453,7 @@ function buildPlusFreeHTML(){
   h += "<div>";
   h += "<div class='pp-feat-num'>04 &middot; Expanded Charts</div>";
   h += "<div class='pp-feat-title'>Full-screen, full history</div>";
-  h += "<div class='pp-feat-desc'>Click any sector&#39;s sparkline to open a full-window chart. Overlay any two of P/E, P/B, EPS, or Price on dual axes &#8212; pick your time window with one tap or drag to zoom into a custom range.</div>";
+  h += "<div class='pp-feat-desc'>Click any sector&#39;s sparkline to open a full-window chart. Overlay any two of P/E, P/B, EPS, or Price on dual axes &#8212; pick your time window with one tap, then drag any range to measure how much each metric moved between those dates.</div>";
   h += "<ul class='pp-bullets'>";
   h += "<li><strong>Hover for exact values</strong> on any date</li>";
   h += "<li><strong>Drag to zoom</strong> into a custom date range</li>";
@@ -6055,7 +6497,7 @@ function buildPlusFreeHTML(){
   h += "<li><strong>Email alerts</strong> on any sector</li>";
   h += "<li><strong>AI summaries</strong> powered by Claude &#8212; 30/day</li>";
   h += "<li><strong>Alpha vs Nifty 50</strong> in every backtest</li>";
-  h += "<li><strong>Expanded charts</strong> &#8212; multi-metric, drag-to-zoom, rolling median</li>";
+  h += "<li><strong>Expanded charts</strong> &#8212; multi-metric, drag-to-measure, rolling median</li>";
   h += "<li>All future Plus features, automatically</li>";
   h += "</ul>";
   h += "<button class='pp-btn-primary' style='width:100%;padding:13px' onclick='authSignIn();closePlusPane()'>Sign in with Google &#8594;</button>";
@@ -6088,7 +6530,7 @@ function buildPlusPaidHTML(){
   h += "<div class='pp-mock'><div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div><div class='pp-mock-body' style='padding:10px 9px'><table class='ppm-tbl'><thead><tr><th rowspan='2'>Date</th><th rowspan='2'>Buy</th><th colspan='3' class='grp'>Outcome &middot; 1Yr</th></tr><tr><th class='sep'>Sell</th><th>CAGR</th><th class='hl sep' style='color:#a5b4fc'>vs N50</th></tr></thead><tbody><tr class='rg'><td>14 Mar 2020</td><td>8,142</td><td class='sep'>13,540</td><td style='color:var(--vchp-c);font-weight:700'>+66.3%</td><td class='alpha-p hl sep'>+42.1%</td></tr><tr class='rg'><td>22 Jun 2022</td><td>14,891</td><td class='sep'>21,230</td><td style='color:var(--vchp-c);font-weight:700'>+42.6%</td><td class='alpha-p hl sep'>+24.3%</td></tr><tr class='rr'><td>11 Dec 2023</td><td>20,305</td><td class='sep'>19,880</td><td style='color:var(--vexp-c);font-weight:700'>&#8722;2.1%</td><td class='alpha-n hl sep'>&#8722;10.8%</td></tr></tbody></table></div></div>";
   h += "</div>";
   h += "<div class='pp-feature rev' id='pp-feat-4' style='margin-top:8px'>";
-  h += "<div><div class='pp-feat-num' style='color:var(--vchp-c)'>&#10003; Active</div><div class='pp-feat-title'>Expanded Charts</div><div class='pp-feat-desc'>Click any sector card&#39;s sparkline to open the full-window chart with multi-metric overlay, drag-to-zoom, hover values, and rolling-median reference.</div></div>";
+  h += "<div><div class='pp-feat-num' style='color:var(--vchp-c)'>&#10003; Active</div><div class='pp-feat-title'>Expanded Charts</div><div class='pp-feat-desc'>Click any sector card&#39;s sparkline to open the full-window chart with multi-metric overlay, drag-to-measure, hover values, and rolling-median reference.</div></div>";
   h += "<div class='pp-mock'><div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div><div class='pp-mock-body' style='padding:10px 9px'>";
   h += "<div style='display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap'>";
   h += "<span style='padding:3px 7px;border-radius:5px;background:rgba(56,189,248,.15);color:#38bdf8;font-family:var(--mono);font-size:.46rem;font-weight:700'>&#9679; P/E</span>";
@@ -6123,6 +6565,7 @@ async function ppStartUpgrade(){
     });
     var data=await res.json();
     if(!data.subscription_id) throw new Error(data.error||'Failed');
+    await loadRazorpay();
     var rzp=new Razorpay({
       key:data.key_id, subscription_id:data.subscription_id,
       name:'SectorScope', description:'Plus \u00b7 \u20b999/month',
