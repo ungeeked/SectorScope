@@ -4549,6 +4549,94 @@ function gsecYieldAt(timestamp){
   return (timestamp - s[lo].t) <= GSEC_STALENESS_MS ? s[lo].y : null;
 }
 
+/* ════════════════════════════════════════
+   RBI REPO RATE SERIES
+   Macro overlay for Bank, PSU Bank, Fin Services. Repo rate is a step
+   function — it only changes at MPC meetings (~every 6 weeks), so a
+   chart point on Aug 3 should carry forward the most recent rate change
+   indefinitely, NOT require a data point within 5 days. The lookup
+   below uses floor semantics with right-edge-only staleness (60 days)
+   so historical chart points always resolve while obviously-stale data
+   feeds at the open right edge are still rejected.
+
+   Robust to either upstream shape: the Apps Script may return one row
+   per day (carry-forward already applied) or one row per change (sparse).
+   Both shapes give correct results with this lookup.
+════════════════════════════════════════ */
+var REPO_URL=WORKER_BASE+'/repo';
+var REPO_SERIES=null;       /* sorted array of {t:msSinceEpoch, r:percentRate} */
+var REPO_LOADING=null;
+var REPO_STALENESS_MS=60*24*60*60*1000;  /* right-edge only; see lookup below */
+
+function loadRepoSeries(){
+  if(REPO_SERIES) return Promise.resolve(REPO_SERIES);
+  if(REPO_LOADING) return REPO_LOADING;
+  REPO_LOADING=fetch(REPO_URL,{redirect:'follow'})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(function(txt){
+      var raw;
+      try{ raw=JSON.parse(txt); }
+      catch(e){ throw new Error('Non-JSON response: '+String(txt).slice(0,120)); }
+      if(!Array.isArray(raw) || !raw.length) throw new Error('Empty repo response');
+      var startIdx = (Array.isArray(raw[0]) && (typeof raw[0][1]!=='number' || isNaN(raw[0][1]))) ? 1 : 0;
+      var series=[];
+      for(var i=startIdx;i<raw.length;i++){
+        var row=raw[i];
+        if(!Array.isArray(row) || row.length<2) continue;
+        var t=new Date(row[0]).getTime();
+        var r=parseFloat(row[1]);
+        /* Upstream stores repo as a fraction (0.0650 = 6.50%); convert to
+           percent for consistency with gsec and the chart's % suffix
+           formatter. Per-row detection — robust to either format if the
+           feed ever changes shape, and a no-op if values are already in
+           percent. RBI repo has never touched 100%, so the threshold is
+           safely well above any real fraction-format value. */
+        if(!isNaN(r) && r > 0 && r < 1) r *= 100;
+        /* RBI repo rate has historically ranged ~4-14.5%. Allow 1-20 to
+           tolerate any feed format quirks; reject obvious junk. */
+        if(isNaN(t) || isNaN(r) || r<1 || r>20) continue;
+        series.push({t:t, r:r});
+      }
+      if(!series.length) throw new Error('No valid repo rows parsed');
+      series.sort(function(a,b){ return a.t - b.t; });
+      REPO_SERIES=series;
+      return series;
+    })
+    .catch(function(e){
+      REPO_LOADING=null;
+      console.warn('[repo] rate fetch failed:', e.message);
+      throw e;
+    });
+  return REPO_LOADING;
+}
+
+/* Return the RBI repo rate (percent) as-of the given timestamp.
+   Step-function carry-forward semantics:
+     - if there's a later entry, the floor's rate persists until that
+       next entry → safe to return regardless of gap length;
+     - only the right edge (past the last known change) applies a
+       staleness window, since beyond that we can't be sure no newer
+       MPC decision exists. */
+function repoRateAt(timestamp){
+  var s=REPO_SERIES;
+  if(!s || !s.length) return null;
+  /* Before series start — best-effort with staleness window. Rare in
+     practice; charts rarely query pre-history-start dates. */
+  if(timestamp < s[0].t){
+    return (s[0].t - timestamp) <= REPO_STALENESS_MS ? s[0].r : null;
+  }
+  /* Floor binary search */
+  var lo=0, hi=s.length-1;
+  while(lo<hi){
+    var mid=(lo+hi+1)>>1;
+    if(s[mid].t<=timestamp) lo=mid; else hi=mid-1;
+  }
+  /* Later entry exists → the step-function rate is valid until then. */
+  if(lo < s.length-1) return s[lo].r;
+  /* At/past the last known entry → apply right-edge staleness. */
+  return (timestamp - s[lo].t) <= REPO_STALENESS_MS ? s[lo].r : null;
+}
+
 var CM_STATE={sector:null,metrics:[],range:'3Y',from:null,to:null,showMedian:true,showBands:false};
 var CM_DRAW=null;  /* set by cmDrawCanvas, consumed by hover handler */
 var CM_DRAG=null;  /* { active, startX, currentX } during a zoom drag */
@@ -4566,9 +4654,13 @@ var CM_METRICS={
      but populated for shape consistency. Amber/gold reads as "yield" in
      financial UIs and stays distinct from PB orange. */
   gsec  : {field:'date',  label:'10Y G-Sec', cLight:'#ca8a04', cDark:'#facc15'},
+  /* repo is also a virtual macro metric — RBI policy rate, step-function
+     by nature. Red/crimson stays visually distinct from amber gsec since
+     the two are most often viewed together on rate-sensitive sector charts. */
+  repo  : {field:'date',  label:'Repo Rate', cLight:'#dc2626', cDark:'#f87171'},
   cls   : {field:'price', label:'Price',     cLight:'#ec4899', cDark:'#f472b6'}
 };
-var CM_METRIC_ORDER=['pe','eps','epsUsd','pb','gsec','cls']; /* render order in checkbox row */
+var CM_METRIC_ORDER=['pe','eps','epsUsd','pb','gsec','repo','cls']; /* render order in checkbox row */
 
 /* Sectors where EPS (USD) is genuinely informative: IT bills ~90%+ in USD,
    Pharma earns 30-50% from US/exports. For domestic INR-driven sectors
@@ -4583,6 +4675,14 @@ var EPS_USD_SECTORS={'IT':1, 'Pharma':1};
    For everyone else the toggle would be a macro line uncorrelated with
    the sector's own series, so we hide the checkbox there entirely. */
 var GSEC_SECTORS={'Bank':1, 'PSU Bank':1, 'Fin Services':1, 'Realty':1};
+
+/* Sectors where the RBI repo rate is a meaningful overlay — banks and
+   financiers whose funding cost moves directly with the policy rate.
+   Realty is excluded here even though it's in GSEC_SECTORS: realty
+   responds to rates primarily through retail-mortgage transmission,
+   which the 10Y G-Sec already captures with less lag and noise than
+   the policy rate itself. */
+var REPO_SECTORS={'Bank':1, 'PSU Bank':1, 'Fin Services':1};
 
 var CM_RANGES=['1W','1M','3M','1Y','3Y','5Y','All'];
 function cmRangeDays(r){
@@ -4670,6 +4770,8 @@ function cmRenderControls(){
     if(k==='epsUsd' && !EPS_USD_SECTORS[CM_STATE.sector]) return;
     /* Hide 10Y G-Sec for sectors where the yield curve isn't a meaningful overlay. */
     if(k==='gsec'   && !GSEC_SECTORS[CM_STATE.sector])    return;
+    /* Hide Repo Rate for sectors outside banking/financials. */
+    if(k==='repo'   && !REPO_SECTORS[CM_STATE.sector])    return;
     var m=CM_METRICS[k];
     var checked=CM_STATE.metrics.indexOf(k)>=0;
     var col=isLight?m.cLight:m.cDark;
@@ -4708,6 +4810,13 @@ function cmRenderControls(){
           cmRenderControls();
           cmRenderChart();
         }).catch(function(){ /* silent; warning already logged in loadGsecSeries */ });
+      }
+      /* Same lazy-load contract for the Repo Rate macro overlay. */
+      if(k==='repo' && CM_STATE.metrics.indexOf('repo')>=0 && !REPO_SERIES){
+        loadRepoSeries().then(function(){
+          cmRenderControls();
+          cmRenderChart();
+        }).catch(function(){ /* silent; warning already logged in loadRepoSeries */ });
       }
     });
   });
@@ -4993,6 +5102,8 @@ function cmDrawCanvas(canvas, rows){
     /* gsec is a virtual macro overlay — value comes from gsecYieldAt(rowDate),
        not from any sector field. Same lazy-load contract as epsUsd. */
     if(key==='gsec'   && !GSEC_SERIES) return [];
+    /* repo is a virtual macro overlay — step-function rate from repoRateAt. */
+    if(key==='repo'   && !REPO_SERIES) return [];
     var f=CM_METRICS[key].field;
     var pts=[];
     for(var i=0;i<rows.length;i++){
@@ -5003,6 +5114,9 @@ function cmDrawCanvas(canvas, rows){
            Resampling to sector dates keeps cross-metric alignment clean
            (hover x-axis lands on the same set of timestamps as PE/PB/etc.). */
         v=gsecYieldAt(t);
+        if(v==null) continue;
+      } else if(key==='repo'){
+        v=repoRateAt(t);
         if(v==null) continue;
       } else {
         v=rows[i][f];
@@ -5197,6 +5311,7 @@ function cmAttachHover(){
     if(key==='cls'||key==='eps') return Math.round(v).toLocaleString('en-IN');
     if(key==='epsUsd') return '$'+v.toFixed(2);
     if(key==='gsec')   return v.toFixed(2)+'%';
+    if(key==='repo')   return v.toFixed(2)+'%';
     return v.toFixed(2);
   }
   function fmtDate(d){
