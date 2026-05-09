@@ -4403,8 +4403,10 @@ document.addEventListener('keydown',function(e){
    full historical time series ([["Date","INR"], [ISO_date, rate], ...]) so
    we convert each EPS data point at the rate in effect on its own date —
    a 2010 EPS gets 2010's rate, today's EPS gets today's. Lazy-loaded on
-   first toggle of the EPS (USD) metric and cached for the session. */
-var FX_URL='https://script.google.com/macros/s/AKfycbx59MeaNlmFMZWCRnFl50XCLNnkhDzjtPuUHPefW7KpEb55oL1HpK5btymiDBiFXZ17/exec';
+   first toggle of the EPS (USD) metric and cached for the session.
+   Proxied through the worker (env.APPS_SCRIPT_FX) so the upstream URL
+   stays server-side and inherits origin check + rate limit + edge cache. */
+var FX_URL=WORKER_BASE+'/fx';
 var FX_SERIES=null;       /* sorted array of {t:msSinceEpoch, r:INRperUSD} */
 var FX_LOADING=null;
 function loadFxSeries(){
@@ -4474,6 +4476,79 @@ function fxRateAt(timestamp){
   return (timestamp - s[lo].t) <= FX_STALENESS_MS ? s[lo].r : null;
 }
 
+/* ════════════════════════════════════════
+   10-YEAR G-SEC YIELD SERIES
+   Macro overlay for rate-sensitive sectors (Bank, PSU Bank, Fin Services,
+   Realty). Mirrors the FX series pattern: standalone Apps Script source,
+   lazy-loaded once into a sorted {t, y} array, looked up at row's own
+   date with a 5-day staleness window. Unlike epsUsd this is *not* derived
+   from a sector field — it's an independent macro series — so seriesFor
+   has a small branch that calls gsecYieldAt(rowDate) directly.
+════════════════════════════════════════ */
+var GSEC_URL=WORKER_BASE+'/gsec';
+var GSEC_SERIES=null;       /* sorted array of {t:msSinceEpoch, y:percentYield} */
+var GSEC_LOADING=null;
+var GSEC_STALENESS_MS=5*24*60*60*1000;  /* same rationale as FX_STALENESS_MS */
+
+function loadGsecSeries(){
+  if(GSEC_SERIES) return Promise.resolve(GSEC_SERIES);
+  if(GSEC_LOADING) return GSEC_LOADING;
+  GSEC_LOADING=fetch(GSEC_URL,{redirect:'follow'})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(function(txt){
+      var raw;
+      try{ raw=JSON.parse(txt); }
+      catch(e){ throw new Error('Non-JSON response: '+String(txt).slice(0,120)); }
+      if(!Array.isArray(raw) || !raw.length) throw new Error('Empty G-Sec response');
+      /* Skip a header row like ["Date","Yield"] if the second column isn't numeric. */
+      var startIdx = (Array.isArray(raw[0]) && (typeof raw[0][1]!=='number' || isNaN(raw[0][1]))) ? 1 : 0;
+      var series=[];
+      for(var i=startIdx;i<raw.length;i++){
+        var row=raw[i];
+        if(!Array.isArray(row) || row.length<2) continue;
+        var t=new Date(row[0]).getTime();
+        var y=parseFloat(row[1]);
+        /* Indian 10y G-Sec has historically ranged ~5-15%. Allow 1-25 to
+           tolerate any feed format quirks; reject obvious junk (incl. a feed
+           that mistakenly reports yields in basis points like 685 vs 6.85). */
+        if(isNaN(t) || isNaN(y) || y<1 || y>25) continue;
+        series.push({t:t, y:y});
+      }
+      if(!series.length) throw new Error('No valid G-Sec rows parsed');
+      /* Defensive sort — Apps Script usually returns ascending but don't trust it. */
+      series.sort(function(a,b){ return a.t - b.t; });
+      GSEC_SERIES=series;
+      return series;
+    })
+    .catch(function(e){
+      GSEC_LOADING=null;  /* allow retry on next click */
+      console.warn('[gsec] 10Y yield fetch failed:', e.message);
+      throw e;
+    });
+  return GSEC_LOADING;
+}
+
+/* Return the 10Y G-Sec yield (percent) as-of the given timestamp. Floor
+   semantics + 5-day staleness window — identical contract to fxRateAt.
+   seriesFor sees null and skips the point so the chart renders an honest
+   gap rather than a clamped-stale line. */
+function gsecYieldAt(timestamp){
+  var s=GSEC_SERIES;
+  if(!s || !s.length) return null;
+  if(timestamp <= s[0].t){
+    return (s[0].t - timestamp) <= GSEC_STALENESS_MS ? s[0].y : null;
+  }
+  if(timestamp >= s[s.length-1].t){
+    return (timestamp - s[s.length-1].t) <= GSEC_STALENESS_MS ? s[s.length-1].y : null;
+  }
+  var lo=0, hi=s.length-1;
+  while(lo<hi){
+    var mid=(lo+hi+1)>>1;
+    if(s[mid].t<=timestamp) lo=mid; else hi=mid-1;
+  }
+  return (timestamp - s[lo].t) <= GSEC_STALENESS_MS ? s[lo].y : null;
+}
+
 var CM_STATE={sector:null,metrics:[],range:'3Y',from:null,to:null,showMedian:true,showBands:false};
 var CM_DRAW=null;  /* set by cmDrawCanvas, consumed by hover handler */
 var CM_DRAG=null;  /* { active, startX, currentX } during a zoom drag */
@@ -4486,15 +4561,28 @@ var CM_METRICS={
      divides by the cached USD/INR rate. Cyan to differentiate from green EPS. */
   epsUsd: {field:'eps',   label:'EPS (USD)', cLight:'#0891b2', cDark:'#22d3ee'},
   pb    : {field:'pb' ,   label:'P/B',       cLight:'#f97316', cDark:'#fb923c'},
+  /* gsec is a virtual *macro* metric — independent of any sector field.
+     seriesFor calls gsecYieldAt(rowDate) directly; `field` here is unused
+     but populated for shape consistency. Amber/gold reads as "yield" in
+     financial UIs and stays distinct from PB orange. */
+  gsec  : {field:'date',  label:'10Y G-Sec', cLight:'#ca8a04', cDark:'#facc15'},
   cls   : {field:'price', label:'Price',     cLight:'#ec4899', cDark:'#f472b6'}
 };
-var CM_METRIC_ORDER=['pe','eps','epsUsd','pb','cls']; /* render order in checkbox row */
+var CM_METRIC_ORDER=['pe','eps','epsUsd','pb','gsec','cls']; /* render order in checkbox row */
 
 /* Sectors where EPS (USD) is genuinely informative: IT bills ~90%+ in USD,
    Pharma earns 30-50% from US/exports. For domestic INR-driven sectors
    (banks, FMCG, realty, etc.) the toggle just imposes FX-shaped noise on
    an INR earnings series, so we hide the checkbox there entirely. */
 var EPS_USD_SECTORS={'IT':1, 'Pharma':1};
+
+/* Sectors where the 10Y G-Sec yield is a meaningful overlay — segments
+   whose valuations are tightly coupled to the rates curve. Bank/Fin
+   Services NIMs and discount-rate effects on book value; PSU Bank's
+   bond-portfolio duration risk; Realty's mortgage-rate-driven demand.
+   For everyone else the toggle would be a macro line uncorrelated with
+   the sector's own series, so we hide the checkbox there entirely. */
+var GSEC_SECTORS={'Bank':1, 'PSU Bank':1, 'Fin Services':1, 'Realty':1};
 
 var CM_RANGES=['1W','1M','3M','1Y','3Y','5Y','All'];
 function cmRangeDays(r){
@@ -4580,6 +4668,8 @@ function cmRenderControls(){
   CM_METRIC_ORDER.forEach(function(k){
     /* Hide EPS (USD) for sectors where USD-converted EPS is just FX noise. */
     if(k==='epsUsd' && !EPS_USD_SECTORS[CM_STATE.sector]) return;
+    /* Hide 10Y G-Sec for sectors where the yield curve isn't a meaningful overlay. */
+    if(k==='gsec'   && !GSEC_SECTORS[CM_STATE.sector])    return;
     var m=CM_METRICS[k];
     var checked=CM_STATE.metrics.indexOf(k)>=0;
     var col=isLight?m.cLight:m.cDark;
@@ -4611,6 +4701,13 @@ function cmRenderControls(){
           cmRenderControls();
           cmRenderChart();
         }).catch(function(){ /* silent; warning already logged in loadFxSeries */ });
+      }
+      /* Same lazy-load contract for the G-Sec macro overlay. */
+      if(k==='gsec' && CM_STATE.metrics.indexOf('gsec')>=0 && !GSEC_SERIES){
+        loadGsecSeries().then(function(){
+          cmRenderControls();
+          cmRenderChart();
+        }).catch(function(){ /* silent; warning already logged in loadGsecSeries */ });
       }
     });
   });
@@ -4892,17 +4989,29 @@ function cmDrawCanvas(canvas, rows){
     /* epsUsd is a virtual metric — eps divided by the USD/INR rate as-of
        each row's own date (not today's rate). Returns no points until the
        FX series has loaded; the toggle's click handler kicks off the fetch. */
-    if(key==='epsUsd' && !FX_SERIES) return [];
+    if(key==='epsUsd' && !FX_SERIES)   return [];
+    /* gsec is a virtual macro overlay — value comes from gsecYieldAt(rowDate),
+       not from any sector field. Same lazy-load contract as epsUsd. */
+    if(key==='gsec'   && !GSEC_SERIES) return [];
     var f=CM_METRICS[key].field;
     var pts=[];
     for(var i=0;i<rows.length;i++){
-      var v=rows[i][f];
-      if(v==null || isNaN(v)) continue;
       var t=new Date(rows[i].date).getTime();
-      if(key==='epsUsd'){
-        var fx=fxRateAt(t);
-        if(!fx) continue;
-        v=+v / fx;
+      var v;
+      if(key==='gsec'){
+        /* No sector field involved — read the macro series at row's date.
+           Resampling to sector dates keeps cross-metric alignment clean
+           (hover x-axis lands on the same set of timestamps as PE/PB/etc.). */
+        v=gsecYieldAt(t);
+        if(v==null) continue;
+      } else {
+        v=rows[i][f];
+        if(v==null || isNaN(v)) continue;
+        if(key==='epsUsd'){
+          var fx=fxRateAt(t);
+          if(!fx) continue;
+          v=+v / fx;
+        }
       }
       pts.push({d:t, v:+v});
     }
@@ -5087,6 +5196,7 @@ function cmAttachHover(){
     if(v==null||isNaN(v)) return '—';
     if(key==='cls'||key==='eps') return Math.round(v).toLocaleString('en-IN');
     if(key==='epsUsd') return '$'+v.toFixed(2);
+    if(key==='gsec')   return v.toFixed(2)+'%';
     return v.toFixed(2);
   }
   function fmtDate(d){
