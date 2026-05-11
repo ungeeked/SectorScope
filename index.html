@@ -1069,19 +1069,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
           <div class="bt-lbl">Sector</div>
           <select class="bt-select" id="bt-sector" onchange="btOnSectorChange()">
             <option value="">— Select —</option>
-            <option value="Infra">Nifty Infra</option>
-            <option value="Realty">Nifty Realty</option>
-            <option value="Bank">Nifty Bank</option>
-            <option value="PSU Bank">Nifty PSU Bank</option>
-            <option value="IT">Nifty IT</option>
-            <option value="Auto">Nifty Auto</option>
-            <option value="FMCG">Nifty FMCG</option>
-            <option value="Energy">Nifty Energy</option>
-            <option value="Metals">Nifty Metals</option>
-            <option value="Pharma">Nifty Pharma</option>
-            <option value="Fin Services">Nifty Fin Services</option>
-            <option value="Defence">Nifty Defence</option>
-            <option value="Healthcare">Nifty Healthcare</option>
+            <!-- Options populated from SECTORS by initBtSectorOptions() -->
           </select>
         </div>
         <div class="bt-field">
@@ -2085,38 +2073,42 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 var WORKER_BASE='https://sectorscope.prashant-06f.workers.dev';
 
 var SECTORS=[
-  {name:'Infra',       color:'#818cf8',url:WORKER_BASE+'/sector/Infra'},
-  {name:'Realty',      color:'#f472b6',url:WORKER_BASE+'/sector/Realty'},
-  {name:'Bank',        color:'#60a5fa',url:WORKER_BASE+'/sector/Bank'},
-  {name:'PSU Bank',    color:'#22d3ee',url:WORKER_BASE+'/sector/'+encodeURIComponent('PSU Bank')},
-  {name:'IT',          color:'#a78bfa',url:WORKER_BASE+'/sector/IT'},
-  {name:'Auto',        color:'#fbbf24',url:WORKER_BASE+'/sector/Auto'},
-  {name:'FMCG',        color:'#34d399',url:WORKER_BASE+'/sector/FMCG'},
-  {name:'Energy',      color:'#fb923c',url:WORKER_BASE+'/sector/Energy'},
-  {name:'Metals',      color:'#94a3b8',url:WORKER_BASE+'/sector/Metals'},
-  {name:'Pharma',      color:'#2dd4bf',url:WORKER_BASE+'/sector/Pharma'},
-  {name:'Fin Services',color:'#fde047',url:WORKER_BASE+'/sector/'+encodeURIComponent('Fin Services')},
-  {name:'Defence',     color:'#10b981',url:WORKER_BASE+'/sector/Defence'},
-  {name:'Healthcare',  color:'#f9a8d4',url:WORKER_BASE+'/sector/Healthcare'}
+  {name:'Infra',         color:'#818cf8',url:WORKER_BASE+'/sector/Infra'},
+  {name:'Realty',        color:'#f472b6',url:WORKER_BASE+'/sector/Realty'},
+  {name:'Bank',          color:'#60a5fa',url:WORKER_BASE+'/sector/Bank'},
+  {name:'PSU Bank',      color:'#22d3ee',url:WORKER_BASE+'/sector/'+encodeURIComponent('PSU Bank')},
+  {name:'IT',            color:'#a78bfa',url:WORKER_BASE+'/sector/IT'},
+  {name:'Auto',          color:'#fbbf24',url:WORKER_BASE+'/sector/Auto'},
+  {name:'FMCG',          color:'#34d399',url:WORKER_BASE+'/sector/FMCG'},
+  {name:'Energy',        color:'#fb923c',url:WORKER_BASE+'/sector/Energy'},
+  {name:'Metals',        color:'#94a3b8',url:WORKER_BASE+'/sector/Metals'},
+  {name:'Pharma',        color:'#2dd4bf',url:WORKER_BASE+'/sector/Pharma'},
+  {name:'Fin Services',  color:'#fde047',url:WORKER_BASE+'/sector/'+encodeURIComponent('Fin Services')},
+  {name:'Defence',       color:'#10b981',url:WORKER_BASE+'/sector/Defence'},
+  {name:'Healthcare',    color:'#f9a8d4',url:WORKER_BASE+'/sector/Healthcare'},
+  {name:'Oil & Gas',     color:'#ef4444',url:WORKER_BASE+'/sector/'+encodeURIComponent('Oil & Gas')},
+  {name:'Cons. Durables',color:'#c084fc',url:WORKER_BASE+'/sector/'+encodeURIComponent('Cons. Durables')}
 ];
 
 /* ── Live intraday feed (updates every 20 min) ── */
 var LIVE_FEED_URL=WORKER_BASE+'/live';
 /* Maps live feed sector names → our internal sector names */
 var LIVE_NAME_MAP={
-  'NIFTY BANK':           'Bank',
-  'NIFTY AUTO':           'Auto',
-  'NIFTY IT':             'IT',
-  'NIFTY INFRA':          'Infra',
-  'NIFTY PHARMA':         'Pharma',
-  'NIFTY FMCG':           'FMCG',
-  'NIFTY PSU BANK':       'PSU Bank',
-  'NIFTY REALTY':         'Realty',
-  'NIFTY METAL':          'Metals',
-  'NIFTY ENERGY':         'Energy',
+  'NIFTY BANK':                 'Bank',
+  'NIFTY AUTO':                 'Auto',
+  'NIFTY IT':                   'IT',
+  'NIFTY INFRA':                'Infra',
+  'NIFTY PHARMA':               'Pharma',
+  'NIFTY FMCG':                 'FMCG',
+  'NIFTY PSU BANK':             'PSU Bank',
+  'NIFTY REALTY':               'Realty',
+  'NIFTY METAL':                'Metals',
+  'NIFTY ENERGY':               'Energy',
   'NIFTY FINANCIAL SERVICES':   'Fin Services',
-  'NIFTY INDIA DEFENCE':  'Defence',
-  'NIFTY HEALTHCARE INDEX':     'Healthcare'
+  'NIFTY INDIA DEFENCE':        'Defence',
+  'NIFTY HEALTHCARE INDEX':     'Healthcare',
+  'NIFTY OIL & GAS':            'Oil & Gas',
+  'NIFTY CONSUMER DURABLES':    'Cons. Durables'
   /* NIFTY (Nifty50) is intentionally omitted — not one of our sectors */
 };
 var liveCache={};  /* keyed by our sector name: {price,pe,pb,asOf} */
@@ -2132,10 +2124,10 @@ var liveCache={};  /* keyed by our sector name: {price,pe,pb,asOf} */
 var appendState='pre-append';
 
 /* Dual = show both PE and PB */
-var DUAL_S=['Infra','Energy','Realty','Metals'];
+var DUAL_S=['Infra','Energy','Realty','Metals','Oil & Gas'];
 /* PB only */
 var PURE_PB=['Bank','PSU Bank','Fin Services'];
-/* All others (IT/Auto/FMCG/Pharma/Defence/Healthcare) are PE only */
+/* All others (IT/Auto/FMCG/Pharma/Defence/Healthcare/Cons. Durables) are PE only */
 function cardType(n){ return DUAL_S.indexOf(n)>=0?'dual':PURE_PB.indexOf(n)>=0?'pb':'pe'; }
 
 var BAND={
@@ -3408,6 +3400,37 @@ function btUpdateMetrics(){
      Checkbox stays visible and clickable at all times. */
   document.getElementById('bt-sl-pe-wrap').classList.toggle('hidden',!pe);
   document.getElementById('bt-sl-pb-wrap').classList.toggle('hidden',!pb);
+}
+
+/* ── Backtest sector dropdown ──
+   Generated from SECTORS so a new sector added to the SECTORS array
+   auto-shows up here. The placeholder "— Select —" stays as inline HTML;
+   real options are appended at init. Override map handles the few cases
+   where the dropdown label differs from "Nifty " + sec.name (e.g.
+   "Cons. Durables" → "Nifty Consumer Durables" because the abbreviation
+   is for card-width reasons and reads awkwardly in a select). */
+var BT_LABEL_OVERRIDES={
+  'Cons. Durables': 'Nifty Consumer Durables',
+};
+function initBtSectorOptions(){
+  var sel=document.getElementById('bt-sector');
+  if(!sel) return;
+  /* Guard against double-populate if this is called twice. */
+  if(sel.dataset.populated==='1') return;
+  var frag=document.createDocumentFragment();
+  SECTORS.forEach(function(s){
+    var opt=document.createElement('option');
+    opt.value=s.name;
+    opt.textContent=BT_LABEL_OVERRIDES[s.name]||('Nifty '+s.name);
+    frag.appendChild(opt);
+  });
+  sel.appendChild(frag);
+  sel.dataset.populated='1';
+}
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',initBtSectorOptions,{once:true});
+} else {
+  initBtSectorOptions();
 }
 
 async function btOnSectorChange(){
