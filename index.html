@@ -83,7 +83,8 @@ html.light #live-chip{color:#15803d;border-color:rgba(21,128,61,.3);background:r
 html.light #status-chip.done{color:#15803d;border-color:rgba(21,128,61,.3);background:rgba(21,128,61,.06)}
 @media(max-width:600px){#status-chip{font-size:.48rem;padding:2px 7px}}
 @media(max-width:680px){#live-chip.visible{display:none!important}.h-right{margin-left:auto}}
-@media(max-width:480px){#status-chip{display:none}.user-name{max-width:64px}}
+@media(max-width:600px){.user-name{display:none}.user-pill{padding-right:6px}}
+@media(max-width:480px){#status-chip{display:none}}
 .icon-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;color:var(--sub);font-size:.9rem;cursor:pointer;transition:all .18s;flex-shrink:0}
 .icon-btn:hover{background:var(--sur);color:var(--txt)}
 /* ── AUTH ── */
@@ -122,6 +123,22 @@ html.light .theme-pip{transform:translateX(22px);background:#f59e0b}
 .dash-grid{position:relative;z-index:1;padding:20px 32px 52px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;max-width:1700px;margin:0 auto;transition:opacity .35s ease}
 .dash-grid.fading{opacity:0;pointer-events:none}
 @media(max-width:680px){.dash-grid{padding:10px;gap:10px}}
+
+/* ── DASH TOOLBAR (sort selector) ── */
+.dash-toolbar{max-width:1700px;margin:0 auto;padding:14px 32px 0;display:flex;justify-content:flex-end;align-items:center;gap:10px}
+.dash-toolbar + .dash-grid{padding-top:10px}
+.sort-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.8px;text-transform:uppercase;color:var(--ghost)}
+.sort-control{display:flex;gap:2px;background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;padding:3px}
+.sort-btn{padding:5px 12px;border-radius:6px;font-family:var(--body);font-size:.7rem;font-weight:600;color:var(--sub);background:transparent;border:none;cursor:pointer;transition:all .18s;white-space:nowrap}
+.sort-btn.active{background:var(--sur);color:var(--txt);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+html.light .sort-btn.active{box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.sort-btn:not(.active):hover{color:var(--txt)}
+@media(max-width:680px){
+  .dash-toolbar{padding:10px 10px 0;justify-content:flex-start}
+  .dash-toolbar + .dash-grid{padding-top:6px}
+  .sort-label{display:none}
+  .sort-btn{padding:5px 10px;font-size:.66rem}
+}
 
 /* ── CARD ── */
 /* contain:layout isolates the card from outside invalidation — during scroll
@@ -1011,6 +1028,10 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           My Alerts
         </div>
+        <div class="user-menu-item" onclick="openDonatePane();closeUserMenu()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          Support development
+        </div>
         <div class="user-menu-item" onclick="authSignOut()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Sign out
@@ -1025,6 +1046,14 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 </header>
 
 <div id="page-dashboard">
+  <div class="dash-toolbar" role="toolbar" aria-label="Dashboard controls">
+    <span class="sort-label" aria-hidden="true">Sort by</span>
+    <div class="sort-control" role="radiogroup" aria-label="Sort sectors by">
+      <button class="sort-btn active" data-sort="valuation" role="radio" aria-checked="true"  onclick="setSortMode('valuation')">Valuation</button>
+      <button class="sort-btn"        data-sort="az"        role="radio" aria-checked="false" onclick="setSortMode('az')">A&ndash;Z</button>
+      <button class="sort-btn"        data-sort="change"    role="radio" aria-checked="false" onclick="setSortMode('change')">Today&rsquo;s %</button>
+    </div>
+  </div>
   <div class="dash-grid" id="grid"></div>
 </div>
 
@@ -3005,12 +3034,89 @@ function sortVal(sec,st){
   return st.pePctRef;
 }
 
+/* ── Sort mode state ──
+   Persisted in localStorage so the user's choice survives reloads.
+   'valuation' (default) sorts cheap→expensive via sortVal (ascending).
+   'az' sorts alphabetically by sector name.
+   'change' sorts by today's intraday % change, highest +ve first.
+   Cards missing a sortable value for the active mode fall to the bottom
+   instead of being treated as 0/empty-string, which would bury or boost
+   them incorrectly. */
+var sortMode='valuation';
+try{
+  var _savedSort=localStorage.getItem('ss_sort_mode');
+  if(_savedSort==='valuation'||_savedSort==='az'||_savedSort==='change') sortMode=_savedSort;
+}catch(e){}
+
+function setSortMode(mode){
+  if(mode!=='valuation'&&mode!=='az'&&mode!=='change') return;
+  if(sortMode===mode) return;
+  sortMode=mode;
+  try{ localStorage.setItem('ss_sort_mode',mode); }catch(e){}
+  var btns=document.querySelectorAll('.sort-btn');
+  for(var i=0;i<btns.length;i++){
+    var on=btns[i].dataset.sort===mode;
+    btns[i].classList.toggle('active',on);
+    btns[i].setAttribute('aria-checked',on?'true':'false');
+  }
+  sortCards();
+}
+
+/* Apply persisted mode to the toolbar buttons on first paint. The DOM
+   may not exist yet (script runs before #page-dashboard is parsed), so
+   defer to DOMContentLoaded if needed. */
+function _applyInitialSortMode(){
+  var btns=document.querySelectorAll('.sort-btn');
+  if(!btns.length) return;
+  for(var i=0;i<btns.length;i++){
+    var on=btns[i].dataset.sort===sortMode;
+    btns[i].classList.toggle('active',on);
+    btns[i].setAttribute('aria-checked',on?'true':'false');
+  }
+}
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',_applyInitialSortMode,{once:true});
+} else {
+  _applyInitialSortMode();
+}
+
 function sortCards(){
   var g=document.getElementById('grid');
   g.classList.add('fading');
   setTimeout(function(){
     var cards=Array.from(g.querySelectorAll('.s-card'));
-    cards.sort(function(a,b){return(+a.dataset.sort||50)-(+b.dataset.sort||50);});
+    var cmp;
+    if(sortMode==='az'){
+      cmp=function(a,b){
+        return (a.dataset.sortName||'').localeCompare(b.dataset.sortName||'');
+      };
+    } else if(sortMode==='change'){
+      /* Today's % change, highest +ve first (descending). Missing values
+         (no live data yet, or sector not yet rendered) sink to bottom. */
+      cmp=function(a,b){
+        var av=parseFloat(a.dataset.sortChange);
+        var bv=parseFloat(b.dataset.sortChange);
+        var aBad=isNaN(av), bBad=isNaN(bv);
+        if(aBad&&bBad) return 0;
+        if(aBad) return 1;
+        if(bBad) return -1;
+        return bv-av;
+      };
+    } else {
+      /* Valuation — cheapest first (ascending % of weighted ref). Cards
+         without a computed sortVal use the placeholder default (50), which
+         keeps them clustered mid-pack until real data lands. */
+      cmp=function(a,b){
+        var av=parseFloat(a.dataset.sort);
+        var bv=parseFloat(b.dataset.sort);
+        var aBad=isNaN(av), bBad=isNaN(bv);
+        if(aBad&&bBad) return 0;
+        if(aBad) return 1;
+        if(bBad) return -1;
+        return av-bv;
+      };
+    }
+    cards.sort(cmp);
     cards.forEach(function(c){g.appendChild(c);});
     void g.offsetHeight;g.classList.remove('fading');
     cards.forEach(function(c,i){c.style.animation='none';void c.offsetWidth;c.style.animation='';c.style.animationDelay=(i*.05)+'s';});
@@ -3021,6 +3127,12 @@ function renderCard(sec,st){
   var el=document.getElementById('c-'+sec.name);if(!el) return;
   statCache[sec.name]=st;
   el.dataset.sort=sortVal(sec,st).toFixed(1);
+  /* Sort keys for the alternate sort modes — see sortCards/setSortMode.
+     sortName: alphabetical (set once, never changes per card).
+     sortChange: today's intraday % change; empty when live data hasn't
+     arrived yet, which the comparator treats as "sink to bottom". */
+  el.dataset.sortName=sec.name;
+  el.dataset.sortChange=isNaN(st.priceChange)?'':String(st.priceChange);
   el.dataset.rendered='1';
   /* Keyboard accessibility: real content is flippable, so expose as a button
      with tabindex. Error/skeleton states strip these attributes. The flip
@@ -3206,7 +3318,9 @@ function initPlaceholders(){
   var g=document.getElementById('grid');g.innerHTML='';
   SECTORS.forEach(function(s,i){
     var el=document.createElement('div');
-    el.className='s-card';el.id='c-'+s.name;el.dataset.sort='50';el.style.animationDelay=(i*.06)+'s';
+    el.className='s-card';el.id='c-'+s.name;el.dataset.sort='50';
+    el.dataset.sortName=s.name;  /* A-Z works on skeletons before data arrives */
+    el.style.animationDelay=(i*.06)+'s';
     el.innerHTML=skelHTML(s);g.appendChild(el);
   });
 }
@@ -5774,12 +5888,16 @@ function authSignOut(){
   currentUser=null;
   subscriptionState=null;
   subscriptionMeta={};
+  donorLastAt=null;
   localStorage.removeItem('ss_user');
   localStorage.removeItem('ss_sub');
   if(typeof google!=='undefined') google.accounts.id.disableAutoSelect();
   authRender();
   renderSubscriptionUI();
   closeUserMenu();
+  /* Hide the donate pane if it happens to be visible on sign-out */
+  var dp=document.getElementById('donate-pane');
+  if(dp) dp.classList.remove('dn-visible');
 }
 
 function toggleUserMenu(){
@@ -5859,9 +5977,14 @@ async function loadSubscriptionStatus(){
     var data=await res.json();
     subscriptionState = data.status || 'none';
     subscriptionMeta  = { expiresAt: data.expiresAt||null, cancelledAt: data.cancelledAt||null };
+    /* Donor record piggybacked on the subscription response — used by the
+       donate pane to suppress re-asking within 6 months of last donation. */
+    donorLastAt = (data.donor && data.donor.lastAt) ? data.donor.lastAt : null;
     /* Cache so refresh doesn't lose Plus status before token arrives */
     try{ localStorage.setItem('ss_sub',JSON.stringify({state:subscriptionState,meta:subscriptionMeta})); }catch(e){}
     renderSubscriptionUI();
+    /* Now that donor status is known, decide whether to slide up the donate pane. */
+    maybeShowDonatePane();
   }catch(e){}
 }
 
@@ -6295,6 +6418,265 @@ function loadRazorpay(){
     document.head.appendChild(s);
   });
   return window._rzpLoading;
+}
+
+/* ════════════════════════════════════════
+   DONATIONS
+   Slide-up pane shown to signed-in users who haven't snoozed and haven't
+   donated within the last 6 months. "Maybe later" snoozes for 7 days; a
+   successful donation snoozes for 6 months. Server donor record is the
+   authoritative gate — localStorage only fast-paths it.
+════════════════════════════════════════ */
+var donorLastAt=null;                           /* ISO string from /subscription */
+var SS_DONATE_SNOOZE_KEY='ss_donate_snooze_until';
+var DONATE_SNOOZE_LATER_MS=7*24*60*60*1000;
+var DONATE_SNOOZE_POSTDONO_MS=6*30*24*60*60*1000;  /* approx 6 months */
+var dnSelectedAmount=100;
+var dnInFlight=false;
+
+function donateShouldShow(){
+  if(!currentUser||!currentUser.token) return false;
+  /* Don't stack on top of What's New if it's currently visible. */
+  var wn=document.getElementById('whatsnew-pane');
+  if(wn && wn.classList.contains('wn-visible')) return false;
+  /* Local snooze covers both "maybe later" and "post-donation" cases. */
+  try{
+    var until=parseInt(localStorage.getItem(SS_DONATE_SNOOZE_KEY)||'0',10);
+    if(Date.now()<until) return false;
+  }catch(e){}
+  /* Server-side donor record. Re-syncs localStorage if it was cleared. */
+  if(donorLastAt){
+    var elapsed=Date.now()-new Date(donorLastAt).getTime();
+    if(elapsed<DONATE_SNOOZE_POSTDONO_MS){
+      try{ localStorage.setItem(SS_DONATE_SNOOZE_KEY,String(Date.now()+DONATE_SNOOZE_POSTDONO_MS-elapsed)); }catch(e){}
+      return false;
+    }
+  }
+  return true;
+}
+
+function donateResetForm(){
+  var btn100=document.querySelector('#dn-amounts .dn-amount-btn[data-amount="100"]');
+  donateSelectAmount(100,btn100);
+  var inp=document.getElementById('dn-custom-input');
+  if(inp) inp.value='';
+  var err=document.getElementById('dn-error');
+  if(err) err.classList.remove('show');
+  /* Rebuild body in case the thank-you state replaced it. */
+  var body=document.getElementById('dn-body');
+  if(body && body.dataset.thanks==='1'){
+    body.dataset.thanks='';
+    body.innerHTML=DN_DEFAULT_BODY;
+    /* Re-bind selection state after innerHTML replacement. */
+    btn100=document.querySelector('#dn-amounts .dn-amount-btn[data-amount="100"]');
+    donateSelectAmount(100,btn100);
+  }
+}
+
+/* Snapshot of the default body markup, captured once on first call so we
+   can restore it after the thank-you state. */
+var DN_DEFAULT_BODY='';
+function _captureDnDefault(){
+  var body=document.getElementById('dn-body');
+  if(body) DN_DEFAULT_BODY=body.innerHTML;
+}
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',_captureDnDefault,{once:true});
+} else {
+  _captureDnDefault();
+}
+
+function maybeShowDonatePane(){
+  if(!donateShouldShow()) return;
+  var pane=document.getElementById('donate-pane');
+  if(!pane){
+    /* DOM not yet built (script ran before pane was parsed). Defer until
+       DOMContentLoaded and try again. */
+    if(document.readyState==='loading'){
+      document.addEventListener('DOMContentLoaded',maybeShowDonatePane,{once:true});
+    }
+    return;
+  }
+  donateResetForm();
+  /* 2.5s delay lets the page settle and gives What's New a chance to
+     show first (its setTimeout is 1.5s on window load). */
+  setTimeout(function(){
+    /* Re-check gate inside the timer — user may have signed out in the
+       interim, or What's New may have just shown. */
+    if(donateShouldShow()) pane.classList.add('dn-visible');
+  },2500);
+}
+
+function openDonatePane(){
+  /* Manual open from the user menu — bypasses snooze gate. */
+  if(!currentUser){ authSignIn(); return; }
+  var pane=document.getElementById('donate-pane');
+  if(!pane) return;
+  donateResetForm();
+  pane.classList.add('dn-visible');
+}
+
+function donateSelectAmount(amount,btn){
+  dnSelectedAmount=amount;
+  var btns=document.querySelectorAll('#dn-amounts .dn-amount-btn');
+  for(var i=0;i<btns.length;i++) btns[i].classList.remove('selected');
+  if(btn) btn.classList.add('selected');
+  var inp=document.getElementById('dn-custom-input');
+  if(inp) inp.value='';
+  var err=document.getElementById('dn-error');
+  if(err) err.classList.remove('show');
+  donateUpdatePrimaryLabel();
+}
+
+function donateCustomInput(){
+  var input=document.getElementById('dn-custom-input');
+  if(!input) return;
+  var val=parseInt(input.value,10);
+  /* Custom input takes priority — deselect preset chips. */
+  var btns=document.querySelectorAll('#dn-amounts .dn-amount-btn');
+  for(var i=0;i<btns.length;i++) btns[i].classList.remove('selected');
+  if(input.value===''){
+    /* Empty input: fall back to ₹100 preset. */
+    dnSelectedAmount=100;
+    var b=document.querySelector('#dn-amounts .dn-amount-btn[data-amount="100"]');
+    if(b) b.classList.add('selected');
+    var err=document.getElementById('dn-error');
+    if(err) err.classList.remove('show');
+  } else if(Number.isFinite(val)&&val>=100&&val<=10000){
+    dnSelectedAmount=val;
+    var err2=document.getElementById('dn-error');
+    if(err2) err2.classList.remove('show');
+  } else {
+    dnSelectedAmount=null;
+  }
+  donateUpdatePrimaryLabel();
+}
+
+function donateUpdatePrimaryLabel(){
+  var btn=document.getElementById('dn-primary-btn');
+  if(!btn) return;
+  if(dnSelectedAmount==null){
+    btn.textContent='Enter \u20B9100 \u2013 \u20B910,000';
+    btn.disabled=true;
+  } else {
+    btn.textContent='Donate \u20B9'+dnSelectedAmount.toLocaleString('en-IN');
+    btn.disabled=dnInFlight;
+  }
+}
+
+function dismissDonatePane(snoozeDays){
+  try{
+    var ms=(snoozeDays||7)*24*60*60*1000;
+    localStorage.setItem(SS_DONATE_SNOOZE_KEY,String(Date.now()+ms));
+  }catch(e){}
+  var pane=document.getElementById('donate-pane');
+  if(pane) pane.classList.remove('dn-visible');
+}
+
+function donateShowError(msg){
+  var err=document.getElementById('dn-error');
+  if(!err) return;
+  err.textContent=msg;
+  err.classList.add('show');
+}
+
+async function donateProceed(){
+  if(dnInFlight) return;
+  if(!currentUser||!currentUser.token){ authSignIn(); return; }
+  if(dnSelectedAmount==null||dnSelectedAmount<100||dnSelectedAmount>10000){
+    donateShowError('Amount must be \u20B9100\u2013\u20B910,000');
+    return;
+  }
+
+  dnInFlight=true;
+  var primary=document.getElementById('dn-primary-btn');
+  if(primary){ primary.disabled=true; primary.textContent='Loading\u2026'; }
+
+  try{
+    await loadRazorpay();
+    var res=await fetch(WORKER_BASE+'/create-donation',{
+      method :'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+currentUser.token },
+      body   :JSON.stringify({ amount: dnSelectedAmount }),
+    });
+    var data=await res.json();
+    if(!res.ok||!data.order_id) throw new Error(data.error||'Failed to create donation');
+
+    var rzp=new Razorpay({
+      key        : data.key_id,
+      amount     : data.amount*100,
+      currency   : 'INR',
+      order_id   : data.order_id,
+      name       : 'SectorScope',
+      description: 'Support development',
+      prefill    : { email: currentUser.email, name: currentUser.name||'' },
+      theme      : { color: '#f59e0b' },
+      handler    : function(response){ verifyDonation(response,data.amount); },
+      modal      : {
+        ondismiss: function(){
+          /* User closed the Razorpay modal without paying. Reset flight flag
+             so they can try again with a different amount. */
+          dnInFlight=false;
+          donateUpdatePrimaryLabel();
+        },
+      },
+    });
+    rzp.on('payment.failed',function(){
+      dnInFlight=false;
+      donateShowError('Payment failed. Please try again.');
+      donateUpdatePrimaryLabel();
+    });
+    rzp.open();
+  } catch(e){
+    console.error('[donate] failed:',e);
+    dnInFlight=false;
+    donateShowError(e.message||'Something went wrong');
+    donateUpdatePrimaryLabel();
+  }
+}
+
+async function verifyDonation(response,amount){
+  try{
+    var res=await fetch(WORKER_BASE+'/verify-donation',{
+      method :'POST',
+      headers:{ 'Content-Type':'application/json', 'Authorization':'Bearer '+currentUser.token },
+      body   :JSON.stringify({
+        razorpay_payment_id : response.razorpay_payment_id,
+        razorpay_order_id   : response.razorpay_order_id,
+        razorpay_signature  : response.razorpay_signature,
+      }),
+    });
+    var data=await res.json();
+    if(!res.ok) throw new Error(data.error||'Verification failed');
+
+    /* Authoritative server confirmation. Set 6-month suppress locally so we
+       don't re-ask even if /subscription returns stale donor info briefly. */
+    donorLastAt=data.lastAt||new Date().toISOString();
+    try{ localStorage.setItem(SS_DONATE_SNOOZE_KEY,String(Date.now()+DONATE_SNOOZE_POSTDONO_MS)); }catch(e){}
+
+    var body=document.getElementById('dn-body');
+    if(body){
+      body.dataset.thanks='1';
+      body.innerHTML='<div class="dn-thanks">'
+        +'<span class="dn-thanks-emoji">\uD83D\uDE4F</span>'
+        +'Thank you for your support.<br>'
+        +'<span style="color:var(--ghost);font-size:.74rem">Your contribution keeps SectorScope running and ad-free.</span>'
+        +'</div>'
+        +'<div class="dn-actions"><button class="dn-dismiss-btn" onclick="closeDonatePaneAfterThanks()">Close</button></div>';
+      /* Auto-close after 6s. */
+      setTimeout(closeDonatePaneAfterThanks,6000);
+    }
+  } catch(e){
+    console.error('[donate] verify failed:',e);
+    donateShowError('Payment processed but verification failed. Please contact support if it doesn\u2019t reflect.');
+  } finally {
+    dnInFlight=false;
+  }
+}
+
+function closeDonatePaneAfterThanks(){
+  var pane=document.getElementById('donate-pane');
+  if(pane) pane.classList.remove('dn-visible');
 }
 
 function showUpgradeFlow(){
@@ -6869,6 +7251,32 @@ async function ppConfirmCancel(){
   </div>
 </div>
 
+<div id="donate-pane" aria-live="polite" aria-label="Support SectorScope">
+  <div class="dn-header">
+    <div class="dn-badge">&#9829; Support</div>
+    <button class="dn-close" onclick="dismissDonatePane(7)" aria-label="Dismiss">&#10005;</button>
+  </div>
+  <div class="dn-body" id="dn-body">
+    <div class="dn-title">Like SectorScope? Chip in and support development.</div>
+    <div class="dn-amounts" id="dn-amounts">
+      <button type="button" class="dn-amount-btn" data-amount="100"  onclick="donateSelectAmount(100,this)">&#8377;100</button>
+      <button type="button" class="dn-amount-btn" data-amount="500"  onclick="donateSelectAmount(500,this)">&#8377;500</button>
+      <button type="button" class="dn-amount-btn" data-amount="1000" onclick="donateSelectAmount(1000,this)">&#8377;1000</button>
+    </div>
+    <div class="dn-custom-wrap">
+      <span class="dn-custom-prefix">&#8377;</span>
+      <input id="dn-custom-input" class="dn-custom-input" type="number" inputmode="numeric"
+             placeholder="Custom amount" min="100" max="10000" oninput="donateCustomInput()" />
+    </div>
+    <div class="dn-custom-hint">Any amount between &#8377;100 and &#8377;10,000</div>
+    <div class="dn-error" id="dn-error"></div>
+    <div class="dn-actions">
+      <button class="dn-primary-btn" id="dn-primary-btn" onclick="donateProceed()">Donate &#8377;100</button>
+      <button class="dn-dismiss-btn" onclick="dismissDonatePane(7)">Maybe later</button>
+    </div>
+  </div>
+</div>
+
 <style>
 #whatsnew-pane{
   position:fixed;bottom:24px;right:24px;z-index:9000;
@@ -6907,6 +7315,49 @@ async function ppConfirmCancel(){
 .wn-dismiss-btn{width:100%;padding:7px;border-radius:9px;border:1px solid var(--bdr);background:transparent;color:var(--ghost);font-family:var(--body);font-size:.76rem;cursor:pointer;transition:color .15s,background .15s}
 .wn-dismiss-btn:hover{color:var(--txt);background:var(--bg3)}
 @media(max-width:400px){#whatsnew-pane{left:12px;right:12px;width:auto;bottom:16px}}
+
+/* ── DONATE PANE — twin of whatsnew, signed-in only, gated by snooze ── */
+#donate-pane{
+  position:fixed;bottom:24px;right:24px;z-index:9000;
+  width:310px;
+  background:var(--bg2);
+  border:1px solid var(--bdr);
+  border-radius:16px;
+  box-shadow:0 8px 40px rgba(0,0,0,.45);
+  padding:20px 20px 16px;
+  font-family:var(--body);
+  transform:translateY(calc(100% + 100px));
+  opacity:0;
+  transition:transform .4s cubic-bezier(.22,.68,0,1.2),opacity .3s ease;
+  pointer-events:none;
+}
+#donate-pane.dn-visible{transform:translateY(0);opacity:1;pointer-events:auto}
+.dn-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.dn-badge{font-family:var(--mono);font-size:.55rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#fbbf24;background:rgba(251,191,36,.12);padding:3px 8px;border-radius:20px;border:1px solid rgba(251,191,36,.25)}
+.dn-close{background:none;border:none;color:var(--ghost);font-size:.9rem;cursor:pointer;padding:2px 4px;line-height:1;border-radius:4px;transition:color .15s,background .15s}
+.dn-close:hover{color:var(--txt);background:var(--bg3)}
+.dn-title{font-size:.92rem;font-weight:700;color:var(--txt);margin-bottom:14px;line-height:1.4}
+.dn-amounts{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:8px}
+.dn-amount-btn{padding:9px 4px;border-radius:9px;border:1px solid var(--bdr);background:var(--bg3);color:var(--txt);font-family:var(--body);font-size:.82rem;font-weight:700;cursor:pointer;transition:all .15s}
+.dn-amount-btn:hover{border-color:#a78bfa;background:rgba(167,139,250,.08)}
+.dn-amount-btn.selected{border-color:#a78bfa;background:rgba(167,139,250,.14);color:#c4b5fd}
+.dn-custom-wrap{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--bdr);border-radius:9px;background:var(--bg3);margin-bottom:4px}
+.dn-custom-prefix{color:var(--ghost);font-family:var(--mono);font-size:.78rem}
+.dn-custom-input{flex:1;background:transparent;border:none;outline:none;color:var(--txt);font-family:var(--body);font-size:.82rem;width:100%}
+.dn-custom-input::-webkit-outer-spin-button,.dn-custom-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.dn-custom-input[type=number]{-moz-appearance:textfield}
+.dn-custom-hint{font-size:.66rem;color:var(--ghost);margin-bottom:12px;text-align:right}
+.dn-error{font-size:.7rem;color:#f87171;margin:0 0 10px;text-align:center;display:none}
+.dn-error.show{display:block}
+.dn-actions{display:flex;flex-direction:column;gap:7px}
+.dn-primary-btn{width:100%;padding:9px;border-radius:9px;border:none;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;font-family:var(--body);font-size:.82rem;font-weight:700;cursor:pointer;transition:opacity .15s}
+.dn-primary-btn:hover{opacity:.9}
+.dn-primary-btn:disabled{opacity:.5;cursor:not-allowed}
+.dn-dismiss-btn{width:100%;padding:7px;border-radius:9px;border:1px solid var(--bdr);background:transparent;color:var(--ghost);font-family:var(--body);font-size:.76rem;cursor:pointer;transition:color .15s,background .15s}
+.dn-dismiss-btn:hover{color:var(--txt);background:var(--bg3)}
+.dn-thanks{font-size:.82rem;color:var(--txt);text-align:center;padding:14px 4px;line-height:1.5}
+.dn-thanks-emoji{font-size:1.6rem;display:block;margin-bottom:8px}
+@media(max-width:400px){#donate-pane{left:12px;right:12px;width:auto;bottom:16px}}
 </style>
 
 <script>
