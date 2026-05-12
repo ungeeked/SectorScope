@@ -945,6 +945,7 @@ html.light .cm-tooltip{background:rgba(255,255,255,.96);box-shadow:0 8px 24px rg
 .cm-tt-label{display:inline-flex;align-items:center;gap:6px;color:var(--sub);font-size:.7rem}
 .cm-tt-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
 .cm-tt-val{font-family:var(--mono);font-weight:600;color:var(--txt);font-size:.74rem}
+.cm-tt-pct{color:var(--sub);font-weight:500;margin-left:2px;font-size:.68rem}
 /* Drag-to-measure panel — appears after dragging a range across the chart, shows
    % change of each displayed metric between the dragged endpoints. Pointer-events:auto
    so the close button is clickable; tooltip's pointer-events:none stays as-is. */
@@ -963,9 +964,29 @@ html.light .cm-delta-panel{background:rgba(255,255,255,.98);box-shadow:0 12px 32
 .cm-delta-close:hover{background:var(--bdr2);color:var(--txt)}
 
 @media(max-width:680px){
-  .cm-header{padding:10px 14px}
-  .cm-bar{padding:8px 12px;gap:8px}
+  .cm-header{padding:8px 12px}
+  .cm-title{font-size:1.2rem}
+  /* Single horizontal-scroll row instead of wrapping to 3–4 rows.
+     Saves ~80–100px of vertical real estate on phones; user swipes
+     left/right within the bar to find ranges/dates. The right-edge
+     fade hints at scrollability without adding a visible scrollbar. */
+  .cm-bar{
+    padding:7px 12px;gap:8px;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    overflow-y:hidden;
+    scrollbar-width:none;
+    -ms-overflow-style:none;
+    -webkit-mask-image:linear-gradient(to right,#000 0,#000 calc(100% - 18px),transparent 100%);
+            mask-image:linear-gradient(to right,#000 0,#000 calc(100% - 18px),transparent 100%);
+  }
+  .cm-bar::-webkit-scrollbar{display:none}
+  .cm-group{flex-wrap:nowrap;flex-shrink:0}
   .cm-divider{display:none}
+  .cm-checkbox{font-size:.7rem;padding:4px 7px;gap:4px}
+  .cm-pill{font-size:.62rem;padding:4px 8px}
+  .cm-date-input{font-size:.6rem;padding:2px 5px}
+  .cm-arrow{padding:0;font-size:.6rem}
 }
 
 .cm-date-input{padding:3px 6px;border-radius:5px;border:1px solid var(--bdr);background:var(--bg2);color:var(--txt);font-family:var(--mono);font-size:.62rem;cursor:pointer}
@@ -4853,21 +4874,22 @@ function openChartModal(sectorName){
   modal.classList.add('open');
   document.body.style.overflow='hidden';
 
-  cmRenderControls();
-  /* Defer chart render to next frame so canvas has been laid out. */
-  requestAnimationFrame(function(){
-    cmRenderChart();
-    cmAttachHover();
-    cmAttachDragMeasure();
-    /* Kick off idle-time prefetch of rolling medians so toggling Median or
-       Median Bands later feels instant. Both PE and PB are prefetched
-       regardless of which is currently visible — covers metric switches too.
-       Plus-gated to match what the toggles actually do. */
-    if(userIsSubscribed()) cmPrefetchMedians(sectorName);
-    /* Prefetch USD/INR (fire-and-forget) so toggling EPS (USD) feels instant.
-       Only relevant for sectors where the toggle is actually shown.
-       loadFxSeries is idempotent — repeat opens make at most one network call. */
-    if(EPS_USD_SECTORS[sectorName]) loadFxSeries().catch(function(){});
+  /* Attempt to enter landscape on phones — helpers no-op on desktop and
+     on browsers that don't support orientation lock (iOS). Awaited so the
+     subsequent requestAnimationFrame measures the post-rotation viewport,
+     not the pre-rotation one — otherwise the first cmDrawCanvas call uses
+     the wrong width and we'd have to redraw. The Promise.resolve() wrap
+     guarantees we run the render even if cmEnterLandscape throws
+     unexpectedly — landscape is nice-to-have, the chart is mandatory. */
+  Promise.resolve(cmEnterLandscape()).catch(function(){}).then(function(){
+    cmRenderControls();
+    requestAnimationFrame(function(){
+      cmRenderChart();
+      cmAttachHover();
+      cmAttachDragMeasure();
+      if(userIsSubscribed()) cmPrefetchMedians(sectorName);
+      if(EPS_USD_SECTORS[sectorName]) loadFxSeries().catch(function(){});
+    });
   });
 }
 
@@ -4886,6 +4908,38 @@ function cmPrefetchMedians(sectorName){
 function closeChartModal(){
   document.getElementById('chart-modal').classList.remove('open');
   document.body.style.overflow='';
+  cmExitLandscape();
+}
+
+/* ── Landscape-on-mobile helpers ──
+   On phones the chart looks much better in landscape (wider plot area,
+   line oscillations don't look exaggerated). We attempt to fullscreen
+   + lock orientation when the modal opens, and reverse on close. Both
+   APIs require a user gesture, which the card-tap-to-open-chart is.
+
+   iOS Safari doesn't implement screen.orientation.lock — the try/catch
+   makes that a silent no-op (the chart still opens with the compact
+   portrait layout we already have). Same for desktops > 680px, where
+   we skip the attempt entirely. */
+async function cmEnterLandscape(){
+  if(window.innerWidth > 680) return;                /* desktop / tablet — skip */
+  if(window.innerHeight <= window.innerWidth) return;/* already landscape — skip */
+  try{
+    if(document.documentElement.requestFullscreen){
+      await document.documentElement.requestFullscreen();
+    }
+    if(screen.orientation && screen.orientation.lock){
+      await screen.orientation.lock('landscape');
+    }
+  }catch(e){
+    /* iOS Safari, permissions denied, kiosk-locked devices, etc. The
+       chart remains functional in portrait; no user-visible error. */
+    console.log('[chart] landscape unavailable:',e.message||e);
+  }
+}
+async function cmExitLandscape(){
+  try{ if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); }catch(e){}
+  try{ if(document.fullscreenElement) await document.exitFullscreen(); }catch(e){}
 }
 
 /* Esc closes chart modal too */
@@ -5220,9 +5274,10 @@ function cmDrawCanvas(canvas, rows){
   var txtCol =isLight?'#475569':'#94a3b8';
 
   /* Plot area: leave room for axes, bottom dates, and the single-row controls bar at top.
-     The bar is ~46px tall on desktop; on narrow widths it can wrap to 2 rows. */
+     Mobile (<560): bar is now a single horizontal-scroll row (~40px tall), so the top
+     margin only needs to clear that one row — was 92px when the bar wrapped to 3+ rows. */
   var ml=54, mr=54, mt=64, mb=34;
-  if(W<560) { mt=92; }  /* controls wrap to more rows on narrow widths */
+  if(W<560) { mt=58; ml=44; mr=44; mb=30; }
   var pw=W-ml-mr, ph=H-mt-mb;
 
   /* Decide which metric goes on which axis */
@@ -5283,6 +5338,34 @@ function cmDrawCanvas(canvas, rows){
   var rightPts=rightKey?seriesFor(rightKey):null;
   var rightRng=rightPts?rangeOf(rightPts):null;
 
+  /* ── All-time max EPS (or USD EPS) for % labels ──
+     Computed from dataCache (full unfiltered history), not from `rows`
+     (which is date-range-filtered). Using the full history keeps the %
+     anchor stable across range/zoom changes — "75% of all-time peak"
+     means the same thing whether the user is viewing 1Y or 10Y.
+     null when the active axis isn't EPS-flavoured, or when epsUsd is
+     selected but FX_SERIES hasn't loaded yet. */
+  function fullEpsMax(key){
+    if(key!=='eps' && key!=='epsUsd') return null;
+    if(key==='epsUsd' && !FX_SERIES)  return null;
+    var fullRows=dataCache[CM_STATE.sector]||[];
+    var mx=-Infinity;
+    for(var i=0;i<fullRows.length;i++){
+      var v=fullRows[i].eps;
+      if(v==null||isNaN(v)) continue;
+      if(key==='epsUsd'){
+        var t=new Date(fullRows[i].date).getTime();
+        var fx=fxRateAt(t);
+        if(!fx) continue;
+        v=+v/fx;
+      }
+      if(v>mx) mx=v;
+    }
+    return isFinite(mx) && mx>0 ? mx : null;
+  }
+  var leftMaxEps  = fullEpsMax(leftKey);
+  var rightMaxEps = rightKey ? fullEpsMax(rightKey) : null;
+
   /* X domain — overall date range from rows (so both series share x) */
   var xMin=Infinity, xMax=-Infinity;
   rows.forEach(function(r){
@@ -5298,19 +5381,34 @@ function cmDrawCanvas(canvas, rows){
 
   /* Horizontal grid + Y-axis labels (use leftRng for tick stops) */
   ctx.strokeStyle=gridCol; ctx.lineWidth=1;
-  ctx.font='10px ui-monospace,Menlo,monospace';
-  ctx.fillStyle=txtCol;
   var nTicks=5;
+  var pctCol=isLight?'rgba(0,0,0,.42)':'rgba(255,255,255,.42)';
   for(var i=0;i<=nTicks;i++){
     var y=mt+(i/nTicks)*ph;
     ctx.beginPath(); ctx.moveTo(ml,y); ctx.lineTo(W-mr,y); ctx.stroke();
+    /* Left axis — absolute value, plus a dimmer % line below for EPS */
     var leftVal=leftRng[1] - (i/nTicks)*(leftRng[1]-leftRng[0]);
     ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.font='10px ui-monospace,Menlo,monospace';
+    ctx.fillStyle=txtCol;
     ctx.fillText(leftVal.toFixed(leftKey==='cls'||leftKey==='eps'?0:1), ml-6, y);
+    if(leftMaxEps){
+      ctx.font='9px ui-monospace,Menlo,monospace';
+      ctx.fillStyle=pctCol;
+      ctx.fillText(Math.round(leftVal/leftMaxEps*100)+'%', ml-6, y+11);
+    }
+    /* Right axis — mirror logic */
     if(rightRng){
       var rightVal=rightRng[1] - (i/nTicks)*(rightRng[1]-rightRng[0]);
       ctx.textAlign='left';
+      ctx.font='10px ui-monospace,Menlo,monospace';
+      ctx.fillStyle=txtCol;
       ctx.fillText(rightVal.toFixed(rightKey==='cls'||rightKey==='eps'?0:1), W-mr+6, y);
+      if(rightMaxEps){
+        ctx.font='9px ui-monospace,Menlo,monospace';
+        ctx.fillStyle=pctCol;
+        ctx.fillText(Math.round(rightVal/rightMaxEps*100)+'%', W-mr+6, y+11);
+      }
     }
   }
 
@@ -5408,6 +5506,10 @@ function cmDrawCanvas(canvas, rows){
     xMin:xMin, xMax:xMax,
     leftKey:leftKey, leftPts:leftPts, leftRng:leftRng,
     rightKey:rightKey, rightPts:rightPts, rightRng:rightRng,
+    /* Y-axis labels show absolute + % of all-time max EPS; hover tooltip
+       reads these for the same treatment on hovered values. null when the
+       axis isn't EPS-flavoured. */
+    leftMaxEps:leftMaxEps, rightMaxEps:rightMaxEps,
     isLight:isLight
   };
 
@@ -5505,11 +5607,21 @@ function cmAttachHover(){
       dotR.style.display='none';
     }
 
-    /* Tooltip content */
-    var rows='<div class="cm-tt-row"><span class="cm-tt-label"><span class="cm-tt-dot" style="background:'+lCol+'"></span>'+CM_METRICS[d.leftKey].label+'</span><span class="cm-tt-val">'+fmt(d.leftKey,pL.v)+'</span></div>';
+    /* Tooltip content. For EPS / EPS(USD), append the same "% of all-time max"
+       suffix that the Y-axis labels show, so the hovered value reads the same
+       way as the axis grid (e.g. "950 · 87%" — easier to anchor "how peaky?"
+       at a glance than just "950"). */
+    function epsPctSuffix(key, max, val){
+      if(!max || max <= 0) return '';
+      if(key !== 'eps' && key !== 'epsUsd') return '';
+      return ' <span class="cm-tt-pct">· '+Math.round(val/max*100)+'%</span>';
+    }
+    var lPctSfx = epsPctSuffix(d.leftKey, d.leftMaxEps, pL.v);
+    var rows='<div class="cm-tt-row"><span class="cm-tt-label"><span class="cm-tt-dot" style="background:'+lCol+'"></span>'+CM_METRICS[d.leftKey].label+'</span><span class="cm-tt-val">'+fmt(d.leftKey,pL.v)+lPctSfx+'</span></div>';
     if(pR){
       var rCol2=d.isLight?CM_METRICS[d.rightKey].cLight:CM_METRICS[d.rightKey].cDark;
-      rows+='<div class="cm-tt-row"><span class="cm-tt-label"><span class="cm-tt-dot" style="background:'+rCol2+'"></span>'+CM_METRICS[d.rightKey].label+'</span><span class="cm-tt-val">'+fmt(d.rightKey,pR.v)+'</span></div>';
+      var rPctSfx = epsPctSuffix(d.rightKey, d.rightMaxEps, pR.v);
+      rows+='<div class="cm-tt-row"><span class="cm-tt-label"><span class="cm-tt-dot" style="background:'+rCol2+'"></span>'+CM_METRICS[d.rightKey].label+'</span><span class="cm-tt-val">'+fmt(d.rightKey,pR.v)+rPctSfx+'</span></div>';
     }
     tooltip.innerHTML='<div class="cm-tt-date">'+fmtDate(anchorD)+'</div>'+rows;
 
