@@ -2085,13 +2085,46 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 /* ════════════════════════════════════════
    CONFIG
 ════════════════════════════════════════ */
-/* ── Cloudflare Worker proxy base URL ──
-   All sector + live feed requests go through the Worker, which hides the
-   real Google Apps Script URLs, enforces a Referer check, rate-limits per
-   IP, and blocks declared AI crawlers. See Worker source in a separate
-   repo / folder; secrets (the Apps Script URLs) live in Worker Secrets
-   and are never shipped to the browser. */
+/* ── Cloudflare Worker base URL ──
+   All sector data + macro feeds (FX, G-Sec, repo) + live NSE feed go
+   through the Worker, which serves sector + macro history from D1, the
+   live feed from NSE direct, enforces an Origin/Referer check, rate-
+   limits per IP, and blocks declared AI crawlers. Daily 17:30 IST cron
+   appends to D1; KV-cached payloads make cold reads fast. */
 var WORKER_BASE='https://sectorscope.prashant-06f.workers.dev';
+
+/* ──────────────────────────────────────────────────────────────────
+   MACRO-FEED PRE-FETCH
+   On idle (after the main app has painted and any high-priority
+   network is done), kick off background fetches for /gsec, /fx, /repo
+   so the browser's HTTP cache is warm by the time the user opens a
+   chart modal and toggles a macro overlay.
+
+   - Uses requestIdleCallback where available, falls back to a 1.5s
+     setTimeout on Safari.
+   - Low priority ('priority: low') so we don't compete with the main
+     sector charts.
+   - Errors are swallowed — pre-fetch is best-effort; loadFxSeries /
+     loadGsecSeries / etc. will retry on actual toggle.
+   - Each fetch lands in the browser disk cache thanks to the cache-
+     control headers set by the worker (max-age=90 + s-maxage=1800).
+   - Idempotent: re-running just hits the cache.
+   ────────────────────────────────────────────────────────────────── */
+(function prefetchMacroFeeds(){
+  var paths = ['/gsec', '/fx', '/repo'];
+  function go(){
+    paths.forEach(function(p){
+      try {
+        fetch(WORKER_BASE + p, { priority: 'low' }).catch(function(){});
+      } catch (_) { /* ignore */ }
+    });
+  }
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(go, { timeout: 3000 });
+  } else {
+    setTimeout(go, 1500);
+  }
+})();
 
 var SECTORS=[
   {name:'Infra',         color:'#818cf8',url:WORKER_BASE+'/sector/Infra'},
@@ -2324,27 +2357,24 @@ function normalise(raw){
     return -1;
   }
   var di=ci(['date']),pi=ci(['close','price','index','value']),
-      pei=ci(['pe','p/e','price_earning']),pbi=ci(['pb','p/b','price_book']);
+      pei=ci(['pe','p/e','price_earning']),pbi=ci(['pb','p/b','price_book']),epsi=ci(['eps','earning']),
+      peri=ci(['pe_ref','peref']),pbri=ci(['pb_ref','pbref']);
   return rows.map(function(row){
-    var date,price,pe,pb;
+    var date,price,pe,pb,eps,peRef,pbRef;
     if(Array.isArray(row)){
-      date=String(row[di>=0?di:0]||'');
-      price=+(row[pi>=0?pi:1])||NaN;
-      pe=+(row[pei>=0?pei:2])||NaN;
-      pb=+(row[pbi>=0?pbi:3])||NaN;
+      date=String(row[di>=0?di:0]||'');price=+(row[pi>=0?pi:1])||NaN;
+      pe=+(row[pei>=0?pei:2])||NaN;pb=+(row[pbi>=0?pbi:3])||NaN;eps=epsi>=0?(+row[epsi]||NaN):NaN;
+      peRef=peri>=0?(+row[peri]||NaN):NaN;
+      pbRef=pbri>=0?(+row[pbri]||NaN):NaN;
     }else{
       date=String(row.date||row.Date||'');
       price=+(row.close||row.price||row.index||row.value||NaN);
-      pe=+(row.pe||row['p/e']||NaN);
-      pb=+(row.pb||row['p/b']||NaN);
+      pe=+(row.pe||row['p/e']||NaN);pb=+(row.pb||row['p/b']||NaN);eps=+(row.eps||row.earning||NaN);
+      peRef=+(row.pe_ref||row.peRef||NaN);
+      pbRef=+(row.pb_ref||row.pbRef||NaN);
     }
-    /* EPS is always derived from price/pe — NSE never ships a separate
-       EPS field, and storing it in D1 would just be a redundant identity
-       that could drift. See history: this used to read column 4 with a
-       price/pe fallback, which broke when the D1 endpoint started shipping
-       pe_ref at index 4. */
-    var eps=(!isNaN(price)&&!isNaN(pe)&&pe>0)?price/pe:NaN;
-    return{date,price,pe,pb,eps};
+    if((isNaN(eps)||eps===0)&&!isNaN(price)&&!isNaN(pe)&&pe!==0) eps=price/pe;
+    return{date,price,pe,pb,eps,peRef,pbRef};
   }).filter(function(r){return r.date;});
 }
 
@@ -3224,7 +3254,8 @@ async function fetchLiveData(){
   try{
     var res=await fetch(LIVE_FEED_URL,{redirect:'follow'});
     if(!res.ok) throw new Error('HTTP '+res.status);
-    /* Google Apps Script may return text that needs manual JSON.parse */
+    /* Defensive parse — upstream may occasionally return non-JSON
+       (e.g. an HTML error page on NSE upstream hiccups) */
     var txt=await res.text();
     var raw;
     try{ raw=JSON.parse(txt); }
@@ -3753,21 +3784,35 @@ function _btCompute(){
        Jan 2022) had ~2yr of history at that point — alternate blend used.
        Same for any past dates where the sector hadn't yet accumulated 5yr.
        Each window is winsorised at 1%/99% before the median so backtest
-       references match what the cards display (computeStats does the same). */
+       references match what the cards display (computeStats does the same).
+
+       FAST PATH: if the worker pre-computed row.peRef / row.pbRef and shipped
+       them in the response (new D1-backed endpoint), use them directly.
+       Falls back to inline compute when the columns aren't present, which
+       handles old cached responses during the 30-min cache cutover after
+       a worker deploy. */
     const elapsedYrs=(tMs - new Date(data[0].date).getTime())/(365.25*86400000);
     const hasFullHistoryAtT = elapsedYrs >= 5;
     let peRef=NaN, pbRef=NaN;
     if(usePE){
-      const h3sl=data.slice(h3s,i+1), h5sl=data.slice(h5s,i+1), h10sl=data.slice(h10s,i+1);
-      const pe3=median(winsorise(vv(h3sl,'pe'))),pe5=median(winsorise(vv(h5sl,'pe'))),pe10=median(winsorise(vv(h10sl,'pe')));
-      const peAllH=hasFullHistoryAtT?NaN:median(winsorise(vv(data.slice(0,i+1),'pe')));
-      peRef=weightedRef(pe3,pe5,pe10,peAllH,hasFullHistoryAtT);
+      if(!isNaN(row.peRef)){
+        peRef = row.peRef;
+      }else{
+        const h3sl=data.slice(h3s,i+1), h5sl=data.slice(h5s,i+1), h10sl=data.slice(h10s,i+1);
+        const pe3=median(winsorise(vv(h3sl,'pe'))),pe5=median(winsorise(vv(h5sl,'pe'))),pe10=median(winsorise(vv(h10sl,'pe')));
+        const peAllH=hasFullHistoryAtT?NaN:median(winsorise(vv(data.slice(0,i+1),'pe')));
+        peRef=weightedRef(pe3,pe5,pe10,peAllH,hasFullHistoryAtT);
+      }
     }
     if(usePB){
-      const h3slb=data.slice(h3s,i+1), h5slb=data.slice(h5s,i+1), h10slb=data.slice(h10s,i+1);
-      const pb3=median(winsorise(vv(h3slb,'pb'))),pb5=median(winsorise(vv(h5slb,'pb'))),pb10=median(winsorise(vv(h10slb,'pb')));
-      const pbAllH=hasFullHistoryAtT?NaN:median(winsorise(vv(data.slice(0,i+1),'pb')));
-      pbRef=weightedRef(pb3,pb5,pb10,pbAllH,hasFullHistoryAtT);
+      if(!isNaN(row.pbRef)){
+        pbRef = row.pbRef;
+      }else{
+        const h3slb=data.slice(h3s,i+1), h5slb=data.slice(h5s,i+1), h10slb=data.slice(h10s,i+1);
+        const pb3=median(winsorise(vv(h3slb,'pb'))),pb5=median(winsorise(vv(h5slb,'pb'))),pb10=median(winsorise(vv(h10slb,'pb')));
+        const pbAllH=hasFullHistoryAtT?NaN:median(winsorise(vv(data.slice(0,i+1),'pb')));
+        pbRef=weightedRef(pb3,pb5,pb10,pbAllH,hasFullHistoryAtT);
+      }
     }
 
     /* remember the last valid ref for the end-of-window summary */
@@ -3915,20 +3960,29 @@ function btComputeHeadless(opts){
     var cur=row[field];  if(!cur||isNaN(cur)||cur<=0) continue;
 
     /* Compute weighted ref at this date.
+       FAST PATH: if the worker pre-computed row.peRef / row.pbRef (new
+       D1-backed /sector endpoint), read directly. Falls back to inline
+       compute for old cached responses during the 30-min cache cutover.
        Each window winsorised at 1%/99% before median, matching computeStats and _btCompute.
        Picks alternate blend (40% all-time + 60% × 3yr) when sector had <5yr at this date. */
-    var w3=[],w5=[],w10=[];
-    for(var k=h3s;  k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w3.push(v); }
-    for(var k=h5s;  k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w5.push(v); }
-    for(var k=h10s; k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w10.push(v); }
-    var elapsedYrs=(tMs - new Date(data[0].date).getTime())/(365.25*86400000);
-    var hasFullAtT=elapsedYrs>=5;
-    var wAll=[];
-    if(!hasFullAtT){
-      for(var k=0; k<=i; k++){ var v=data[k][field]; if(v>0&&!isNaN(v)) wAll.push(v); }
+    var ref;
+    var preRef = field==='pe' ? row.peRef : row.pbRef;
+    if(!isNaN(preRef)){
+      ref = preRef;
+    }else{
+      var w3=[],w5=[],w10=[];
+      for(var k=h3s;  k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w3.push(v); }
+      for(var k=h5s;  k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w5.push(v); }
+      for(var k=h10s; k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w10.push(v); }
+      var elapsedYrs=(tMs - new Date(data[0].date).getTime())/(365.25*86400000);
+      var hasFullAtT=elapsedYrs>=5;
+      var wAll=[];
+      if(!hasFullAtT){
+        for(var k=0; k<=i; k++){ var v=data[k][field]; if(v>0&&!isNaN(v)) wAll.push(v); }
+      }
+      ref=weightedRef(median(winsorise(w3)),median(winsorise(w5)),median(winsorise(w10)),
+                      hasFullAtT?NaN:median(winsorise(wAll)),hasFullAtT);
     }
-    var ref=weightedRef(median(winsorise(w3)),median(winsorise(w5)),median(winsorise(w10)),
-                        hasFullAtT?NaN:median(winsorise(wAll)),hasFullAtT);
     if(isNaN(ref)||ref<=0) continue;
 
     var ratio=cur/ref;
@@ -4565,13 +4619,14 @@ document.addEventListener('keydown',function(e){
    - Default range 3Y
    - Dual Y-axis on canvas
 ════════════════════════════════════════ */
-/* USD/INR series for the EPS (USD) chart line. The Apps Script returns a
-   full historical time series ([["Date","INR"], [ISO_date, rate], ...]) so
-   we convert each EPS data point at the rate in effect on its own date —
-   a 2010 EPS gets 2010's rate, today's EPS gets today's. Lazy-loaded on
-   first toggle of the EPS (USD) metric and cached for the session.
-   Proxied through the worker (env.APPS_SCRIPT_FX) so the upstream URL
-   stays server-side and inherits origin check + rate limit + edge cache. */
+/* USD/INR series for the EPS (USD) chart line. The worker returns a
+   full historical time series ([["Date","INR"], [ISO_date, rate], ...])
+   from D1 (Frankfurter/ECB-sourced, appended daily by the 17:30 IST
+   cron) so we convert each EPS data point at the rate in effect on its
+   own date — a 2010 EPS gets 2010's rate, today's EPS gets today's.
+   Lazy-loaded on first toggle of the EPS (USD) metric and cached for
+   the session. Edge-cached + KV-warmed at the worker for fast cold
+   reads. */
 var FX_URL=WORKER_BASE+'/fx';
 var FX_SERIES=null;       /* sorted array of {t:msSinceEpoch, r:INRperUSD} */
 var FX_LOADING=null;
@@ -4597,7 +4652,7 @@ function loadFxSeries(){
         series.push({t:t, r:rate});
       }
       if(!series.length) throw new Error('No valid FX rows parsed');
-      /* Defensive sort — Apps Script usually returns ascending but don't trust it. */
+      /* Defensive sort — the D1-backed feed returns ascending but don't trust it. */
       series.sort(function(a,b){ return a.t - b.t; });
       FX_SERIES=series;
       return series;
@@ -4645,7 +4700,8 @@ function fxRateAt(timestamp){
 /* ════════════════════════════════════════
    10-YEAR G-SEC YIELD SERIES
    Macro overlay for rate-sensitive sectors (Bank, PSU Bank, Fin Services,
-   Realty). Mirrors the FX series pattern: standalone Apps Script source,
+   Realty). Mirrors the FX series pattern: D1-backed feed via the worker
+   (10Y yield scraped daily by the india10y service-binding worker),
    lazy-loaded once into a sorted {t, y} array, looked up at row's own
    date with a 5-day staleness window. Unlike epsUsd this is *not* derived
    from a sector field — it's an independent macro series — so seriesFor
@@ -4681,7 +4737,7 @@ function loadGsecSeries(){
         series.push({t:t, y:y});
       }
       if(!series.length) throw new Error('No valid G-Sec rows parsed');
-      /* Defensive sort — Apps Script usually returns ascending but don't trust it. */
+      /* Defensive sort — the D1-backed feed returns ascending but don't trust it. */
       series.sort(function(a,b){ return a.t - b.t; });
       GSEC_SERIES=series;
       return series;
@@ -4725,9 +4781,11 @@ function gsecYieldAt(timestamp){
    so historical chart points always resolve while obviously-stale data
    feeds at the open right edge are still rejected.
 
-   Robust to either upstream shape: the Apps Script may return one row
-   per day (carry-forward already applied) or one row per change (sparse).
-   Both shapes give correct results with this lookup.
+   Robust to either feed shape: the worker may return one row per day
+   (carry-forward already applied) or one row per change (sparse). Both
+   shapes give correct results with this lookup. The current D1-backed
+   implementation returns the sparse form (one row per MPC decision,
+   ~6 per year, scraped daily by the indianrepo service-binding worker).
 ════════════════════════════════════════ */
 var REPO_URL=WORKER_BASE+'/repo';
 var REPO_SERIES=null;       /* sorted array of {t:msSinceEpoch, r:percentRate} */
