@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<!-- Warm up DNS+TLS to the Cloudflare Worker domain in parallel with HTML
+     parse so the first sector fetch doesn't pay handshake latency.
+     crossorigin attribute: our fetches are CORS (different origin from
+     sectorscope.in), so the preconnection must be marked CORS-capable to
+     actually be reused. -->
+<link rel="preconnect" href="https://sectorscope.prashant-06f.workers.dev" crossorigin>
 <title>SectorScope</title>
 <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
@@ -4946,15 +4952,28 @@ function openChartModal(sectorName){
      not the pre-rotation one — otherwise the first cmDrawCanvas call uses
      the wrong width and we'd have to redraw. The Promise.resolve() wrap
      guarantees we run the render even if cmEnterLandscape throws
-     unexpectedly — landscape is nice-to-have, the chart is mandatory. */
+     unexpectedly — landscape is nice-to-have, the chart is mandatory.
+
+     INP optimization: the heavy chart render (canvas drawing, several
+     hundred ms for large sectors) must NOT run inside the rAF callback
+     because rAF runs BEFORE the next paint. Doing 500ms of work in rAF
+     means the modal's open-frame paint is delayed by 500ms, which is
+     exactly the INP regression we're fixing. Instead we use rAF (to wait
+     for layout — canvas needs correct dimensions) followed by setTimeout
+     0 (to defer until AFTER paint). The user sees the modal frame within
+     one paint cycle (~16-50ms); the chart draws shortly after, with
+     a brief blank-canvas flash that's far less disruptive than half a
+     second of perceived input lag. */
   Promise.resolve(cmEnterLandscape()).catch(function(){}).then(function(){
     cmRenderControls();
     requestAnimationFrame(function(){
-      cmRenderChart();
-      cmAttachHover();
-      cmAttachDragMeasure();
-      if(userIsSubscribed()) cmPrefetchMedians(sectorName);
-      if(EPS_USD_SECTORS[sectorName]) loadFxSeries().catch(function(){});
+      setTimeout(function(){
+        cmRenderChart();
+        cmAttachHover();
+        cmAttachDragMeasure();
+        if(userIsSubscribed()) cmPrefetchMedians(sectorName);
+        if(EPS_USD_SECTORS[sectorName]) loadFxSeries().catch(function(){});
+      }, 0);
     });
   });
 }
