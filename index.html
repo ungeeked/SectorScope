@@ -1059,6 +1059,14 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           Support development
         </div>
+        <!-- Contact us — opens an in-app form pane (signed-in users
+             only, hence its placement inside the user menu). Submits to
+             the worker /contact endpoint which sends via Resend with the
+             user's Google email set as Reply-To. -->
+        <div class="user-menu-item" onclick="openContactPane();closeUserMenu()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Contact us
+        </div>
         <div class="user-menu-item" onclick="authSignOut()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Sign out
@@ -1207,6 +1215,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <a href="#h-backtest">6 · Backtest</a>
       <a href="#h-plus">7 · SectorScope Plus</a>
       <a href="#h-limits">8 · Limits &amp; honest caveats</a>
+      <a href="#h-contact">9 · Get in touch</a>
     </div>
   </div>
 
@@ -2001,6 +2010,27 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     </div>
 
     <div class="hp-note">India Equity · NSE sector indices · Valuations based on trailing TTM earnings &amp; book value.</div>
+  </div>
+
+  <!-- ══ 9. CONTACT ══ -->
+  <div class="hp-sec" id="h-contact">
+    <div class="hp-sec-h">9 · Get in touch</div>
+    <div class="hp-p">Found a bug, have feedback, or want a feature added? We'd love to hear from you. Drop a note — every email gets read.</div>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">Contact</div>
+      <!-- target=_blank ensures the SectorScope tab stays put while the
+           mailto handler opens in a new tab; the new tab usually auto-
+           closes once the OS hands the URL off to the email client.
+           rel=noopener is a safety habit for any target=_blank link. -->
+      <a href="mailto:help@sectorscope.in" target="_blank" rel="noopener"
+         style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;margin-top:8px;background:var(--bg);border:1px solid var(--bdr);border-radius:8px;color:var(--fg);font-family:var(--body);font-size:.95rem;text-decoration:none;font-weight:600;transition:border-color .15s,background .15s"
+         onmouseover="this.style.borderColor='#6366f1';this.style.background='rgba(99,102,241,.08)'"
+         onmouseout="this.style.borderColor='';this.style.background='var(--bg)'">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        help@sectorscope.in
+      </a>
+    </div>
   </div>
 
 </div>
@@ -7496,6 +7526,166 @@ async function ppConfirmCancel(){
     </div>
   </div>
 </div>
+
+<!-- ══════════════ CONTACT PANE ══════════════
+     Slides up from bottom-right like donate-pane. Signed-in users only
+     (visible from user menu, which itself is only shown post-auth).
+     Submits to worker /contact endpoint; worker verifies the Google ID
+     token, rate-limits per user, and sends via Resend with Reply-To set
+     to the user's email so a reply in the inbox goes back to them. -->
+<div id="contact-pane" role="dialog" aria-label="Contact SectorScope">
+  <div class="ct-header">
+    <div class="ct-badge">&#9993; Contact</div>
+    <button class="ct-close" onclick="closeContactPane()" aria-label="Close">&#10005;</button>
+  </div>
+  <div class="ct-body">
+    <div class="ct-title">Send us a message</div>
+    <div class="ct-from-line">From: <span id="ct-from-email">—</span></div>
+    <input id="ct-subject" class="ct-input" type="text" maxlength="200" placeholder="Subject" autocomplete="off"/>
+    <textarea id="ct-message" class="ct-textarea" maxlength="5000" placeholder="Your message…" rows="6"></textarea>
+    <div class="ct-error" id="ct-error"></div>
+    <div class="ct-success" id="ct-success">&#10003; Thanks &mdash; we'll get back to you soon.</div>
+    <div class="ct-actions">
+      <button class="ct-send-btn" id="ct-send-btn" onclick="submitContactForm()">Send</button>
+      <button class="ct-dismiss-btn" onclick="closeContactPane()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<style>
+#contact-pane{
+  position:fixed;bottom:24px;right:24px;z-index:9000;
+  width:380px;max-width:calc(100vw - 32px);
+  background:var(--bg2);
+  border:1px solid var(--bdr);
+  border-radius:16px;
+  box-shadow:0 8px 40px rgba(0,0,0,.45);
+  padding:20px 20px 16px;
+  font-family:var(--body);
+  transform:translateY(calc(100% + 100px));
+  opacity:0;
+  transition:transform .4s cubic-bezier(.22,.68,0,1.2),opacity .3s ease;
+  pointer-events:none;
+}
+#contact-pane.ct-visible{transform:translateY(0);opacity:1;pointer-events:auto}
+.ct-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.ct-badge{font-family:var(--mono);font-size:.55rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:#6366f1;background:rgba(99,102,241,.12);padding:3px 8px;border-radius:20px;border:1px solid rgba(99,102,241,.25)}
+.ct-close{background:none;border:none;color:var(--ghost);font-size:.9rem;cursor:pointer;padding:2px 4px;line-height:1;border-radius:4px;transition:color .15s,background .15s}
+.ct-close:hover{color:var(--txt);background:var(--bg3)}
+.ct-title{font-size:.92rem;font-weight:700;color:var(--txt);margin-bottom:8px;line-height:1.4}
+.ct-from-line{font-size:.7rem;color:var(--ghost);margin-bottom:10px;font-family:var(--mono)}
+.ct-from-line span{color:var(--sub)}
+.ct-input,.ct-textarea{
+  width:100%;padding:9px 10px;margin-bottom:8px;
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;
+  color:var(--txt);font-family:var(--body);font-size:.82rem;
+  outline:none;box-sizing:border-box;
+  transition:border-color .15s;
+}
+.ct-input:focus,.ct-textarea:focus{border-color:#6366f1}
+.ct-textarea{resize:vertical;min-height:120px;font-family:var(--body);line-height:1.5}
+.ct-error{font-size:.7rem;color:#f87171;margin:0 0 8px;text-align:center;display:none}
+.ct-error.show{display:block}
+.ct-success{font-size:.78rem;color:var(--chp-c);margin:0 0 10px;text-align:center;display:none;font-weight:600}
+.ct-success.show{display:block}
+.ct-actions{display:flex;flex-direction:column;gap:7px}
+.ct-send-btn{width:100%;padding:9px;border-radius:9px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:var(--body);font-size:.82rem;font-weight:700;cursor:pointer;transition:opacity .15s}
+.ct-send-btn:hover:not(:disabled){opacity:.88}
+.ct-send-btn:disabled{opacity:.55;cursor:not-allowed}
+.ct-dismiss-btn{width:100%;padding:7px;border-radius:9px;border:1px solid var(--bdr);background:transparent;color:var(--ghost);font-family:var(--body);font-size:.76rem;cursor:pointer;transition:color .15s,background .15s}
+.ct-dismiss-btn:hover{color:var(--txt);background:var(--bg3)}
+@media(max-width:480px){#contact-pane{left:12px;right:12px;width:auto;bottom:16px}}
+</style>
+
+<script>
+/* ── Contact pane helpers ──
+   Opens / closes the contact-pane modal. Auth-gated: requires currentUser
+   to be set (the user menu where the entry-point lives is only shown after
+   sign-in, but we double-check defensively). Submit calls /contact on the
+   worker with the user's Google ID token as Bearer auth. */
+function openContactPane(){
+  if(!window.currentUser){ if(typeof authSignIn==='function') authSignIn(); return; }
+  var pane=document.getElementById('contact-pane');
+  if(!pane) return;
+  /* Reset form state on each open — covers re-opening after a previous send. */
+  document.getElementById('ct-from-email').textContent=window.currentUser.email||'—';
+  document.getElementById('ct-subject').value='';
+  document.getElementById('ct-message').value='';
+  document.getElementById('ct-error').classList.remove('show');
+  document.getElementById('ct-success').classList.remove('show');
+  var sendBtn=document.getElementById('ct-send-btn');
+  sendBtn.disabled=false;
+  sendBtn.textContent='Send';
+  pane.classList.add('ct-visible');
+  /* Tiny delay so focus doesn't race the open animation. */
+  setTimeout(function(){ try{ document.getElementById('ct-subject').focus(); }catch(e){} }, 280);
+}
+
+function closeContactPane(){
+  var pane=document.getElementById('contact-pane');
+  if(pane) pane.classList.remove('ct-visible');
+}
+
+function ctShowError(msg){
+  var err=document.getElementById('ct-error');
+  if(!err) return;
+  err.textContent=msg;
+  err.classList.add('show');
+}
+
+async function submitContactForm(){
+  if(!window.currentUser||!window.currentUser.token){
+    ctShowError('Sign in required.');
+    return;
+  }
+  var subject=(document.getElementById('ct-subject').value||'').trim();
+  var message=(document.getElementById('ct-message').value||'').trim();
+  if(!subject){ ctShowError('Subject is required.'); return; }
+  if(!message){ ctShowError('Message is required.'); return; }
+  if(subject.length>200){ ctShowError('Subject too long (max 200 chars).'); return; }
+  if(message.length>5000){ ctShowError('Message too long (max 5000 chars).'); return; }
+
+  var sendBtn=document.getElementById('ct-send-btn');
+  var errEl=document.getElementById('ct-error');
+  errEl.classList.remove('show');
+  sendBtn.disabled=true;
+  sendBtn.textContent='Sending…';
+
+  try {
+    var res=await fetch(WORKER_BASE+'/contact',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'Authorization':'Bearer '+window.currentUser.token,
+      },
+      body:JSON.stringify({subject:subject,message:message}),
+    });
+    if(res.ok){
+      /* Success — show confirmation, hide the form fields, auto-close after 4s. */
+      document.getElementById('ct-success').classList.add('show');
+      document.getElementById('ct-subject').style.display='none';
+      document.getElementById('ct-message').style.display='none';
+      document.getElementById('ct-from-line')?.style?.setProperty('display','none');
+      sendBtn.style.display='none';
+      setTimeout(closeContactPane,4000);
+    } else {
+      var errBody={};
+      try{ errBody=await res.json(); }catch(e){}
+      var msg = (errBody && errBody.error) ? errBody.error
+              : (res.status===401 ? 'Sign in expired. Please sign in again.'
+              : (res.status===429 ? 'Too many messages today. Try again in 24 hours.'
+              : 'Send failed. Please try again.'));
+      ctShowError(msg);
+      sendBtn.disabled=false;
+      sendBtn.textContent='Send';
+    }
+  } catch (e) {
+    ctShowError('Network error. Check your connection and try again.');
+    sendBtn.disabled=false;
+    sendBtn.textContent='Send';
+  }
+}
+</script>
 
 <style>
 #whatsnew-pane{
