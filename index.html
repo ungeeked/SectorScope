@@ -4871,6 +4871,12 @@ var CM_METRICS={
      divides by the cached USD/INR rate. Cyan to differentiate from green EPS. */
   epsUsd: {field:'eps',   label:'EPS (USD)', cLight:'#0891b2', cDark:'#22d3ee'},
   pb    : {field:'pb' ,   label:'P/B',       cLight:'#f97316', cDark:'#fb923c'},
+  /* bv is a virtual metric — Book Value per index unit = price / pb.
+     Computed inside seriesFor; `field` here is unused but populated for
+     shape consistency with the other virtual metrics. Purple to stay
+     distinct from pb's orange (its arithmetic sibling), cls's pink (also
+     an absolute-INR series), and the cool blues used by pe/epsUsd. */
+  bv    : {field:'price', label:'Book Value', cLight:'#9333ea', cDark:'#c084fc'},
   /* gsec is a virtual *macro* metric — independent of any sector field.
      seriesFor calls gsecYieldAt(rowDate) directly; `field` here is unused
      but populated for shape consistency. Amber/gold reads as "yield" in
@@ -4882,7 +4888,7 @@ var CM_METRICS={
   repo  : {field:'date',  label:'Repo Rate', cLight:'#dc2626', cDark:'#f87171'},
   cls   : {field:'price', label:'Price',     cLight:'#ec4899', cDark:'#f472b6'}
 };
-var CM_METRIC_ORDER=['pe','eps','epsUsd','pb','gsec','repo','cls']; /* render order in checkbox row */
+var CM_METRIC_ORDER=['pe','eps','epsUsd','pb','bv','gsec','repo','cls']; /* render order in checkbox row */
 
 /* Sectors where EPS (USD) is genuinely informative: IT bills ~90%+ in USD,
    Pharma earns 30-50% from US/exports. For domestic INR-driven sectors
@@ -5387,6 +5393,13 @@ function cmDrawCanvas(canvas, rows){
       } else if(key==='repo'){
         v=repoRateAt(t);
         if(v==null) continue;
+      } else if(key==='bv'){
+        /* Book Value per index unit = price / pb. Both must be present and
+           positive — pb<=0 would blow the divide and isn't a real reading
+           anyway (the cron's append path treats pb<=0 as null). */
+        var pBV=rows[i].price, pbBV=rows[i].pb;
+        if(pBV==null || isNaN(pBV) || pbBV==null || isNaN(pbBV) || pbBV<=0) continue;
+        v = pBV / pbBV;
       } else {
         v=rows[i][f];
         if(v==null || isNaN(v)) continue;
@@ -5468,7 +5481,7 @@ function cmDrawCanvas(canvas, rows){
     ctx.textAlign='right'; ctx.textBaseline='middle';
     ctx.font='10px ui-monospace,Menlo,monospace';
     ctx.fillStyle=txtCol;
-    ctx.fillText(leftVal.toFixed(leftKey==='cls'||leftKey==='eps'?0:1), ml-6, y);
+    ctx.fillText(leftVal.toFixed(leftKey==='cls'||leftKey==='eps'||leftKey==='bv'?0:1), ml-6, y);
     if(leftMaxEps){
       ctx.font='9px ui-monospace,Menlo,monospace';
       ctx.fillStyle=pctCol;
@@ -5480,7 +5493,7 @@ function cmDrawCanvas(canvas, rows){
       ctx.textAlign='left';
       ctx.font='10px ui-monospace,Menlo,monospace';
       ctx.fillStyle=txtCol;
-      ctx.fillText(rightVal.toFixed(rightKey==='cls'||rightKey==='eps'?0:1), W-mr+6, y);
+      ctx.fillText(rightVal.toFixed(rightKey==='cls'||rightKey==='eps'||rightKey==='bv'?0:1), W-mr+6, y);
       if(rightMaxEps){
         ctx.font='9px ui-monospace,Menlo,monospace';
         ctx.fillStyle=pctCol;
@@ -5624,7 +5637,7 @@ function cmAttachHover(){
 
   function fmt(key, v){
     if(v==null||isNaN(v)) return '—';
-    if(key==='cls'||key==='eps') return Math.round(v).toLocaleString('en-IN');
+    if(key==='cls'||key==='eps'||key==='bv') return Math.round(v).toLocaleString('en-IN');
     if(key==='epsUsd') return '$'+v.toFixed(2);
     if(key==='gsec')   return v.toFixed(2)+'%';
     if(key==='repo')   return v.toFixed(2)+'%';
