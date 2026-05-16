@@ -590,6 +590,12 @@ html.light .sd-header{background:rgba(238,241,248,.96)}
 .sd-title{font-family:var(--cond);font-size:1.4rem;font-weight:800;letter-spacing:-.2px;color:var(--txt);flex:1}
 .sd-close{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;color:var(--sub);font-size:1rem;cursor:pointer;transition:all .18s;flex-shrink:0}
 .sd-close:hover{background:var(--sur);color:var(--txt)}
+/* Chart-header icon button (e.g. PNG export). Same chrome as .sd-close but
+   sized for an SVG icon rather than a glyph; padded to give the 14px stroke
+   icon comfortable optical bounds inside the 32px square. */
+.cm-icon-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;color:var(--sub);cursor:pointer;transition:all .18s;flex-shrink:0;padding:0}
+.cm-icon-btn:hover{background:var(--sur);color:var(--txt)}
+.cm-icon-btn svg{display:block}
 .sd-body{flex:1;overflow-y:auto;padding:20px 22px 48px}
 @media(max-width:680px){.sd-body{padding:14px 12px 40px}.sd-header{padding:10px 14px}}
 /* ── AI SUMMARY ── */
@@ -615,9 +621,9 @@ html.light .sd-header{background:rgba(238,241,248,.96)}
 .ai-powered svg{width:13px;height:13px;flex-shrink:0}
 .ai-summary-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
 .ai-summary-remaining{font-family:var(--mono);font-size:.48rem;color:var(--ghost)}
-.ai-regenerate-wrap{padding:10px 16px 12px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end}
-.ai-regenerate-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:7px;border:1px solid var(--bdr);background:transparent;color:var(--sub);font-family:var(--body);font-size:.72rem;font-weight:600;cursor:pointer;transition:background .15s,color .15s}
-.ai-regenerate-btn:hover{background:var(--bg3);color:var(--txt)}
+.ai-regenerate-wrap{padding:10px 16px 12px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end;gap:8px}
+.ai-regenerate-btn,.ai-share-btn{display:inline-flex;align-items:center;gap:5px;padding:5px 13px;border-radius:7px;border:1px solid var(--bdr);background:transparent;color:var(--sub);font-family:var(--body);font-size:.72rem;font-weight:600;cursor:pointer;transition:background .15s,color .15s}
+.ai-regenerate-btn:hover,.ai-share-btn:hover{background:var(--bg3);color:var(--txt)}
 .ai-generate-wrap{padding:18px 16px;display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center}
 .ai-generate-hint{font-family:var(--body);font-size:.76rem;color:var(--sub)}
 .ai-generate-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 20px;border-radius:9px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:var(--body);font-size:.78rem;font-weight:700;cursor:pointer;transition:opacity .18s}
@@ -2074,6 +2080,11 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   <div class="cm-header">
     <div class="cm-color-bar" id="cm-color-bar"></div>
     <div class="cm-title" id="cm-title">—</div>
+    <button class="cm-icon-btn" onclick="cmExportPNG()" aria-label="Save chart as PNG" title="Save as PNG">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M8 1.5v8.5m0 0L4.5 6.5M8 10l3.5-3.5M2.5 12.5v1a1 1 0 0 0 1 1h9a1 1 0 0 0 1-1v-1"/>
+      </svg>
+    </button>
     <button class="sd-close" onclick="closeChartModal()" aria-label="Close chart">✕</button>
   </div>
   <div class="cm-body">
@@ -4537,7 +4548,10 @@ function buildSectorDetailHTML(sec, st, data){
   var initialContent;
   if(cached){
     initialContent='<div class="ai-summary-body">'+cached.bodyHtml+'</div>'
-      +'<div class="ai-regenerate-wrap"><button class="ai-regenerate-btn" onclick="triggerAISummary(\''+sec.name+'\')">↺ Regenerate</button></div>';
+      +'<div class="ai-regenerate-wrap">'
+        +'<button class="ai-share-btn" onclick="shareAISummary(\''+sec.name+'\')">↗ Share</button>'
+        +'<button class="ai-regenerate-btn" onclick="triggerAISummary(\''+sec.name+'\')">↺ Regenerate</button>'
+      +'</div>';
   } else {
     initialContent='<div id="ai-summary-content" class="ai-generate-wrap">'
       +'<div class="ai-generate-hint">Get an instant plain-language read on this sector\'s valuation and earnings.</div>'
@@ -5292,6 +5306,271 @@ function cmRollingRef(sectorName, field){
   }
   CM_REF_CACHE[key]=out;
   return out;
+}
+
+/* ════════════════════════════════════════
+   PNG export — composite the on-screen chart canvas onto a downloadable
+   PNG with: sector title, metric-color-dot legend, theme-matched
+   background, a subtle centered watermark, the drag-selection overlay
+   (rect + delta panel) if active at export time, and a sectorscope.in
+   footer with timestamp.
+
+   The source canvas is already drawn at devicePixelRatio (see
+   cmDrawCanvas), so its bitmap is naturally crisp on retina/HiDPI. The
+   composite works in *bitmap* coordinates throughout (no setTransform),
+   so drawImage of the chart is a 1:1 paint with no scaling artefacts.
+   DOM-overlay positions (drag rect / delta panel) are read in CSS pixels
+   from their inline styles and multiplied by dpr at paint time.
+
+   Filename: sectorscope-<sector-slug>-<range>-<YYYY-MM-DD>.png so
+   captures sort chronologically in the user's downloads folder.
+════════════════════════════════════════ */
+function cmExportPNG(){
+  var src=document.getElementById('cm-canvas');
+  if(!src || !src.width || !src.height || !CM_STATE.sector) return;
+  var sec=SECTORS.find(function(s){return s.name===CM_STATE.sector;});
+  if(!sec) return;
+
+  var dpr     = window.devicePixelRatio || 1;
+  var isLight = document.documentElement.classList.contains('light');
+
+  var padX    = 24 * dpr;
+  var headerH = 80 * dpr;
+  var footerH = 36 * dpr;
+  var W = src.width + padX*2;
+  var H = src.height + headerH + footerH;
+
+  var out=document.createElement('canvas');
+  out.width=W; out.height=H;
+  var ctx=out.getContext('2d');
+
+  /* Background — match theme so light-mode users get white PNGs and
+     dark-mode users get the same slate the modal shows. */
+  ctx.fillStyle = isLight ? '#ffffff' : '#0b1220';
+  ctx.fillRect(0, 0, W, H);
+
+  /* ── Header: sector color accent + "Nifty <Sector>" ── */
+  ctx.fillStyle = sec.color;
+  ctx.fillRect(padX, 22*dpr, 4*dpr, 44*dpr);
+
+  ctx.fillStyle = isLight ? '#0f172a' : '#f1f5f9';
+  ctx.font = 'bold ' + (24*dpr) + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  ctx.textBaseline = 'top';
+  ctx.textAlign = 'left';
+  ctx.fillText('Nifty ' + CM_STATE.sector, padX + 14*dpr, 22*dpr);
+
+  /* ── Subtitle row: per-metric colored dot + label, then optional overlay
+     suffix, then date range. Replaces the plain "P/E + EPS" string so the
+     viewer can map each line in the chart to its color without already
+     knowing the convention. */
+  var cursorX = padX + 14*dpr;
+  var lineY   = 52*dpr;
+  var dotR    = 4*dpr;
+  ctx.font = (13*dpr) + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+
+  CM_STATE.metrics.forEach(function(k){
+    var m   = CM_METRICS[k];
+    var col = isLight ? m.cLight : m.cDark;
+    /* Small rounded square (matches .cm-delta-dot styling — 8px square w/
+       2px radius) instead of a circle, for visual consistency with the
+       on-screen delta panel. */
+    ctx.fillStyle = col;
+    var dotX = cursorX, dotY = lineY + 4*dpr;
+    if(typeof ctx.roundRect === 'function'){
+      ctx.beginPath();
+      ctx.roundRect(dotX, dotY, 8*dpr, 8*dpr, 2*dpr);
+      ctx.fill();
+    } else {
+      ctx.fillRect(dotX, dotY, 8*dpr, 8*dpr);
+    }
+    ctx.fillStyle = isLight ? '#0f172a' : '#cbd5e1';
+    ctx.fillText(m.label, dotX + 12*dpr, lineY);
+    cursorX = dotX + 12*dpr + ctx.measureText(m.label).width + 18*dpr;
+  });
+
+  /* Overlay suffix — Median or Bands, whichever is active (mutex). Dimmer
+     than the metric labels so it reads as a modifier, not as a third metric. */
+  var overlayLabel = CM_STATE.showMedian ? '+ Median' : (CM_STATE.showBands ? '+ Bands' : '');
+  if(overlayLabel){
+    ctx.fillStyle = isLight ? '#64748b' : '#94a3b8';
+    ctx.fillText(overlayLabel, cursorX, lineY);
+    cursorX += ctx.measureText(overlayLabel).width + 18*dpr;
+  }
+
+  /* Range — prefer the computed window over the bare range label so screenshots
+     with custom date pickers stay self-describing. */
+  var rangeStr;
+  var win = cmRangeWindow();
+  if(CM_STATE.from && CM_STATE.to){
+    rangeStr = cmISO(CM_STATE.from) + ' → ' + cmISO(CM_STATE.to);
+  } else if(win){
+    rangeStr = (CM_STATE.range || '') + '  (' + cmISO(win.from) + ' → ' + cmISO(win.to) + ')';
+  } else {
+    rangeStr = CM_STATE.range || '';
+  }
+  ctx.fillStyle = isLight ? '#475569' : '#94a3b8';
+  ctx.fillText('·  ' + rangeStr, cursorX, lineY);
+
+  /* ── Chart body — 1:1 bitmap copy of the source canvas ── */
+  ctx.drawImage(src, padX, headerH);
+
+  /* ── Watermark — centered in the chart area, very low alpha so it reads
+     as a faint signature rather than a brand stamp. Sits behind any line
+     visually thanks to the low opacity but is drawn after the chart so
+     it shows up on solid background patches too. */
+  ctx.save();
+  ctx.globalAlpha = isLight ? 0.06 : 0.07;
+  ctx.fillStyle = isLight ? '#0f172a' : '#f1f5f9';
+  ctx.font = 'bold ' + (Math.min(44, src.width / dpr * 0.07) * dpr) + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('sectorscope.in', padX + src.width / 2, headerH + src.height / 2);
+  ctx.restore();
+
+  /* ── Drag overlay — if a measurement is active when the user clicks
+     export, replicate it onto the PNG. Two pieces: the translucent blue
+     selection rectangle (matches .cm-drag-rect CSS), and the floating
+     delta panel showing date range + per-metric % deltas. Both are read
+     from the live DOM rather than reconstructed from CM_DRAW, so any
+     UI quirks (the panel's clamped position, the rect's clamped edges)
+     transfer faithfully. */
+  var rectEl = document.getElementById('cm-drag-rect');
+  if(rectEl && rectEl.style.display === 'block'){
+    var rl = parseFloat(rectEl.style.left)   || 0;
+    var rt = parseFloat(rectEl.style.top)    || 0;
+    var rwCss = parseFloat(rectEl.style.width)  || 0;
+    var rhCss = parseFloat(rectEl.style.height) || 0;
+    var rx = padX    + rl * dpr;
+    var ry = headerH + rt * dpr;
+    var rw = rwCss * dpr;
+    var rh = rhCss * dpr;
+    /* Fill — same rgba as the CSS rule */
+    ctx.fillStyle = 'rgba(59,130,246,.15)';
+    ctx.fillRect(rx, ry, rw, rh);
+    /* Left + right borders only (matches CSS: border-left + border-right,
+       no top/bottom). 0.5px offset for crisp 1px lines. */
+    ctx.strokeStyle = 'rgba(59,130,246,.7)';
+    ctx.lineWidth = 1 * dpr;
+    ctx.beginPath();
+    ctx.moveTo(rx + 0.5*dpr, ry);          ctx.lineTo(rx + 0.5*dpr, ry + rh);
+    ctx.moveTo(rx + rw - 0.5*dpr, ry);     ctx.lineTo(rx + rw - 0.5*dpr, ry + rh);
+    ctx.stroke();
+  }
+
+  var panel = document.getElementById('cm-delta-panel');
+  if(panel && panel.style.display === 'block'){
+    /* Parse the live panel's content rather than reconstructing it — keeps
+       formatting (% signs, en-dashes, duration "2.2y" etc.) identical to
+       what the user sees on screen. */
+    var datesEl = panel.querySelector('.cm-delta-dates');
+    var rowEls  = panel.querySelectorAll('.cm-delta-row');
+    if(datesEl && rowEls.length){
+      var deltaRows = [];
+      rowEls.forEach(function(rowEl){
+        var lEl = rowEl.querySelector('.cm-delta-label');
+        var vEl = rowEl.querySelector('.cm-delta-val');
+        var dEl = rowEl.querySelector('.cm-delta-dot');
+        if(!lEl || !vEl) return;
+        deltaRows.push({
+          label: lEl.textContent.replace(/\s+/g, ' ').trim(),
+          value: vEl.textContent.trim(),
+          color: (dEl && (dEl.style.background || dEl.style.backgroundColor)) || '#888',
+          tone : vEl.classList.contains('pos') ? 'pos'
+               : vEl.classList.contains('neg') ? 'neg' : 'na',
+        });
+      });
+
+      /* Position — read inline style; measured width/height via offset*. */
+      var px = parseFloat(panel.style.left) || 0;
+      var py = parseFloat(panel.style.top)  || 0;
+      var bx = padX    + px * dpr;
+      var by = headerH + py * dpr;
+
+      /* Internal layout — mirrors the on-screen panel's padding/typography. */
+      var padTop = 10*dpr, padBot = 10*dpr, padInnerX = 12*dpr;
+      var datesFontPx = 10*dpr;     /* CSS .62rem ≈ 10px on default root */
+      var rowFontPx   = 13*dpr;     /* CSS .72rem ≈ 11.5px label, .78rem val — split the diff */
+      var datesH      = 14*dpr;
+      var rowH        = 19*dpr;
+      var panelW      = Math.max(180*dpr, panel.offsetWidth * dpr);
+      var panelH      = padTop + datesH + 6*dpr + deltaRows.length * rowH + padBot;
+
+      /* Chrome — themed background + faint border, rounded if supported. */
+      ctx.fillStyle   = isLight ? '#ffffff' : '#0b1220';
+      ctx.strokeStyle = isLight ? 'rgba(0,0,0,.12)' : 'rgba(255,255,255,.14)';
+      ctx.lineWidth   = 1*dpr;
+      if(typeof ctx.roundRect === 'function'){
+        ctx.beginPath();
+        ctx.roundRect(bx, by, panelW, panelH, 10*dpr);
+        ctx.fill(); ctx.stroke();
+      } else {
+        ctx.fillRect(bx, by, panelW, panelH);
+        ctx.strokeRect(bx, by, panelW, panelH);
+      }
+
+      /* Dates header — small uppercase monospace, ghost color. */
+      ctx.font = (datesFontPx) + 'px ui-monospace,Menlo,Consolas,monospace';
+      ctx.fillStyle = isLight ? '#94a3b8' : '#64748b';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'top';
+      ctx.fillText(datesEl.textContent.replace(/\s+/g, ' ').trim().toUpperCase(),
+                   bx + padInnerX, by + padTop);
+
+      /* Per-metric rows: dot + label (left), value (right, colored by tone). */
+      var ry = by + padTop + datesH + 6*dpr;
+      deltaRows.forEach(function(row){
+        /* Dot — small rounded square, matches .cm-delta-dot CSS. */
+        ctx.fillStyle = row.color;
+        if(typeof ctx.roundRect === 'function'){
+          ctx.beginPath();
+          ctx.roundRect(bx + padInnerX, ry + 5*dpr, 8*dpr, 8*dpr, 2*dpr);
+          ctx.fill();
+        } else {
+          ctx.fillRect(bx + padInnerX, ry + 5*dpr, 8*dpr, 8*dpr);
+        }
+        /* Label */
+        ctx.font = rowFontPx + 'px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+        ctx.fillStyle = isLight ? '#475569' : '#94a3b8';
+        ctx.textAlign = 'left';
+        ctx.fillText(row.label, bx + padInnerX + 14*dpr, ry);
+        /* Value — colored by tone, mono font for tabular alignment */
+        var toneCol = row.tone === 'pos' ? (isLight ? '#059669' : '#34d399')
+                    : row.tone === 'neg' ? (isLight ? '#dc2626' : '#f87171')
+                    : (isLight ? '#94a3b8' : '#64748b');
+        ctx.fillStyle = toneCol;
+        ctx.font = 'bold ' + rowFontPx + 'px ui-monospace,Menlo,Consolas,monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText(row.value, bx + panelW - padInnerX, ry);
+        ry += rowH;
+      });
+    }
+  }
+
+  /* ── Footer — sectorscope.in (left) + Generated <date> (right) ── */
+  ctx.font = (11*dpr) + 'px ui-monospace,Menlo,Consolas,monospace';
+  ctx.fillStyle = isLight ? '#94a3b8' : '#64748b';
+  ctx.textBaseline = 'top';
+  var footerY = headerH + src.height + 12*dpr;
+  ctx.textAlign = 'left';
+  ctx.fillText('sectorscope.in', padX, footerY);
+  ctx.textAlign = 'right';
+  var today = new Date().toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'});
+  ctx.fillText('Generated ' + today, src.width + padX, footerY);
+
+  /* ── Download ── */
+  var fname = 'sectorscope-'
+    + CM_STATE.sector.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    + '-' + (CM_STATE.range || 'custom')
+    + '-' + new Date().toISOString().slice(0,10)
+    + '.png';
+  out.toBlob(function(blob){
+    if(!blob){ console.error('[chart-export] toBlob returned null'); return; }
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a');
+    a.href=url; a.download=fname;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 200);
+  }, 'image/png');
 }
 
 function cmRenderChart(){
@@ -7011,6 +7290,258 @@ function escapeHtml(s){
     .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
     .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+
+/* ════════════════════════════════════════
+   SHARE AI SUMMARY — composite the cached summary into a 1080-wide social
+   share card (PNG), then route through the Web Share API on mobile (native
+   share sheet → WhatsApp/Twitter/etc.) or fall back to file download on
+   desktop. The card recreates the SectorScope brandmark, the sector name
+   with its color accent, the summary paragraphs, and the verdict box.
+
+   Why composite rather than html2canvas the live block:
+     - No external dependency
+     - Output stays consistent across themes (we drive theme from the
+       isLight check, not from whatever the user happens to be viewing)
+     - We can use a layout sized for social (1080w × dynamic h) instead
+       of whatever the modal width happens to be
+
+   Cached summary content is the source of truth — same paragraphs and
+   verdict that the user sees on screen, parsed back out of the stored
+   bodyHtml so we don't re-run any AI calls.
+════════════════════════════════════════ */
+async function shareAISummary(sectorName){
+  var cached = aiSummaryCache[sectorName];
+  if(!cached || !cached.bodyHtml) return;
+  var sec = SECTORS.find(function(s){return s.name===sectorName;});
+  if(!sec) return;
+
+  /* Wait for web fonts so Barlow Condensed (brandmark) is available at
+     measure/draw time. Falls back to system condensed if unavailable. */
+  if(document.fonts && document.fonts.ready){
+    try{ await document.fonts.ready; }catch(e){}
+  }
+
+  /* Parse paragraphs + verdict out of the stored HTML. Going through
+     DOMParser keeps escapeHtml's entities (&amp; etc.) correctly decoded
+     to plain text via .textContent — no double-encoding bugs. */
+  var parser = new DOMParser();
+  var doc    = parser.parseFromString('<div>'+cached.bodyHtml+'</div>', 'text/html');
+  var paras  = [];
+  doc.querySelectorAll('p').forEach(function(p){
+    var t = p.textContent.trim();
+    if(t) paras.push(t);
+  });
+  var verdictEl = doc.querySelector('.ai-verdict');
+  var verdict   = verdictEl ? verdictEl.textContent.trim() : '';
+
+  var isLight = document.documentElement.classList.contains('light');
+
+  /* Layout constants — design grid is 1080px wide. Height is computed
+     after wrapping the body so short summaries don't get padded out and
+     long ones don't get clipped. */
+  var W        = 1080;
+  var PAD      = 60;
+  var contentW = W - PAD*2;
+
+  /* Font specs. Barlow Condensed is the brandmark face; everything else
+     is system sans / mono for portability across the various platforms
+     the screenshot ends up on. */
+  var brandFont   = 'bold 64px "Barlow Condensed","Bebas Neue","Oswald",sans-serif';
+  var titleFont   = '700 60px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  var chipFont    = '600 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  var bodyFont    = '400 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  var verdictFont = '600 28px ui-monospace,Menlo,Consolas,monospace';
+  var footerFont  = '500 22px ui-monospace,Menlo,Consolas,monospace';
+  var bodyLineH    = 46;
+  var verdictLineH = 42;
+  var verdictPad   = 28;   /* inner padding of the verdict box */
+
+  /* Word-wrap helper — measures with a throwaway context using the same
+     font spec we'll paint with, so wraps match the rendered layout. */
+  var tc = document.createElement('canvas').getContext('2d');
+  function wrap(text, maxW, font){
+    tc.font = font;
+    var words = text.split(/\s+/);
+    var lines = [], cur = '';
+    for(var i=0; i<words.length; i++){
+      var test = cur ? cur+' '+words[i] : words[i];
+      if(tc.measureText(test).width > maxW && cur){
+        lines.push(cur); cur = words[i];
+      } else {
+        cur = test;
+      }
+    }
+    if(cur) lines.push(cur);
+    return lines.length ? lines : [''];
+  }
+
+  var wrappedParas   = paras.map(function(p){return wrap(p, contentW, bodyFont);});
+  var wrappedVerdict = verdict ? wrap(verdict, contentW - verdictPad*2 - 4, verdictFont) : [];
+
+  /* Height pass — sum the row heights we're about to draw. Mirrors the
+     render pass exactly; any change to one needs the matching change here
+     or the canvas ends up too short/too tall. */
+  var H = PAD;
+  H += 64;       /* brand text */
+  H += 8;        /* gap */
+  H += 8;        /* rainbow bar */
+  H += 32;       /* gap */
+  H += 60;       /* sector title */
+  H += 24;       /* gap */
+  H += 30;       /* chip line */
+  H += 14;       /* gap */
+  H += 1;        /* divider */
+  H += 28;       /* gap */
+  wrappedParas.forEach(function(lines, i){
+    H += lines.length * bodyLineH;
+    if(i < wrappedParas.length-1) H += 18;
+  });
+  if(verdict){
+    H += 24;
+    H += verdictPad*2 + wrappedVerdict.length * verdictLineH;
+  }
+  H += 28;       /* gap */
+  H += 1;        /* divider */
+  H += 20;       /* gap */
+  H += 28;       /* footer */
+  H += PAD;
+
+  /* Real canvas + paint */
+  var canvas = document.createElement('canvas');
+  canvas.width = W; canvas.height = H;
+  var ctx = canvas.getContext('2d');
+
+  /* Background — theme-driven so dark-mode users get dark cards. */
+  ctx.fillStyle = isLight ? '#ffffff' : '#0b1220';
+  ctx.fillRect(0, 0, W, H);
+
+  var cy = PAD;
+  ctx.textBaseline = 'top';
+  ctx.textAlign    = 'left';
+
+  /* ── Brandmark: "SectorScope" wordmark + rainbow underline.
+     Mirrors the h-brandmark SVG in the page header (x=0..90 covers the
+     first 90/175 ≈ 51% of the text width). */
+  ctx.font = brandFont;
+  ctx.fillStyle = isLight ? '#0f172a' : '#f1f5f9';
+  ctx.fillText('SectorScope', PAD, cy);
+  var brandTextW = ctx.measureText('SectorScope').width;
+  cy += 64;
+  cy += 8;
+  var barW = brandTextW * 0.55;
+  var segW = barW / 5;
+  ['#00c853','#69f0ae','#ffd740','#ff7043','#ff1744'].forEach(function(c, i){
+    ctx.fillStyle = c;
+    ctx.fillRect(PAD + i*segW, cy, segW, 8);
+  });
+  cy += 8;
+  cy += 32;
+
+  /* ── Sector title with color accent bar (same pattern as the chart export) */
+  ctx.fillStyle = sec.color;
+  ctx.fillRect(PAD, cy + 4, 6, 52);
+  ctx.font = titleFont;
+  ctx.fillStyle = isLight ? '#0f172a' : '#f1f5f9';
+  ctx.fillText('Nifty ' + sec.name, PAD + 18, cy);
+  cy += 60;
+  cy += 24;
+
+  /* ── Section chip + divider */
+  ctx.font = chipFont;
+  ctx.fillStyle = isLight ? '#475569' : '#94a3b8';
+  ctx.fillText('✨  AI SUMMARY', PAD, cy);
+  cy += 30;
+  cy += 14;
+  ctx.fillStyle = isLight ? 'rgba(0,0,0,.10)' : 'rgba(255,255,255,.10)';
+  ctx.fillRect(PAD, cy, contentW, 1);
+  cy += 1;
+  cy += 28;
+
+  /* ── Body paragraphs */
+  ctx.font = bodyFont;
+  ctx.fillStyle = isLight ? '#1e293b' : '#cbd5e1';
+  wrappedParas.forEach(function(lines, i){
+    lines.forEach(function(line){
+      ctx.fillText(line, PAD, cy);
+      cy += bodyLineH;
+    });
+    if(i < wrappedParas.length-1) cy += 18;
+  });
+
+  /* ── Verdict box — indigo left accent matches the .ai-verdict CSS rule */
+  if(verdict){
+    cy += 24;
+    var vBoxH = verdictPad*2 + wrappedVerdict.length * verdictLineH;
+    ctx.fillStyle = isLight ? 'rgba(99,102,241,.06)' : 'rgba(99,102,241,.10)';
+    if(typeof ctx.roundRect === 'function'){
+      ctx.beginPath();
+      ctx.roundRect(PAD, cy, contentW, vBoxH, 12);
+      ctx.fill();
+    } else {
+      ctx.fillRect(PAD, cy, contentW, vBoxH);
+    }
+    ctx.fillStyle = '#6366f1';
+    ctx.fillRect(PAD, cy, 4, vBoxH);
+    ctx.font = verdictFont;
+    ctx.fillStyle = isLight ? '#1e293b' : '#f1f5f9';
+    var vy = cy + verdictPad;
+    wrappedVerdict.forEach(function(line){
+      ctx.fillText(line, PAD + verdictPad, vy);
+      vy += verdictLineH;
+    });
+    cy += vBoxH;
+  }
+
+  /* ── Bottom divider + footer */
+  cy += 28;
+  ctx.fillStyle = isLight ? 'rgba(0,0,0,.10)' : 'rgba(255,255,255,.10)';
+  ctx.fillRect(PAD, cy, contentW, 1);
+  cy += 1;
+  cy += 20;
+
+  ctx.font = footerFont;
+  ctx.fillStyle = isLight ? '#94a3b8' : '#64748b';
+  ctx.textAlign = 'left';
+  ctx.fillText('✦  Powered by Claude', PAD, cy);
+  ctx.textAlign = 'right';
+  ctx.fillText('sectorscope.in', W - PAD, cy);
+
+  /* ── Output: Web Share API on mobile (lands in the native share sheet,
+     so users can attach to WhatsApp/Twitter/etc. with one tap), download
+     fallback everywhere else. The fallback also catches the case where
+     the user cancels the share sheet without picking a target — we don't
+     want to *also* download in that case, hence the AbortError early-return. */
+  var fname = 'sectorscope-ai-' + sectorName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+    + '-' + new Date().toISOString().slice(0,10) + '.png';
+
+  canvas.toBlob(async function(blob){
+    if(!blob){ console.error('[ai-share] toBlob returned null'); return; }
+    var file = new File([blob], fname, {type: 'image/png'});
+
+    if(navigator.share && navigator.canShare && navigator.canShare({files: [file]})){
+      try{
+        await navigator.share({
+          files: [file],
+          title: 'AI Summary · Nifty ' + sectorName,
+          /* Pre-fill text with the verdict if we have one — gives the
+             recipient the headline even if they don't open the image. */
+          text : (verdict || 'AI-generated summary for Nifty ' + sectorName) + '\n\nsectorscope.in',
+        });
+        return;
+      }catch(e){
+        if(e.name === 'AbortError') return;
+        console.warn('[ai-share] Web Share failed, falling back to download:', e.message);
+      }
+    }
+
+    var url = URL.createObjectURL(blob);
+    var a   = document.createElement('a');
+    a.href  = url; a.download = fname;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 200);
+  }, 'image/png');
+}
+
 async function triggerAISummary(sectorName){
   var st=statCache[sectorName];
   if(!st) return;
@@ -7176,6 +7707,7 @@ async function loadAISummary(sectorName, st){
     if(blockBody){
       blockBody.innerHTML='<div class="ai-summary-body">'+bodyHtml+'</div>'
         +'<div class="ai-regenerate-wrap">'
+          +'<button class="ai-share-btn" onclick="shareAISummary(\''+sectorName+'\')">↗ Share</button>'
           +'<button class="ai-regenerate-btn" onclick="triggerAISummary(\''+sectorName+'\')">↺ Regenerate</button>'
         +'</div>';
     }
