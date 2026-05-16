@@ -25,7 +25,6 @@
 <!-- Set theme class before any CSS is parsed to kill the dark→light flash on cold load. -->
 <script>(function(){try{var t=localStorage.getItem('theme');if(t!=='dark') document.documentElement.classList.add('light');}catch(e){}})();</script>
 <!-- Warm TCP+TLS to the origins we hit on cold load so the handshakes overlap with HTML/CSS parse. -->
-<link rel="preconnect" href="https://sectorscope.prashant-06f.workers.dev">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://accounts.google.com">
@@ -1024,9 +1023,9 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <div class="h-sub">Sector analysis, simplified</div>
   </div>
   <nav class="page-tabs" role="tablist" aria-label="Page navigation">
-    <button class="ptab active" id="tab-dash" role="tab" aria-selected="true" onclick="showPage('dashboard')">Dashboard</button>
-    <button class="ptab" id="tab-bt" role="tab" aria-selected="false" onclick="showPage('backtest')">Backtest</button>
-    <button class="ptab" id="tab-help" role="tab" aria-selected="false" onclick="showPage('help')">Help</button>
+    <button class="ptab active" role="tab" aria-selected="true" onclick="showPage('dashboard')">Dashboard</button>
+    <button class="ptab" role="tab" aria-selected="false" onclick="showPage('backtest')">Backtest</button>
+    <button class="ptab" role="tab" aria-selected="false" onclick="showPage('help')">Help</button>
   </nav>
   <div class="h-right">
     <div id="status-chip" role="status" aria-live="polite">⏳ Connecting…</div>
@@ -2078,14 +2077,14 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <button class="sd-close" onclick="closeChartModal()" aria-label="Close chart">✕</button>
   </div>
   <div class="cm-body">
-    <div class="cm-bar" id="cm-bar">
+    <div class="cm-bar">
       <div class="cm-group" id="cm-metrics"><!-- populated by openChartModal() --></div>
       <div class="cm-divider"></div>
       <div class="cm-group" id="cm-overlay"><!-- populated by openChartModal() --></div>
       <div class="cm-divider"></div>
       <div class="cm-group" id="cm-ranges"><!-- populated by openChartModal() --></div>
       <div class="cm-divider"></div>
-      <div class="cm-group" id="cm-dates">
+      <div class="cm-group">
         <input type="date" id="cm-date-from" class="cm-date-input" aria-label="From date">
         <span class="cm-arrow">→</span>
         <input type="date" id="cm-date-to" class="cm-date-input" aria-label="To date">
@@ -2423,11 +2422,6 @@ function sliceYrs(data,yrs){
   var cut=new Date(last);cut.setFullYear(cut.getFullYear()-yrs);
   return data.filter(function(r){return new Date(r.date)>=cut;});
 }
-function sliceUpTo(data,endDate,yrs){
-  /* slice of `yrs` years ending at endDate, no future data */
-  var cut=new Date(endDate);cut.setFullYear(cut.getFullYear()-yrs);
-  return data.filter(function(r){var d=new Date(r.date);return d>=cut&&d<=endDate;});
-}
 function vv(a,field){
   return a.map(function(r){return r[field];}).filter(function(v){return v&&!isNaN(v)&&isFinite(v)&&v>0;});
 }
@@ -2631,28 +2625,6 @@ function computeStats(data,live){
     data3yr:s3,
     dataYears:dataYears, isShortHistory:isShortHistory
   };
-}
-
-/* EPS value ~N days before last available date. Walks backwards until
-   finding first valid positive EPS on or before the target date. */
-function epsAt(data,daysAgo){
-  /* Single-point EPS lookup: most recent valid reading on-or-before
-     (last-daysAgo). Kept for any external reference — internal YoY
-     calls now use the smoothed helpers below. */
-  if(!data||!data.length) return NaN;
-  var last=new Date(data[data.length-1].date);
-  if(isNaN(last)) return NaN;
-  var target=new Date(last);
-  target.setDate(target.getDate()-daysAgo);
-  for(var k=data.length-1;k>=0;k--){
-    var dt=new Date(data[k].date);
-    if(isNaN(dt)) continue;
-    if(dt<=target){
-      var v=data[k].eps;
-      if(v&&!isNaN(v)&&isFinite(v)&&v>0) return v;
-    }
-  }
-  return NaN;
 }
 
 /* Trailing-N-day EPS average: mean of valid positive EPS readings in the
@@ -2862,13 +2834,6 @@ function histCapsule(st){
     : 'Limited history: '+yrs+' years of data. Standard 5yr median is well-formed but the 10yr anchor is incomplete.';
   return '<span class="hist-cap" title="'+tip+'">◷ '+label+'</span>';
 }
-function cbrows(field,m3,m5,m10,cur){
-  function r(lbl,med){
-    var mult=(!isNaN(cur)&&!isNaN(med)&&med>0)?cur/med:NaN;
-    return'<div class="cb-row"><span class="cb-l">'+lbl+'</span><span class="cb-m">'+f(med,2)+'</span><span class="cb-x">'+fx(mult)+'</span></div>';
-  }
-  return r('3yr',m3)+r('5yr',m5)+r('10yr',m10);
-}
 /* YoY color: red <0, amber 0-10%, green >10% */
 function yoyColor(yoy){
   if(isNaN(yoy)) return 'var(--sub)';
@@ -2935,9 +2900,6 @@ function epsBox(st){
     rows+='<div class="cb-eps-row"><span class="cb-eps-lbl">Momentum</span><span class="cb-eps-val" style="color:var(--neu-c)">◆ EPS low · inconsistent growth</span></div>';
   }
   return'<div class="cb-eps-panel">'+rows+'</div>';
-}
-function refNote(ref,d){
-  return'<div class="cb-ref-note">Weighted ref = '+f(ref,d!=null?d:2)+'</div>';
 }
 
 function buildCard(sec,st){
@@ -4583,7 +4545,7 @@ function buildSectorDetailHTML(sec, st, data){
       +'</div>';
   }
 
-  return '<div class="ai-summary-wrap" id="ai-summary-block">'
+  return '<div class="ai-summary-wrap">'
       +'<div class="ai-summary-head">'
         +'<div class="ai-summary-title">✨ AI Summary <span class="plus-tag">PLUS</span></div>'
         +'<div class="ai-summary-right">'
@@ -6038,37 +6000,85 @@ setInterval(function(){ fetchLiveData().catch(function(){}); }, 2 * 60 * 1000);
    GOOGLE AUTH
 ════════════════════════════════════════ */
 var GOOGLE_CLIENT_ID='575713517295-uo4blh9i4sqg1l6n37fv664v8uv8u0ed.apps.googleusercontent.com';
-var currentUser=null; /* { email, name, picture, token } */
+var currentUser=null; /* { email, name, picture, token, expiresAt } */
+
+/* True when the in-memory session is present and its server-issued
+   expiresAt is comfortably in the future. We treat the last 5min as
+   "expired" so we don't kick off requests with a token that'll die
+   mid-flight. Used by authInit to suppress One Tap on every refresh. */
+function _sessionIsFresh(){
+  if(!currentUser || !currentUser.token || !currentUser.expiresAt) return false;
+  return new Date(currentUser.expiresAt).getTime() - 5*60*1000 > Date.now();
+}
 
 function authInit(){
   if(typeof google==='undefined') return;
   google.accounts.id.initialize({
     client_id: GOOGLE_CLIENT_ID,
     callback: authHandleCredential,
-    auto_select: true,           /* silently signs in returning users */
+    auto_select: true,
     cancel_on_tap_outside: true,
   });
-  /* Show One Tap prompt for returning users */
+  /* Skip the One Tap prompt if restoreSession() already gave us a valid
+     30-day session token. Without this gate, One Tap pops on every page
+     refresh because GSI can't read its session cookies through most
+     browsers' third-party-cookie restrictions and `auto_select` therefore
+     doesn't take the silent path. With it, One Tap shows only on first
+     visit or after the 30-day session naturally expires. */
+  if(_sessionIsFresh()) return;
   google.accounts.id.prompt();
 }
 
-function authHandleCredential(response){
-  /* Decode the JWT returned by Google — no server needed for reading claims */
-  var parts=response.credential.split('.');
-  var payload=JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
+/* Exchange a fresh Google credential (ID token or access token) for the
+   worker-signed 30-day session JWT. Used by both the One Tap callback
+   and the OAuth2 fallback callback. Returns the /session response object
+   on success ({sessionToken,expiresAt,email,name,picture}), or null on
+   network/auth failure. */
+async function authExchangeForSession(googleToken){
+  try{
+    var res=await fetch(WORKER_BASE+'/session',{
+      method :'POST',
+      headers:{'Content-Type':'application/json'},
+      body   :JSON.stringify({token:googleToken}),
+    });
+    if(!res.ok){
+      console.error('[auth] /session non-OK:',res.status);
+      return null;
+    }
+    return await res.json();
+  }catch(e){
+    console.error('[auth] /session fetch failed:',e.message);
+    return null;
+  }
+}
+
+/* Persist the freshly-issued session into currentUser + localStorage and
+   re-render the UI. Both auth paths (One Tap and OAuth2 fallback) funnel
+   here so the persisted shape stays consistent. */
+function _persistSession(sess){
   currentUser={
-    email  : payload.email,
-    name   : payload.given_name||payload.name||payload.email.split('@')[0],
-    picture: payload.picture||'',
-    token  : response.credential,
+    email    : sess.email,
+    name     : sess.name,
+    picture  : sess.picture || '',
+    token    : sess.sessionToken,
+    expiresAt: sess.expiresAt,
   };
   authRender();
-  localStorage.setItem('ss_user', JSON.stringify({
-    email  : currentUser.email,
-    name   : currentUser.name,
-    picture: currentUser.picture,
-    token  : response.credential,
-  }));
+  try{ localStorage.setItem('ss_user', JSON.stringify(currentUser)); }catch(e){}
+}
+
+async function authHandleCredential(response){
+  /* response.credential is a Google ID token (JWT). We exchange it for
+     our own session JWT — see comment block in admin.js for the
+     rationale. Until the exchange completes the user has no usable token,
+     so the UI stays in signed-out state to avoid an inconsistent
+     intermediate where the avatar's shown but every API call 401s. */
+  var sess=await authExchangeForSession(response.credential);
+  if(!sess){
+    console.error('[auth] session exchange failed — staying signed-out');
+    return;
+  }
+  _persistSession(sess);
 }
 
 function authRender(){
@@ -6103,31 +6113,21 @@ function authRender(){
 function authSignIn(){
   if(typeof google==='undefined') return;
   google.accounts.id.prompt(function(notification){
-    /* If One Tap is suppressed (e.g. user dismissed it before), fall back
-       to the popup flow */
+    /* If One Tap is suppressed (user dismissed before, third-party cookies
+       blocked, etc.) fall back to the OAuth2 access-token popup. Same
+       end-state either way: we hand the Google token to /session and
+       store the resulting 30-day session JWT. */
     if(notification.isNotDisplayed()||notification.isSkippedMoment()){
       google.accounts.oauth2.initTokenClient({
         client_id: GOOGLE_CLIENT_ID,
         scope    : 'email profile',
-        callback : function(resp){
-          /* Token client doesn't return an ID token — use userinfo endpoint */
-          fetch('https://www.googleapis.com/oauth2/v3/userinfo',{
-            headers:{'Authorization':'Bearer '+resp.access_token}
-          }).then(function(r){return r.json();}).then(function(info){
-            currentUser={
-              email  : info.email,
-              name   : info.given_name||info.name||info.email.split('@')[0],
-              picture: info.picture||'',
-              token  : resp.access_token,
-            };
-            authRender();
-            localStorage.setItem('ss_user',JSON.stringify({
-              email  : currentUser.email,
-              name   : currentUser.name,
-              picture: currentUser.picture,
-              token  : resp.access_token,
-            }));
-          });
+        callback : async function(resp){
+          var sess=await authExchangeForSession(resp.access_token);
+          if(!sess){
+            console.error('[auth] session exchange (OAuth2 path) failed');
+            return;
+          }
+          _persistSession(sess);
         },
       }).requestAccessToken();
     }
@@ -6164,16 +6164,36 @@ document.addEventListener('click',function(e){
   if(!e.target.closest('#user-pill')) closeUserMenu();
 });
 
-/* Restore session from localStorage on page load (shows name/avatar
-   immediately while One Tap silently re-validates in the background) */
+/* Restore session from localStorage on page load. Two transitions to
+   handle gracefully:
+     1. OLD FORMAT (pre-session-JWT migration): stored object had no
+        `expiresAt` field and the `token` was a Google ID token with a
+        1hr lifetime — almost always already expired by the time the
+        user returns. Clear it; the user signs in once and lands on the
+        new flow. Visible cost: one extra One Tap prompt on the first
+        post-deploy visit per device.
+     2. EXPIRED SESSION (30+ days idle): nuke and re-sign-in.
+   Anything that passes both gates is a fresh-enough session JWT and
+   the UI can render the pill immediately. */
 (function restoreSession(){
   var saved=localStorage.getItem('ss_user');
   if(!saved) return;
   try{
     var u=JSON.parse(saved);
-    currentUser={email:u.email,name:u.name,picture:u.picture||'',token:u.token||null};
+    if(!u.expiresAt || new Date(u.expiresAt).getTime() < Date.now()){
+      localStorage.removeItem('ss_user');
+      localStorage.removeItem('ss_sub');
+      return;
+    }
+    currentUser={
+      email    : u.email,
+      name     : u.name,
+      picture  : u.picture || '',
+      token    : u.token,
+      expiresAt: u.expiresAt,
+    };
     authRender();
-    /* Restore cached Plus status instantly — re-validated once real token arrives */
+    /* Restore cached Plus status instantly — re-validated by loadSubscriptionStatus */
     var savedSub=localStorage.getItem('ss_sub');
     if(savedSub){
       var sub=JSON.parse(savedSub);
@@ -6211,10 +6231,6 @@ var PLUS_FOR_ALL_UNTIL = new Date('2026-10-31T23:59:59+05:30');
 function userIsSubscribed(){
   if(currentUser && new Date() < PLUS_FOR_ALL_UNTIL) return true;
   return subscriptionState === 'active';
-}
-
-function subscriptionIsCancelled(){
-  return subscriptionState === 'active' && !!subscriptionMeta.cancelledAt;
 }
 
 async function loadSubscriptionStatus(){
@@ -6626,32 +6642,6 @@ async function myAlertDelete(sector,alertId,btn){
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape'){ closeSectorDetail(); closeMyAlerts(); closePlusPane(); }
 });
-
-async function confirmCancelSubscription(){
-  closeUserMenu();
-  if(!currentUser||!currentUser.token) return;
-  var confirmed=window.confirm(
-    'Cancel your SectorScope Plus subscription?\n\n'+
-    'You will keep Plus access until the end of your current billing period. '+
-    'After that, alerts and AI summaries will be paused.'
-  );
-  if(!confirmed) return;
-
-  try{
-    var res=await fetch(WORKER_BASE+'/cancel-subscription',{
-      method :'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
-    });
-    var data=await res.json();
-    if(!res.ok){
-      alert('Could not cancel: '+(data.error||'Unknown error. Please try again.'));
-      return;
-    }
-    alert('Done. Your Plus access continues until the end of this billing period.');
-  }catch(e){
-    alert('Something went wrong. Please try again.');
-  }
-}
 
 /* Lazy-load Razorpay's checkout.js. Removed from <head> because most visits
    never reach the upgrade flow — saves ~30KB JS download/parse on cold load.
@@ -7346,7 +7336,7 @@ function buildPlusFreeHTML(){
   h += "</div>";
   h += "</div></div></div>";
   h += "<hr class='pp-divider'>";
-  h += "<div class='pp-pricing' id='pp-pricing'>";
+  h += "<div class='pp-pricing'>";
   h += "<div class='pp-pricing-card'>";
   h += "<div class='pp-price-amt' style='font-size:1.6rem;letter-spacing:0'>Free during launch</div>";
   h += "<div class='pp-price-per' style='margin-bottom:18px'>SIGN IN WITH GOOGLE TO ACCESS</div>";
@@ -7408,70 +7398,6 @@ function buildPlusPaidHTML(){
   h += "<div style='margin-top:8px;padding:6px 9px;border-radius:6px;background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.08);font-family:var(--mono);font-size:.46rem;display:flex;justify-content:space-between;gap:14px'><span style='color:var(--ghost)'>14 NOV 2023</span><span><span style='color:#38bdf8'>P/E</span> <strong style='color:#fff'>17.4</strong> &middot; <span style='color:#34d399'>EPS</span> <strong style='color:#fff'>3,206</strong></span></div>";
   h += "</div></div></div>";
   return h;
-}
-
-async function ppStartUpgrade(){
-  if(!currentUser||!currentUser.token){ authSignIn(); return; }
-  var btns=document.querySelectorAll('.pp-btn-primary');
-  btns.forEach(function(b){ b.textContent='Loading\u2026'; b.disabled=true; });
-  try{
-    var res=await fetch(WORKER_BASE+'/create-subscription',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
-      body:JSON.stringify({email:currentUser.email}),
-    });
-    var data=await res.json();
-    if(!data.subscription_id) throw new Error(data.error||'Failed');
-    await loadRazorpay();
-    var rzp=new Razorpay({
-      key:data.key_id, subscription_id:data.subscription_id,
-      name:'SectorScope', description:'Plus \u00b7 \u20b999/month',
-      image:'https://sectorscope.in/assets/favicon.ico',
-      prefill:{email:currentUser.email}, theme:{color:'#6366f1'},
-      handler:async function(response){
-        var vres=await fetch(WORKER_BASE+'/verify-payment',{
-          method:'POST',
-          headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
-          body:JSON.stringify({
-            razorpay_payment_id:response.razorpay_payment_id,
-            razorpay_subscription_id:response.razorpay_subscription_id,
-            razorpay_signature:response.razorpay_signature,
-          }),
-        });
-        var v=await vres.json();
-        if(v.ok){
-          subscriptionState='active';
-          renderSubscriptionUI();
-          document.getElementById('pp-body').innerHTML='<div class="pp-body-inner">'+buildPlusPaidHTML()+'</div>';
-          setTimeout(function(){
-            document.querySelectorAll('#pp-body .pp-feature').forEach(function(el){ el.classList.add('visible'); });
-          },100);
-        }
-      },
-      modal:{ondismiss:function(){
-        btns.forEach(function(b){ b.textContent='Get Plus \u2014 \u20b999/mo \u2192'; b.disabled=false; });
-      }}
-    });
-    rzp.open();
-  }catch(e){
-    alert('Could not start checkout: '+(e.message||'Please try again.'));
-    btns.forEach(function(b){ b.textContent='Get Plus \u2014 \u20b999/mo \u2192'; b.disabled=false; });
-  }
-}
-
-async function ppConfirmCancel(){
-  if(!currentUser||!currentUser.token) return;
-  var confirmed=window.confirm('Cancel SectorScope Plus?\n\nYour access continues until the end of this billing period. Alerts and AI summaries will pause after that.');
-  if(!confirmed) return;
-  try{
-    var res=await fetch(WORKER_BASE+'/cancel-subscription',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
-    });
-    var data=await res.json();
-    if(!res.ok){ alert('Could not cancel: '+(data.error||'Please try again.')); return; }
-    alert('Done. Your Plus access continues until the end of this billing period.');
-  }catch(e){ alert('Something went wrong. Please try again.'); }
 }
 </script>
 
