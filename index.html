@@ -659,6 +659,65 @@ html.light .sd-header{background:rgba(238,241,248,.96)}
 .sd-eps-chart-svg{display:block}
 .sd-eps-no-data{padding:16px;font-family:var(--mono);font-size:.62rem;color:var(--ghost);text-align:center}
 
+/* ── INDEX CONSTITUENTS (live NSE data inside detail overlay) ── */
+.sd-cons-wrap{background:var(--bg2);border:1px solid var(--bdr);border-radius:11px;overflow:hidden;margin-bottom:22px}
+.sd-cons-summary{padding:11px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-family:var(--mono);font-size:.62rem}
+.sd-cons-breadth{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.sd-cons-tally{display:inline-flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums;font-weight:600}
+.sd-cons-tally.up{color:var(--chp-c)}
+.sd-cons-tally.down{color:var(--exp-c)}
+.sd-cons-tally.flat{color:var(--sub)}
+.sd-cons-tally-arrow{font-size:.74rem;line-height:1}
+.sd-cons-meta{color:var(--ghost);font-size:.52rem;letter-spacing:.4px;text-transform:uppercase}
+.sd-cons-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.7rem}
+.sd-cons-table thead th{text-align:right;font-weight:500;font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ghost);padding:9px 10px 7px;border-bottom:1px solid var(--bdr);cursor:pointer;user-select:none;white-space:nowrap;transition:color .15s}
+.sd-cons-table thead th:first-child{text-align:left;padding-left:14px}
+.sd-cons-table thead th:last-child{padding-right:14px}
+.sd-cons-table thead th:hover{color:var(--txt)}
+.sd-cons-table thead th.is-sorted{color:var(--txt)}
+.sd-cons-table thead th.is-sorted::after{content:"";display:inline-block;width:0;height:0;margin-left:5px;border-left:4px solid transparent;border-right:4px solid transparent;vertical-align:2px}
+.sd-cons-table thead th.is-sorted.is-desc::after{border-top:4px solid var(--txt)}
+.sd-cons-table thead th.is-sorted.is-asc::after{border-bottom:4px solid var(--txt)}
+.sd-cons-table tbody td{padding:10px;border-bottom:1px solid var(--bdr2);text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;color:var(--txt)}
+.sd-cons-table tbody td:first-child{text-align:left;padding-left:14px;font-family:var(--cond);font-weight:700;font-size:.84rem;letter-spacing:-.2px}
+.sd-cons-table tbody td:last-child{padding-right:14px}
+.sd-cons-table tbody tr:last-child td{border-bottom:0}
+.sd-cons-table tbody tr:hover td{background:rgba(255,255,255,.02)}
+html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
+.sd-cons-num.up{color:var(--chp-c)}
+.sd-cons-num.down{color:var(--exp-c)}
+.sd-cons-num.flat{color:var(--sub)}
+.sd-cons-chip{display:inline-block;padding:2px 7px;border-radius:5px;font-weight:600;min-width:54px;text-align:center;font-size:.65rem}
+.sd-cons-chip.up{background:var(--chp-tl);color:var(--chp-c);border:1px solid var(--chp-bd)}
+.sd-cons-chip.down{background:var(--exp-tl);color:var(--exp-c);border:1px solid var(--exp-bd)}
+.sd-cons-chip.flat{background:var(--bg3);color:var(--sub);border:1px solid var(--bdr)}
+.sd-cons-range{display:inline-flex;flex-direction:column;gap:3px;width:96px;text-align:left;vertical-align:middle}
+.sd-cons-range-bar{position:relative;height:3px;background:var(--bg3);border-radius:2px}
+.sd-cons-range-bar::after{content:"";position:absolute;top:-2px;left:var(--pos,0%);width:2px;height:7px;background:var(--txt);border-radius:1px;transform:translateX(-1px)}
+.sd-cons-range-bounds{display:flex;justify-content:space-between;font-size:.5rem;color:var(--ghost)}
+.sd-cons-state{padding:30px 16px;text-align:center;color:var(--ghost);font-family:var(--mono);font-size:.62rem}
+.sd-cons-state.err{color:var(--exp-c)}
+/* Generic PLUS tag used by section titles outside the AI-summary /
+   chart-modal scopes. Same gradient as the existing scoped rules. */
+.sd-section-title .plus-tag,.sd-cons-gate-title .plus-tag{font-family:var(--mono);font-size:.44rem;font-weight:700;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:2px 5px;border-radius:4px;letter-spacing:.3px;vertical-align:middle;margin-left:6px}
+.sd-cons-gate{padding:26px 18px;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center}
+.sd-cons-gate-icon{font-size:1.4rem}
+.sd-cons-gate-title{font-family:var(--cond);font-size:1rem;font-weight:800;color:var(--txt);display:inline-flex;align-items:center;gap:8px}
+.sd-cons-gate-desc{font-family:var(--body);font-size:.78rem;color:var(--sub);line-height:1.55;max-width:360px}
+.sd-cons-gate-btn{margin-top:4px;padding:8px 20px;border-radius:9px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:var(--body);font-size:.78rem;font-weight:700;cursor:pointer;transition:opacity .18s}
+.sd-cons-gate-btn:hover{opacity:.88}
+/* Responsive column collapse — match the breakpoints used by the
+   median / quarterly tables elsewhere in the detail overlay. */
+@media(max-width:680px){
+  .sd-cons-col-chg-abs,.sd-cons-col-range{display:none}
+  .sd-cons-table thead th,.sd-cons-table tbody td{padding-left:8px;padding-right:8px}
+  .sd-cons-table thead th:first-child,.sd-cons-table tbody td:first-child{padding-left:12px}
+  .sd-cons-table thead th:last-child,.sd-cons-table tbody td:last-child{padding-right:12px}
+}
+@media(max-width:420px){
+  .sd-cons-col-volume{display:none}
+}
+
 /* quarterly table */
 .sd-qtbl-wrap{background:var(--bg2);border:1px solid var(--bdr);border-radius:11px;overflow:hidden;margin-bottom:22px}
 .sd-qtbl-scroll{overflow-x:auto;max-height:340px;overflow-y:auto}
@@ -1607,7 +1666,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   <!-- ══ 5. THE DETAIL PAGE ══ -->
   <div class="hp-sec" id="h-detail">
     <div class="hp-sec-h">5 · The detail page</div>
-    <div class="hp-p">When you tap the <em>↗ Detail</em> button on any card, a full-screen overlay opens with everything that didn't fit on the card. There's an AI-written summary at the top (Plus only — covered in <strong>section 7</strong>), then three big information sections: a current snapshot of the key numbers, a side-by-side view of how today compares to historical medians at three time horizons, and a pair of bar charts showing the sector's earnings trajectory.</div>
+    <div class="hp-p">When you tap the <em>↗ Detail</em> button on any card, a full-screen overlay opens with everything that didn't fit on the card. There's an AI-written summary at the top (Plus only — covered in <strong>section 7</strong>), then five information sections: a snapshot of the current numbers, a side-by-side view of how today compares to historical medians at three time horizons, a pair of bar charts showing the sector's earnings trajectory, a live table of the index's constituent stocks (Plus only), and finally a scrollable quarterly history table.</div>
     <div class="hp-p">This is where you go after the dashboard tells you a sector is interesting and you want to confirm whether the cheapness is genuine or a trap.</div>
 
     <!-- 3 sections -->
@@ -1752,9 +1811,68 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
         </div>
       </div>
 
-      <!-- Section D: Quarterly Table -->
+      <!-- Section D: Index Constituents (PLUS) -->
       <div class="hp-ov-section">
-        <div class="hp-ov-head">④ Quarterly Averages · Last 5 Years</div>
+        <div class="hp-ov-head">④ Index Constituents <span class="plus-tag">PLUS</span></div>
+        <div class="hp-ov-body">
+          <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">A live table of every stock in the sector's NSE index — sourced directly from NSE's official index-tracker feed and refreshed every 60 seconds while the overlay is open. Useful for confirming whether a sector-level move is broad-based or driven by a few large names.</div>
+
+          <!-- Mock breadth strip + table -->
+          <div style="background:var(--bg3);border:1px solid var(--bdr2);border-radius:8px;overflow:hidden;margin:8px 0 4px">
+            <div style="padding:9px 13px;border-bottom:1px solid var(--bdr2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-family:var(--mono);font-size:.6rem">
+              <div style="display:flex;gap:14px;flex-wrap:wrap">
+                <span style="color:var(--chp-c);font-weight:600">↑ 7 up</span>
+                <span style="color:var(--exp-c);font-weight:600">↓ 3 down</span>
+                <span style="color:var(--ghost);font-size:.52rem;letter-spacing:.4px;text-transform:uppercase">· ₹3,820 Cr traded</span>
+              </div>
+              <span style="color:var(--ghost);font-size:.5rem;letter-spacing:.4px;text-transform:uppercase">As of 3:30 PM</span>
+            </div>
+            <table class="hp-qtbl-mock" style="font-size:.62rem">
+              <thead><tr>
+                <th>Symbol</th><th>Price</th><th>% Chg</th><th>Day Range</th><th>Value (₹Cr)</th>
+              </tr></thead>
+              <tbody>
+                <tr>
+                  <td style="font-family:var(--cond);font-weight:700;font-size:.78rem">COFORGE</td>
+                  <td>1,342</td>
+                  <td><span style="display:inline-block;padding:1px 6px;border-radius:4px;background:var(--chp-tl);color:var(--chp-c);border:1px solid var(--chp-bd);font-weight:700">+4.67%</span></td>
+                  <td><div style="width:80px;height:3px;background:var(--bg3);border-radius:2px;position:relative;display:inline-block;vertical-align:middle"><span style="position:absolute;top:-2px;left:92%;width:2px;height:7px;background:var(--txt);transform:translateX(-1px)"></span></div></td>
+                  <td>376</td>
+                </tr>
+                <tr>
+                  <td style="font-family:var(--cond);font-weight:700;font-size:.78rem">TCS</td>
+                  <td>2,283</td>
+                  <td><span style="display:inline-block;padding:1px 6px;border-radius:4px;background:var(--chp-tl);color:var(--chp-c);border:1px solid var(--chp-bd);font-weight:700">+0.86%</span></td>
+                  <td><div style="width:80px;height:3px;background:var(--bg3);border-radius:2px;position:relative;display:inline-block;vertical-align:middle"><span style="position:absolute;top:-2px;left:46%;width:2px;height:7px;background:var(--txt);transform:translateX(-1px)"></span></div></td>
+                  <td>432</td>
+                </tr>
+                <tr>
+                  <td style="font-family:var(--cond);font-weight:700;font-size:.78rem">WIPRO</td>
+                  <td>191.75</td>
+                  <td><span style="display:inline-block;padding:1px 6px;border-radius:4px;background:var(--exp-tl);color:var(--exp-c);border:1px solid var(--exp-bd);font-weight:700">−0.42%</span></td>
+                  <td><div style="width:80px;height:3px;background:var(--bg3);border-radius:2px;position:relative;display:inline-block;vertical-align:middle"><span style="position:absolute;top:-2px;left:22%;width:2px;height:7px;background:var(--txt);transform:translateX(-1px)"></span></div></td>
+                  <td>192</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="hp-p" style="margin-top:10px;margin-bottom:6px;font-size:.8rem"><strong>What's in each column</strong></div>
+          <dl class="hp-kv" style="margin-top:4px">
+            <dt>Breadth strip</dt><dd>Sits above the table. Shows <strong>up</strong> / <strong>down</strong> / <strong>flat</strong> counts (green / red / grey) plus total traded value across the index in ₹Cr. A quick read on whether a sector move is broad or narrow: 9 up · 1 down is participation, 3 up · 7 down with the index green means a few heavyweights are carrying the index.</dd>
+            <dt>Symbol &amp; Price</dt><dd>The NSE ticker and last traded price. Click "Symbol" in the header to sort A→Z.</dd>
+            <dt>Chg &amp; % Chg</dt><dd>Absolute and percentage change vs previous close. The % cell wears a coloured chip — green for up, red for down. Click "% Chg" to sort top-gainers / top-losers. The absolute Chg column is useful for high-priced stocks where small percentage moves still mean ₹50–100 swings.</dd>
+            <dt>Day Range</dt><dd>A tiny tick on a horizontal bar showing where the current price sits between today's low (left edge) and today's high (right edge). Tick near the right = stock holding near intraday high (often breakout-prone); tick near the left = near intraday low. Sortable too — handy for spotting names at the top of their day's range across the whole sector.</dd>
+            <dt>Volume &amp; Value</dt><dd>Total shares traded today (compact units — K, L, Cr) and total traded value in ₹Cr. Sorting by Value brings the day's most-traded names to the top — typically the heaviest-weighted index components.</dd>
+          </dl>
+
+          <div class="hp-p" style="margin-top:8px;margin-bottom:0;font-size:.8rem;color:var(--sub)">The table refreshes automatically every 60 seconds while the detail page is open. If you switch tabs and return, it refreshes immediately on focus. Closing the detail page stops the polling. Data is sourced from NSE's official index-tracker API and is cached at the edge for ~60s during market hours, so the entire workflow is cheap even with frequent re-opens.</div>
+        </div>
+      </div>
+
+      <!-- Section E: Quarterly Table -->
+      <div class="hp-ov-section">
+        <div class="hp-ov-head">⑤ Quarterly Averages · Last 5 Years</div>
         <div class="hp-ov-body">
           <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">A scrollable table showing quarterly average Price, P/E, P/B, and EPS going back 5 years. Most recent quarter is at the top. Two cells in each column are highlighted:</div>
           <div style="overflow-x:auto">
@@ -1929,11 +2047,11 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   <!-- ══ 7. SECTORSCOPE PLUS ══ -->
   <div class="hp-sec" id="h-plus">
     <div class="hp-sec-h">7 · SectorScope Plus</div>
-    <div class="hp-p">Plus unlocks four features layered on top of the free dashboard: <strong>expanded charts</strong>, <strong>AI sector summaries</strong>, <strong>email alerts</strong>, and <strong>vs-Nifty-50 alpha in backtests</strong>. This section walks through each one in the order you're likely to encounter it, with the concrete UI elements you'll see.</div>
+    <div class="hp-p">Plus unlocks five features layered on top of the free dashboard: <strong>expanded charts</strong>, <strong>AI sector summaries</strong>, <strong>live index constituents</strong>, <strong>email alerts</strong>, and <strong>vs-Nifty-50 alpha in backtests</strong>. This section walks through each one in the order you're likely to encounter it, with the concrete UI elements you'll see.</div>
 
     <div class="hp-card tip">
       <div class="hp-card-ttl">Currently free for signed-in users</div>
-      <div class="hp-p" style="margin-bottom:0">SectorScope Plus is in soft launch. Until <strong>31 October 2026</strong>, all four features are free for any signed-in user — no payment, no subscription required. Just sign in with Google from the top-right corner of any page. After 31 October, Plus moves to a paid tier; existing users will get advance notice and a grandfathered offer.</div>
+      <div class="hp-p" style="margin-bottom:0">SectorScope Plus is in soft launch. Until <strong>31 October 2026</strong>, all five features are free for any signed-in user — no payment, no subscription required. Just sign in with Google from the top-right corner of any page. After 31 October, Plus moves to a paid tier; existing users will get advance notice and a grandfathered offer.</div>
     </div>
 
     <div class="hp-sub-h">Expanded chart — full historical view</div>
@@ -1962,6 +2080,15 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
         <li><strong>Doesn't recommend:</strong> No "buy this" or "sell that" calls. The summary is descriptive — it tells you what the data says, not what to do about it.</li>
         <li><strong>Daily limit:</strong> 30 summaries per account per day, resets at midnight IST. The cap exists because each summary call costs a small amount on the backend; if you hit it, the button disables until midnight.</li>
       </ul>
+    </div>
+
+    <div class="hp-sub-h">Index constituents — live prices for every stock</div>
+    <div class="hp-p">In the sector detail overlay (tap ↗ Detail on any card), an <strong>Index Constituents</strong> block shows every stock in that sector's NSE index with live price, intraday change, day-range position, traded volume, and traded value. The data refreshes every 60 seconds while the overlay is open and again the instant you switch back to the tab — so coming back from another window always shows fresh numbers.</div>
+    <div class="hp-p">At the top of the block sits a <strong>breadth strip</strong>: a quick read of how many constituents are up vs down vs flat. Useful for distinguishing broad-based sector moves (9 up · 1 down) from narrow ones driven by one or two heavyweights (3 up · 7 down with the index still green). Every column is sortable — click "% Chg" descending for top gainers, click "Volume" to find the day's most-traded names, click "Day Range" to find stocks near intraday highs vs lows. See <strong>section 5</strong> for the full column breakdown with a screenshot.</div>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">Why this is useful alongside the dashboard signal</div>
+      <div class="hp-p" style="margin-bottom:0">The dashboard tells you whether a sector is cheap; the constituents table tells you what's actually moving inside it today. A sector that's "Cheap" on the band and has 8 of 10 stocks green is showing genuine participation. A sector that's "Cheap" but has 7 of 10 red while the index is up — because one mega-cap is rallying — is a much more fragile setup, and worth a second look at the per-stock breakdown before acting.</div>
     </div>
 
     <div class="hp-sub-h">Email alerts — get notified at your level</div>
@@ -4574,6 +4701,13 @@ function buildSectorDetailHTML(sec, st, data){
     +'<div class="sd-stats-grid">'+statCards+'</div>'
     +(peMedBlock||pbMedBlock?'<div class="sd-section-title">Historical Medians</div>'+peMedBlock+pbMedBlock:'')
     +(epsGrowthCharts?'<div class="sd-section-title">EPS Growth</div>'+epsGrowthCharts:'')
+    +'<div class="sd-section-title">Index Constituents <span class="plus-tag">PLUS</span></div>'
+    +'<div class="sd-cons-wrap" id="sd-cons-wrap">'
+      +'<div class="sd-cons-summary" id="sd-cons-summary">'
+        +'<div class="sd-cons-breadth"><span class="sd-cons-tally flat">Loading…</span></div>'
+      +'</div>'
+      +'<div id="sd-cons-body"><div class="sd-cons-state">Fetching live constituent data…</div></div>'
+    +'</div>'
     +'<div class="sd-section-title">Quarterly Averages · Last 5 Years <span style="font-weight:400;color:var(--ghost);letter-spacing:0;text-transform:none">(scroll)</span></div>'
     +'<div class="sd-qtbl-wrap"><div class="sd-qtbl-scroll">'+qtbl+'</div></div>';
 }
@@ -4591,6 +4725,10 @@ function openSectorDetail(name){
   overlay.classList.add('open');
   document.body.style.overflow='hidden';
   document.getElementById('sd-close').focus();
+
+  /* Kick off the live constituents fetch + start polling while the
+     overlay is open. Cleaned up in closeSectorDetail. */
+  startConstituentsTracking(name);
 
   /* For sectors where EPS (USD) is meaningful, ensure the FX series is
      loaded so the EPS growth chart can show grouped INR+USD bars. If the
@@ -4616,12 +4754,237 @@ function openSectorDetail(name){
 function closeSectorDetail(){
   document.getElementById('sector-detail').classList.remove('open');
   document.body.style.overflow='';
+  stopConstituentsTracking();
 }
 
 /* Close on Escape key */
 document.addEventListener('keydown',function(e){
   if(e.key==='Escape') closeSectorDetail();
 });
+
+
+/* ════════════════════════════════════════
+   INDEX CONSTITUENTS — live NSE constituent prices for the open sector
+
+   Backed by the worker's /index-tracker/<sector> endpoint (NSE's
+   indexTrackerApi behind it). The summary bar shows up/down/flat
+   counts and total traded value; the table is sortable and shows
+   each constituent's price, abs/% change, intraday day-range, volume,
+   and value.
+
+   Lifecycle:
+     - openSectorDetail   → startConstituentsTracking(name)
+                            • initial fetch
+                            • 60s polling while overlay is open
+                            • visibilitychange handler for tab-focus refresh
+     - closeSectorDetail  → stopConstituentsTracking()
+                            • clears interval + listener
+
+   Polling cadence matches the worker's 60s edge-cache during market
+   hours, so most polls land warm at CF and don't hit NSE.
+════════════════════════════════════════ */
+var consState={sector:null,data:null,sort:{key:'pChange',dir:'desc'},pollId:0,visHandler:null};
+
+function startConstituentsTracking(sector){
+  stopConstituentsTracking();
+  consState.sector=sector;
+  consState.data=null;
+  consState.sort={key:'pChange',dir:'desc'};
+
+  /* Plus gate. If the user isn't entitled, render the upsell card and
+     skip the fetch entirely — no point spending the network round-trip
+     or worker hit on data they can't see. The gate distinguishes
+     "not signed in" from "signed in but not Plus" with different CTAs,
+     matching the chart-modal paywall pattern. */
+  if(!userIsSubscribed()){
+    renderConstituentsGate();
+    return;
+  }
+
+  fetchConstituents(sector);
+  consState.pollId=setInterval(function(){
+    if(consState.sector===sector && userIsSubscribed()) fetchConstituents(sector);
+  },60000);
+  consState.visHandler=function(){
+    if(document.visibilityState==='visible' && consState.sector===sector && userIsSubscribed()){
+      fetchConstituents(sector);
+    }
+  };
+  document.addEventListener('visibilitychange',consState.visHandler);
+}
+
+function renderConstituentsGate(){
+  /* Replace both the summary bar and the body with the gate — the
+     count tallies are part of the gated data and shouldn't peek
+     through above the paywall. */
+  var summary=document.getElementById('sd-cons-summary');
+  if(summary) summary.style.display='none';
+  var body=document.getElementById('sd-cons-body');
+  if(!body) return;
+  var signedIn = !!(typeof currentUser !== 'undefined' && currentUser);
+  var ctaLabel = signedIn ? 'Upgrade to Plus' : 'Sign in with Google';
+  var ctaCall  = signedIn ? 'openPlusPane()' : 'authSignIn()';
+  body.innerHTML='<div class="sd-cons-gate">'
+    +'<div class="sd-cons-gate-icon">🔒</div>'
+    +'<div class="sd-cons-gate-title">Index Constituents <span class="plus-tag">PLUS</span></div>'
+    +'<div class="sd-cons-gate-desc">See live prices, intraday day-range, and traded volume for every stock in this index — sortable and auto-refreshing every 60 seconds during market hours.</div>'
+    +'<button class="sd-cons-gate-btn" onclick="'+ctaCall+'">'+ctaLabel+'</button>'
+  +'</div>';
+}
+
+function stopConstituentsTracking(){
+  if(consState.pollId){ clearInterval(consState.pollId); consState.pollId=0; }
+  if(consState.visHandler){
+    document.removeEventListener('visibilitychange',consState.visHandler);
+    consState.visHandler=null;
+  }
+  consState.sector=null;
+  consState.data=null;
+}
+
+function fetchConstituents(sector){
+  fetch(WORKER_BASE+'/index-tracker/'+encodeURIComponent(sector),{redirect:'follow'})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(json){
+      /* Guard against the user having closed the overlay or switched
+         sectors during the in-flight fetch. */
+      if(consState.sector!==sector) return;
+      consState.data=json;
+      renderConstituents();
+    })
+    .catch(function(err){
+      console.warn('[constituents]',sector,err && err.message);
+      if(consState.sector!==sector) return;
+      /* Only show error if we don't already have data — keep stale
+         data visible across transient failures rather than blanking. */
+      if(!consState.data){
+        var body=document.getElementById('sd-cons-body');
+        if(body) body.innerHTML='<div class="sd-cons-state err">Couldn\'t load constituents. Will retry.</div>';
+      }
+    });
+}
+
+function renderConstituents(){
+  var d=consState.data;
+  if(!d||!d.stocks||!d.stocks.length){
+    var body=document.getElementById('sd-cons-body');
+    if(body) body.innerHTML='<div class="sd-cons-state">No constituent data available for this index.</div>';
+    return;
+  }
+  renderConstituentsSummary(d);
+  renderConstituentsTable(d);
+}
+
+function renderConstituentsSummary(d){
+  var up=0,down=0,flat=0,totalVal=0;
+  for(var i=0;i<d.stocks.length;i++){
+    var s=d.stocks[i];
+    if(s.pChange>0) up++;
+    else if(s.pChange<0) down++;
+    else flat++;
+    totalVal+=s.tradedValue||0;
+  }
+  var t=new Date(d.updated);
+  var timeStr=t.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',hour12:true});
+  var crStr=(totalVal/1e7).toLocaleString('en-IN',{maximumFractionDigits:0});
+  var summary=document.getElementById('sd-cons-summary');
+  if(!summary) return;
+  summary.innerHTML=
+    '<div class="sd-cons-breadth">'
+      +'<span class="sd-cons-tally up"><span class="sd-cons-tally-arrow">↑</span>'+up+' up</span>'
+      +'<span class="sd-cons-tally down"><span class="sd-cons-tally-arrow">↓</span>'+down+' down</span>'
+      +(flat?'<span class="sd-cons-tally flat">— '+flat+' flat</span>':'')
+      +'<span class="sd-cons-meta">· ₹'+crStr+' Cr traded</span>'
+    +'</div>'
+    +'<div class="sd-cons-meta">As of '+timeStr+'</div>';
+}
+
+function renderConstituentsTable(d){
+  var sort=consState.sort;
+  /* Compute synthetic day-range position once per render so it's
+     sortable and reusable across cells. */
+  var rows=d.stocks.map(function(s){
+    var pos=(s.high>s.low&&isFinite(s.lastPrice))
+      ? Math.max(0,Math.min(100,((s.lastPrice-s.low)/(s.high-s.low))*100))
+      : -1;
+    return Object.assign({},s,{rangePos:pos});
+  });
+  rows.sort(function(a,b){
+    var x=a[sort.key],y=b[sort.key];
+    if(typeof x==='string') return sort.dir==='asc'?x.localeCompare(y):y.localeCompare(x);
+    return sort.dir==='asc'?x-y:y-x;
+  });
+
+  function fmtNum(v){ return (typeof v==='number'&&isFinite(v))?v.toLocaleString('en-IN',{maximumFractionDigits:2}):'—'; }
+  function fmtPct(v){ return (v>0?'+':'')+v.toFixed(2)+'%'; }
+  function fmtCompact(v){
+    if(!isFinite(v)) return '—';
+    if(v>=1e7) return (v/1e7).toFixed(2)+' Cr';
+    if(v>=1e5) return (v/1e5).toFixed(2)+' L';
+    if(v>=1e3) return (v/1e3).toFixed(1)+'K';
+    return String(Math.round(v));
+  }
+  function fmtCr(v){ return (v/1e7).toLocaleString('en-IN',{maximumFractionDigits:0}); }
+
+  function th(key,label,extraClass){
+    var cls='';
+    if(extraClass) cls+=extraClass+' ';
+    if(sort.key===key){ cls+='is-sorted '+(sort.dir==='desc'?'is-desc':'is-asc'); }
+    return '<th class="'+cls.trim()+'" data-key="'+key+'">'+label+'</th>';
+  }
+
+  var head='<thead><tr>'
+    +th('symbol','Symbol')
+    +th('lastPrice','Price')
+    +th('change','Chg','sd-cons-col-chg-abs')
+    +th('pChange','% Chg')
+    +th('rangePos','Day Range','sd-cons-col-range')
+    +th('tradedVolume','Volume','sd-cons-col-volume')
+    +th('tradedValue','Value (₹Cr)')
+    +'</tr></thead>';
+
+  var body='<tbody>';
+  for(var i=0;i<rows.length;i++){
+    var s=rows[i];
+    var dir=s.pChange>0?'up':s.pChange<0?'down':'flat';
+    var sign=s.change>0?'+':'';
+    var rangeCell;
+    if(s.rangePos<0){
+      rangeCell='—';
+    } else {
+      rangeCell='<div class="sd-cons-range">'
+        +'<div class="sd-cons-range-bar" style="--pos:'+s.rangePos+'%"></div>'
+        +'<div class="sd-cons-range-bounds"><span>'+fmtNum(s.low)+'</span><span>'+fmtNum(s.high)+'</span></div>'
+      +'</div>';
+    }
+    body+='<tr>'
+      +'<td>'+s.symbol+'</td>'
+      +'<td>'+fmtNum(s.lastPrice)+'</td>'
+      +'<td class="sd-cons-col-chg-abs sd-cons-num '+dir+'">'+sign+fmtNum(s.change)+'</td>'
+      +'<td><span class="sd-cons-chip '+dir+'">'+fmtPct(s.pChange)+'</span></td>'
+      +'<td class="sd-cons-col-range">'+rangeCell+'</td>'
+      +'<td class="sd-cons-col-volume">'+fmtCompact(s.tradedVolume)+'</td>'
+      +'<td>'+fmtCr(s.tradedValue)+'</td>'
+    +'</tr>';
+  }
+  body+='</tbody>';
+
+  var bodyEl=document.getElementById('sd-cons-body');
+  if(!bodyEl) return;
+  bodyEl.innerHTML='<table class="sd-cons-table">'+head+body+'</table>';
+
+  /* Wire column-header sort clicks. Re-runs on every render — cheap
+     and keeps event handlers attached to the live nodes. */
+  var ths=bodyEl.querySelectorAll('thead th');
+  for(var j=0;j<ths.length;j++){
+    ths[j].addEventListener('click',function(ev){
+      var key=ev.currentTarget.getAttribute('data-key');
+      if(consState.sort.key===key) consState.sort.dir=consState.sort.dir==='desc'?'asc':'desc';
+      else { consState.sort.key=key; consState.sort.dir=(key==='symbol'?'asc':'desc'); }
+      renderConstituentsTable(consState.data);
+    });
+  }
+}
 
 
 /* ════════════════════════════════════════
@@ -6955,14 +7318,14 @@ function loadRazorpay(){
 /* ════════════════════════════════════════
    DONATIONS
    Slide-up pane shown to signed-in users who haven't snoozed and haven't
-   donated within the last 6 months. "Maybe later" snoozes for 7 days; a
-   successful donation snoozes for 6 months. Server donor record is the
+   donated within the last 6 months. "Maybe later" snoozes for 24 hours;
+   a successful donation snoozes for 6 months. Server donor record is the
    authoritative gate — localStorage only fast-paths it.
 ════════════════════════════════════════ */
 var donorLastAt=null;                           /* ISO string from /subscription */
 var SS_DONATE_SNOOZE_KEY='ss_donate_snooze_until';
-var DONATE_SNOOZE_LATER_MS=7*24*60*60*1000;
-var DONATE_SNOOZE_POSTDONO_MS=6*30*24*60*60*1000;  /* approx 6 months */
+var DONATE_SNOOZE_LATER_MS=24*60*60*1000;           /* 1 day */
+var DONATE_SNOOZE_POSTDONO_MS=6*30*24*60*60*1000;   /* approx 6 months */
 var dnSelectedAmount=100;
 var dnInFlight=false;
 
@@ -7888,6 +8251,7 @@ function buildPlusFreeHTML(){
   h += "<ul class='pp-price-feats'>";
   h += "<li><strong>Email alerts</strong> on any sector</li>";
   h += "<li><strong>AI summaries</strong> powered by Claude &#8212; 30/day</li>";
+  h += "<li><strong>Live index constituents</strong> &#8212; every stock, sortable, auto-refreshing</li>";
   h += "<li><strong>Alpha vs Nifty 50</strong> in every backtest</li>";
   h += "<li><strong>Expanded charts</strong> &#8212; multi-metric, drag-to-measure, rolling median</li>";
   h += "<li>All future Plus features, automatically</li>";
