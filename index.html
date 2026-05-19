@@ -62,7 +62,15 @@ html.light{
   --na-bg:  #fff;   --na-bd: rgba(150,160,180,.22); --na-tl: rgba(150,160,180,.05);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+/* `scrollbar-gutter:stable` reserves space for the vertical scrollbar
+   whether or not the page actually needs one. Without this, switching
+   from Dashboard (long, has scrollbar) to Backtest (short, no scrollbar)
+   would let the viewport reclaim the ~15px gutter, shifting the sticky
+   header and tab capsule right. Switching back shifts everything left.
+   Stable gutter keeps layout fixed across the three tabs. Supported in
+   Chrome 94+, Firefox 97+, Safari 18.2+; older Safari falls back to the
+   pre-fix behaviour (the original shift), which is harmless. */
+html{scroll-behavior:smooth;scrollbar-gutter:stable}
 body{background:var(--bg);color:var(--txt);font-family:var(--body);min-height:100vh;-webkit-font-smoothing:antialiased;transition:background .3s,color .3s}
 body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 50% at 15% -5%,rgba(99,102,241,.06) 0%,transparent 55%),radial-gradient(ellipse 60% 45% at 88% 105%,rgba(16,185,129,.04) 0%,transparent 50%)}
 
@@ -1088,9 +1096,9 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <div class="h-sub">Sector analysis, simplified</div>
   </div>
   <nav class="page-tabs" role="tablist" aria-label="Page navigation">
-    <button class="ptab active" role="tab" aria-selected="true" onclick="showPage('dashboard')">Dashboard</button>
-    <button class="ptab" role="tab" aria-selected="false" onclick="showPage('backtest')">Backtest</button>
-    <button class="ptab" role="tab" aria-selected="false" onclick="showPage('help')">Help</button>
+    <button id="tab-dash" class="ptab active" role="tab" aria-selected="true" onclick="showPage('dashboard')">Dashboard</button>
+    <button id="tab-bt" class="ptab" role="tab" aria-selected="false" onclick="showPage('backtest')">Backtest</button>
+    <button id="tab-help" class="ptab" role="tab" aria-selected="false" onclick="showPage('help')">Help</button>
   </nav>
   <div class="h-right">
     <div id="status-chip" role="status" aria-live="polite">⏳ Connecting…</div>
@@ -2378,6 +2386,14 @@ var BH={
 /* ════════════════════════════════════════
    UTILS
 ════════════════════════════════════════ */
+/* Time-unit constants in milliseconds — used throughout the file for
+   any duration arithmetic (cutoffs, cooldowns, staleness windows, etc).
+   MS_YEAR uses the 365.25-day approximation that matches the worker's
+   reference-series math, so frontend and backend agree on what "1 year"
+   means to the nearest leap-day adjustment. */
+var MS_DAY  = 86400000;
+var MS_YEAR = 365.25 * MS_DAY;
+
 /* Normalise any date string to YYYY-MM-DD for <input type="date">.
    Uses LOCAL date parts (not toISOString/UTC) so IST timestamps like
    "1999-09-01T00:00:00+05:30" don't roll back a day through UTC. */
@@ -2590,7 +2606,7 @@ function computeStats(data,live){
   if(data.length>=2){
     var firstDate=new Date(data[0].date),lastDate=new Date(last.date);
     if(!isNaN(firstDate)&&!isNaN(lastDate)){
-      dataYears=(lastDate-firstDate)/(365.25*86400000);
+      dataYears=(lastDate-firstDate)/(MS_YEAR);
     }
   }
   var hasFullHistory=!isNaN(dataYears)&&dataYears>=5;
@@ -2773,7 +2789,7 @@ function epsTrailingAvg(data,liveEps,days){
   if(!data||!data.length) return NaN;
   var last=new Date(data[data.length-1].date);
   if(isNaN(last)) return NaN;
-  var cutoffMs=last.getTime()-days*86400000;
+  var cutoffMs=last.getTime()-days*MS_DAY;
   var sum=0,n=0;
   for(var k=data.length-1;k>=0;k--){
     var dt=new Date(data[k].date);
@@ -2796,8 +2812,8 @@ function epsWindowAvg(data,daysAgo,halfWindow){
   if(isNaN(last)) return NaN;
   var target=new Date(last);
   target.setDate(target.getDate()-daysAgo);
-  var loMs=target.getTime()-halfWindow*86400000;
-  var hiMs=target.getTime()+halfWindow*86400000;
+  var loMs=target.getTime()-halfWindow*MS_DAY;
+  var hiMs=target.getTime()+halfWindow*MS_DAY;
   var sum=0,n=0;
   for(var k=0;k<data.length;k++){
     var dt=new Date(data[k].date);
@@ -2836,8 +2852,8 @@ function computeUsdEpsContextForAI(sectorName){
   function usdAvgAt(daysAgo){
     var target=new Date(lastDate);
     target.setDate(target.getDate()-daysAgo);
-    var loMs=target.getTime()-7*86400000;
-    var hiMs=target.getTime()+7*86400000;
+    var loMs=target.getTime()-7*MS_DAY;
+    var hiMs=target.getTime()+7*MS_DAY;
     var sum=0,n=0;
     for(var k=0;k<data.length;k++){
       var dt=new Date(data[k].date);
@@ -3333,7 +3349,7 @@ function showErr(sec,msg){
   var el=document.getElementById('c-'+sec.name);if(!el) return;
   /* Error state isn't flippable — clear any interactive attributes set by renderCard */
   el.removeAttribute('role');el.removeAttribute('tabindex');el.dataset.rendered='';
-  el.innerHTML='<div class="card-face bna" style="--acc:'+sec.color+'"><div class="card-err"><span>⚠ Nifty '+sec.name+'<br><span style="opacity:.7;font-size:.56rem">'+msg+'</span></span><button class="retry-btn" data-action="retry" data-sector="'+sec.name+'">↻ Retry</button></div></div>';
+  el.innerHTML='<div class="card-face bna" style="--acc:'+sec.color+'"><div class="card-err"><span>⚠ Nifty '+sec.name+'<br><span style="opacity:.7;font-size:.56rem">'+escapeHtml(msg)+'</span></span><button class="retry-btn" data-action="retry" data-sector="'+sec.name+'">↻ Retry</button></div></div>';
 }
 function skelHTML(sec){
   return'<div class="card-inner"><div class="card-face bna" style="--acc:'+sec.color+'"><div class="skel-wrap">'
@@ -3689,7 +3705,7 @@ async function btOnSectorChange(){
     var span=NaN;
     if(btData.length>=2){
       var fd=new Date(btData[0].date),ld=new Date(last.date);
-      if(!isNaN(fd)&&!isNaN(ld)) span=(ld-fd)/(365.25*86400000);
+      if(!isNaN(fd)&&!isNaN(ld)) span=(ld-fd)/(MS_YEAR);
     }
     var hasFull=!isNaN(span)&&span>=5;
     var s3v=sliceYrs(btData,3),s5v=sliceYrs(btData,5),s10v=sliceYrs(btData,10);
@@ -3747,8 +3763,121 @@ function btValidateDates(startVal,endVal,dataMinDate,dataMaxDate){
   var dMin=new Date(dataMinDate),dMax=new Date(dataMaxDate);
   if(s<dMin) return 'Start date is before the earliest available data ('+fmtDate(dataMinDate)+').';
   if(e>dMax) return 'End date is after the latest available data ('+fmtDate(dataMaxDate)+').';
-  var minWindowMs=90*86400000;
+  var minWindowMs=90*MS_DAY;
   if(e-s<minWindowMs) return 'Window must be at least 90 days to produce useful signals.';
+  return null;
+}
+
+/* ════════════════════════════════════════
+   BACKTEST — SHARED FORWARD-RETURN HELPERS
+   Used by both btRun (the full backtest table) and btComputeHeadless
+   (the lightweight version used by AI summaries). Before this they were
+   duplicated almost verbatim — see the original function-level comments
+   that literally said "replicates niftyFwdReturn from _btCompute".
+════════════════════════════════════════ */
+
+/* Forward return for a sector buy at data[buyIdx], held `months` months.
+   Always returns {cagr, open, sellPrice}:
+   - cagr null + open true + sellPrice null: buy price invalid, OR no
+     usable forward data at all (data ends before target and pre-target
+     window is too short for an annualised extrapolation).
+   - cagr set + open false: closed trade — found a row at-or-after target.
+   - cagr set + open true: still-open trade — extrapolated from the
+     latest available row, annualised over the elapsed period.
+   Callers that don't need the still-open extrapolation (e.g.
+   btComputeHeadless) just reject results where open is true. */
+function _fwdReturnRow(data, buyIdx, months){
+  var bd=new Date(data[buyIdx].date), bp=data[buyIdx].price;
+  if(!bp || bp<=0) return {cagr:null, open:true, sellPrice:null};
+  var tgt=new Date(bd); tgt.setMonth(tgt.getMonth()+months);
+  for(var k=buyIdx+1; k<data.length; k++){
+    var sp=data[k].price;
+    if(new Date(data[k].date)>=tgt && sp>0){
+      return {cagr:Math.pow(sp/bp, 12/months)-1, open:false, sellPrice:sp};
+    }
+  }
+  /* No closed trade — extrapolate from latest row if ≥ ~18 days elapsed
+     (anything shorter is too noisy to annualise). */
+  for(var m=data.length-1; m>buyIdx; m--){
+    var lp=data[m].price;
+    if(lp>0){
+      var el=(new Date(data[m].date)-bd)/MS_YEAR;
+      if(el>0.05) return {cagr:Math.pow(lp/bp, 1/el)-1, open:true, sellPrice:lp};
+    }
+  }
+  return {cagr:null, open:true, sellPrice:null};
+}
+
+/* Cached timestamp array for dataCache['Nifty 50']. Re-derives only
+   when the underlying array reference changes (which only happens on
+   (re)load). Used by _niftyFwdReturn to avoid repeated Date parsing in
+   the inner loop — called O(signals) times per backtest run. */
+var _nifty50TsCache={data:null, ts:null};
+function _niftyTs(){
+  var d=dataCache['Nifty 50']||[];
+  if(_nifty50TsCache.data!==d){
+    _nifty50TsCache.data=d;
+    _nifty50TsCache.ts=d.map(function(r){return new Date(r.date).getTime();});
+  }
+  return _nifty50TsCache.ts;
+}
+
+/* Lazy-load Nifty 50 history into dataCache. Idempotent — returns
+   immediately if data is already cached, including the empty-array
+   sentinel that marks a previous failed load. Both callers (btRun for
+   the alpha column, loadAISummary for the headless backtest's alpha
+   figure) fire-and-forget; the dependent features show 'N/A' or skip
+   the alpha part on failure. The Plus gate (only signed-in subscribers
+   see the alpha column) lives at the call-site in btRun, since the
+   AI-summary path is Plus-gated upstream and doesn't need the check. */
+async function _ensureNifty50Loaded(){
+  if(dataCache['Nifty 50']) return dataCache['Nifty 50'];
+  try{
+    dataCache['Nifty 50']=normalise(await fetchWithRetry(WORKER_BASE+'/sector/'+encodeURIComponent('Nifty 50')));
+  }catch(e){
+    console.warn('[nifty50] data unavailable:', e);
+    dataCache['Nifty 50']=[];
+  }
+  return dataCache['Nifty 50'];
+}
+
+/* Nifty 50 forward return for the same period — used for alpha (sector
+   minus Nifty). Returns CAGR or null. Matches the open-trade
+   extrapolation behavior the inline btRun copy used to do: if no closed
+   row exists at-or-after target, walk back from end-of-history and
+   annualise. btComputeHeadless never sees this path because it skips
+   open sector trades upstream, so the extrapolation work is btRun-only.
+   Caller is responsible for ensuring dataCache['Nifty 50'] is loaded —
+   _ensureNifty50Loaded handles that. */
+function _niftyFwdReturn(buyDateStr, months){
+  var nifty50=dataCache['Nifty 50']||[];
+  if(!nifty50.length) return null;
+  var ts=_niftyTs();
+  var bd=new Date(buyDateStr).getTime();
+  var tgt=bd + months*(MS_YEAR/12);
+  /* Find closest Nifty row to buy date — stop scanning a week past it. */
+  var bi=0, bestDiff=Infinity;
+  for(var i=0; i<ts.length; i++){
+    var diff=Math.abs(ts[i]-bd);
+    if(diff<bestDiff){bestDiff=diff; bi=i;}
+    if(ts[i] > bd + 7*MS_DAY) break;
+  }
+  var bp=nifty50[bi].price;
+  if(!bp || bp<=0) return null;
+  for(var k=bi+1; k<nifty50.length; k++){
+    var sp=nifty50[k].price;
+    if(ts[k]>=tgt && sp>0) return Math.pow(sp/bp, 12/months)-1;
+  }
+  /* Open trade — use last available Nifty price, annualised. Mirrors
+     the open-trade fallback in _fwdReturnRow so the table's alpha column
+     stays apples-to-apples (both legs extrapolated or both closed). */
+  for(var m=nifty50.length-1; m>bi; m--){
+    var lp=nifty50[m].price;
+    if(lp>0){
+      var el=(ts[m]-bd)/MS_YEAR;
+      if(el>0.05) return Math.pow(lp/bp, 1/el)-1;
+    }
+  }
   return null;
 }
 
@@ -3762,7 +3891,7 @@ async function btRun(){
   if(err){
     var tdiv=btEl('bt-table-div');
     btEl('bt-results-card').style.display='';
-    if(tdiv) tdiv.innerHTML='<div class="no-signals" style="color:var(--exp-c)">⚠ '+err+'</div>';
+    if(tdiv) tdiv.innerHTML='<div class="no-signals" style="color:var(--exp-c)">⚠ '+escapeHtml(err)+'</div>';
     btEl('bt-summary-div').innerHTML='';
     btEl('bt-ref-info').innerHTML='';
     return;
@@ -3772,14 +3901,7 @@ async function btRun(){
   btEl('bt-results-card').style.display='none';
 
   /* Fetch Nifty 50 historical data for vs-Nifty column (Plus only, cached after first load) */
-  if(userIsSubscribed()&&!dataCache['Nifty 50']){
-    try{
-      dataCache['Nifty 50']=normalise(await fetchWithRetry(WORKER_BASE+'/sector/'+encodeURIComponent('Nifty 50')));
-    }catch(e){
-      console.warn('[backtest] Nifty 50 data unavailable:',e);
-      dataCache['Nifty 50']=[];
-    }
-  }
+  if(userIsSubscribed()) await _ensureNifty50Loaded();
 
   setTimeout(function(){
     try {
@@ -3808,7 +3930,7 @@ function _btCompute(){
   var cdEl=document.getElementById('bt-cooldown');
   var cdDays=cdEl?parseInt(cdEl.value,10):180;
   if(isNaN(cdDays)||cdDays<1) cdDays=180;
-  var COOLDOWN=cdDays*86400000;
+  var COOLDOWN=cdDays*MS_DAY;
   var data=btData;
   var res=[];
   var lastBuy=null;
@@ -3835,54 +3957,17 @@ function _btCompute(){
      a 5-day stride still catches every meaningful touch-of-threshold but costs 5× less. */
   var STRIDE=5;
 
-  function fwdReturn(buyIdx,months){
-    const bd=new Date(data[buyIdx].date), bp=data[buyIdx].price;
-    if(!bp||bp<=0) return{cagr:null,open:true,sellPrice:null};
-    const tgt=new Date(bd);tgt.setMonth(tgt.getMonth()+months);
-    for(let k=buyIdx+1;k<data.length;k++){
-      const sp=data[k].price;
-      if(new Date(data[k].date)>=tgt&&sp>0) return{cagr:Math.pow(sp/bp,12/months)-1,open:false,sellPrice:sp};
-    }
-    for(let m=data.length-1;m>buyIdx;m--){
-      const lp=data[m].price;
-      if(lp>0){const el=(new Date(data[m].date)-bd)/(365.25*86400000);if(el>0.05) return{cagr:Math.pow(lp/bp,1/el)-1,open:true,sellPrice:lp};}
-    }
-    return{cagr:null,open:true,sellPrice:null};
-  }
-
-  /* Nifty 50 forward return for the same period — used for alpha (sector − Nifty) */
-  var nifty50=dataCache['Nifty 50']||[];
-  var nifty50Ts=nifty50.map(function(r){return new Date(r.date).getTime();});
-  function niftyFwdReturn(buyDateStr,months){
-    if(!nifty50.length) return null;
-    const bd=new Date(buyDateStr).getTime();
-    const tgt=bd+months*(365.25/12)*86400000;
-    /* find closest row to buy date */
-    let bi=0,bestDiff=Infinity;
-    for(let i=0;i<nifty50Ts.length;i++){
-      const d=Math.abs(nifty50Ts[i]-bd);
-      if(d<bestDiff){bestDiff=d;bi=i;}
-      if(nifty50Ts[i]>bd+7*86400000) break; /* stop scanning once a week past buy date */
-    }
-    const bp=nifty50[bi].price;
-    if(!bp||bp<=0) return null;
-    for(let k=bi+1;k<nifty50.length;k++){
-      const sp=nifty50[k].price;
-      if(nifty50Ts[k]>=tgt&&sp>0) return Math.pow(sp/bp,12/months)-1;
-    }
-    /* open: use last available price annualised */
-    for(let m=nifty50.length-1;m>bi;m--){
-      const lp=nifty50[m].price;
-      if(lp>0){const el=(nifty50Ts[m]-new Date(buyDateStr).getTime())/(365.25*86400000);if(el>0.05) return Math.pow(lp/bp,1/el)-1;}
-    }
-    return null;
-  }
+  /* Bind module-level forward-return helpers to this run's `data` array.
+     The helpers themselves are defined above (see "BACKTEST — SHARED
+     FORWARD-RETURN HELPERS"); these locals just close over `data` so
+     the call sites below stay short. */
+  function fwdReturn(buyIdx, months){ return _fwdReturnRow(data, buyIdx, months); }
+  var niftyFwdReturn = _niftyFwdReturn;
 
   /* pre-compute date timestamps once — avoids thousands of Date parses in the loop */
   const ts=new Array(data.length);
   for(let ii=0;ii<data.length;ii++){ts[ii]=new Date(data[ii].date).getTime();}
   const startMs=startDate.getTime(), endMs=endDate.getTime();
-  const MS_YR=365.25*86400000;
   /* Trigger tolerance: fire when ratio is within ±TOL of user threshold.
      e.g. threshold 80%, TOL 1% → fire when 79% ≤ ratio ≤ 81%. */
   const TOL=0.01;
@@ -3901,7 +3986,7 @@ function _btCompute(){
     }
 
     /* advance window start-pointers (O(1) amortised over the whole loop) */
-    const c3Ms=tMs-3*MS_YR, c5Ms=tMs-5*MS_YR, c10Ms=tMs-10*MS_YR;
+    const c3Ms=tMs-3*MS_YEAR, c5Ms=tMs-5*MS_YEAR, c10Ms=tMs-10*MS_YEAR;
     while(h3s<=i && ts[h3s]<c3Ms) h3s++;
     while(h5s<=i && ts[h5s]<c5Ms) h5s++;
     while(h10s<=i && ts[h10s]<c10Ms) h10s++;
@@ -3927,7 +4012,7 @@ function _btCompute(){
        Falls back to inline compute when the columns aren't present, which
        handles old cached responses during the 30-min cache cutover after
        a worker deploy. */
-    const elapsedYrs=(tMs - new Date(data[0].date).getTime())/(365.25*86400000);
+    const elapsedYrs=(tMs - new Date(data[0].date).getTime())/(MS_YEAR);
     const hasFullHistoryAtT = elapsedYrs >= 5;
     let peRef=NaN, pbRef=NaN;
     if(usePE){
@@ -4036,55 +4121,31 @@ function btComputeHeadless(opts){
 
   var field=opts.field, thr=opts.threshold;
   var cdDays=opts.cooldownDays||180;
-  var COOLDOWN=cdDays*86400000;
+  var COOLDOWN=cdDays*MS_DAY;
   var TOL=0.01;        /* same ±1% tolerance as _btCompute */
   var STRIDE=5;        /* same stride as _btCompute */
 
   /* sliding window pointers (same as _btCompute) */
   var h3s=0,h5s=0,h10s=0;
   var ts=data.map(function(r){return new Date(r.date).getTime();});
-  var MS_YR=365.25*86400000;
-
-  /* Forward return helper — replicates fwdReturn from _btCompute */
-  function fwdRet(buyIdx,months){
-    var bd=new Date(data[buyIdx].date), bp=data[buyIdx].price;
-    if(!bp||bp<=0) return null;
-    var tgt=new Date(bd); tgt.setMonth(tgt.getMonth()+months);
-    for(var k=buyIdx+1;k<data.length;k++){
-      var sp=data[k].price;
-      if(new Date(data[k].date)>=tgt && sp>0) return Math.pow(sp/bp,12/months)-1;
-    }
-    return null;  /* still open — ignore for AI summary */
+  /* Bind module-level forward-return helpers to this run's `data` array.
+     fwdRet discards the {open, sellPrice} parts of _fwdReturnRow's
+     return because the headless aggregator only counts closed 1Y trades
+     (open ones are skipped at the call-site via `if(r1y===null) continue`).
+     niftyFwd is the module helper unchanged — never invoked for open
+     sector trades, so its own extrapolation branch is dead weight here. */
+  function fwdRet(buyIdx, months){
+    var r=_fwdReturnRow(data, buyIdx, months);
+    return r.open ? null : r.cagr;
   }
-
-  /* Nifty 50 forward return — replicates niftyFwdReturn from _btCompute */
-  var nifty50=dataCache['Nifty 50']||[];
-  var n50Ts=nifty50.map(function(r){return new Date(r.date).getTime();});
-  function niftyFwd(buyDateStr,months){
-    if(!nifty50.length) return null;
-    var bd=new Date(buyDateStr).getTime();
-    var tgt=bd+months*(365.25/12)*86400000;
-    var bi=0,bestDiff=Infinity;
-    for(var i=0;i<n50Ts.length;i++){
-      var d=Math.abs(n50Ts[i]-bd);
-      if(d<bestDiff){bestDiff=d;bi=i;}
-      if(n50Ts[i]>bd+7*86400000) break;
-    }
-    var bp=nifty50[bi].price;
-    if(!bp||bp<=0) return null;
-    for(var k=bi+1;k<nifty50.length;k++){
-      var sp=nifty50[k].price;
-      if(n50Ts[k]>=tgt && sp>0) return Math.pow(sp/bp,12/months)-1;
-    }
-    return null;
-  }
+  var niftyFwd = _niftyFwdReturn;
 
   var trades=[], lastBuy=null;
   for(var i=0;i<data.length;i++){
     var row=data[i];
     var tMs=ts[i];
     /* advance window starts (O(1) amortised) */
-    var c3=tMs-3*MS_YR, c5=tMs-5*MS_YR, c10=tMs-10*MS_YR;
+    var c3=tMs-3*MS_YEAR, c5=tMs-5*MS_YEAR, c10=tMs-10*MS_YEAR;
     while(h3s <=i && ts[h3s] <c3 ) h3s++;
     while(h5s <=i && ts[h5s] <c5 ) h5s++;
     while(h10s<=i && ts[h10s]<c10) h10s++;
@@ -4110,7 +4171,7 @@ function btComputeHeadless(opts){
       for(var k=h3s;  k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w3.push(v); }
       for(var k=h5s;  k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w5.push(v); }
       for(var k=h10s; k<=i; k++) { var v=data[k][field]; if(v>0&&!isNaN(v)) w10.push(v); }
-      var elapsedYrs=(tMs - new Date(data[0].date).getTime())/(365.25*86400000);
+      var elapsedYrs=(tMs - new Date(data[0].date).getTime())/(MS_YEAR);
       var hasFullAtT=elapsedYrs>=5;
       var wAll=[];
       if(!hasFullAtT){
@@ -4244,7 +4305,7 @@ function btRenderTable(trades){
     } else {
       msg='No signals in this window.<br>Adjust thresholds or date range.';
     }
-    document.getElementById('bt-table-div').innerHTML='<div class="no-signals">'+msg+'</div>';
+    document.getElementById('bt-table-div').innerHTML='<div class="no-signals">'+escapeHtml(msg)+'</div>';
     return;
   }
   var isBoth=btResults&&btResults.both;
@@ -4437,8 +4498,8 @@ function buildEpsGrowthCharts(data, secColor, sectorName){
     if(isNaN(last)) return NaN;
     var target=new Date(last);
     target.setDate(target.getDate()-daysAgo);
-    var loMs=target.getTime()-7*86400000;
-    var hiMs=target.getTime()+7*86400000;
+    var loMs=target.getTime()-7*MS_DAY;
+    var hiMs=target.getTime()+7*MS_DAY;
     var sum=0,n=0;
     for(var k=0;k<data.length;k++){
       var dt=new Date(data[k].date);
@@ -4461,8 +4522,8 @@ function buildEpsGrowthCharts(data, secColor, sectorName){
     if(isNaN(last)) return NaN;
     var target=new Date(last);
     target.setDate(target.getDate()-daysAgo);
-    var loMs=target.getTime()-7*86400000;
-    var hiMs=target.getTime()+7*86400000;
+    var loMs=target.getTime()-7*MS_DAY;
+    var hiMs=target.getTime()+7*MS_DAY;
     var sum=0,n=0;
     for(var k=0;k<data.length;k++){
       var dt=new Date(data[k].date);
@@ -4501,7 +4562,7 @@ function buildEpsGrowthCharts(data, secColor, sectorName){
      Per-quarter buckets carry both INR sums and USD sums (USD pre-converted
      at each row's date) so we can produce both QoQ series from one data pass. */
   var qBuckets={};
-  var cutoff=new Date(lastDate.getTime()-730*86400000);
+  var cutoff=new Date(lastDate.getTime()-730*MS_DAY);
   for(var ri=0;ri<data.length;ri++){
     var r=data[ri];
     var rd=new Date(r.date);
@@ -4988,253 +5049,169 @@ function renderConstituentsTable(d){
 
 
 /* ════════════════════════════════════════
+   MACRO OVERLAYS — shared loader + lookup helpers
+   The three macro overlays (FX, G-Sec, Repo) share the same shape: lazy-
+   load a [['Date','Label'],[date,value],...] JSON payload from the
+   worker into a sorted {t, v} array, then look up `value at timestamp`
+   with floor semantics. _fetchMacroSeries does the load+parse+sort once;
+   the _lookup* primitives do the binary-search lookup with two
+   staleness regimes — symmetric staleness for FX/G-Sec (where a stale
+   point is worse than no point) and right-edge-only staleness for Repo
+   (step-function carry-forward is the correct semantic there).
+
+   Each feed below is a thin definition: URL, value-key, range bounds,
+   staleness window, and (for repo) a per-row normalize. The shared
+   helpers absorb the load+parse+sort+lookup boilerplate that used to be
+   duplicated three times.
+════════════════════════════════════════ */
+function _fetchMacroSeries(url, valueKey, min, max, label, normalize){
+  return fetch(url, {redirect:'follow'})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+    .then(function(txt){
+      var raw;
+      try{ raw=JSON.parse(txt); }
+      catch(e){ throw new Error('Non-JSON response: '+String(txt).slice(0,120)); }
+      if(!Array.isArray(raw) || !raw.length) throw new Error('Empty '+label+' response');
+      /* Skip a header row like ["Date","INR"] if the second column isn't numeric. */
+      var startIdx=(Array.isArray(raw[0]) && (typeof raw[0][1]!=='number' || isNaN(raw[0][1]))) ? 1 : 0;
+      var series=[];
+      for(var i=startIdx;i<raw.length;i++){
+        var row=raw[i];
+        if(!Array.isArray(row) || row.length<2) continue;
+        var t=new Date(row[0]).getTime();
+        var v=parseFloat(row[1]);
+        if(normalize) v=normalize(v);
+        if(isNaN(t) || isNaN(v) || v<min || v>max) continue;
+        var entry={t:t};
+        entry[valueKey]=v;
+        series.push(entry);
+      }
+      if(!series.length) throw new Error('No valid '+label+' rows parsed');
+      /* Defensive sort — the D1-backed feed returns ascending but don't trust it. */
+      series.sort(function(a,b){ return a.t - b.t; });
+      return series;
+    });
+}
+
+/* Floor lookup with symmetric staleness: returns value at-or-before ts,
+   rejecting if the gap (on either side) exceeds staleness. Out-of-range
+   timestamps return the nearest edge if within staleness, else null. */
+function _lookupFloor(s, ts, staleness, valueKey){
+  if(!s || !s.length) return null;
+  if(ts <= s[0].t){
+    return (s[0].t - ts) <= staleness ? s[0][valueKey] : null;
+  }
+  if(ts >= s[s.length-1].t){
+    return (ts - s[s.length-1].t) <= staleness ? s[s.length-1][valueKey] : null;
+  }
+  var lo=0, hi=s.length-1;
+  while(lo<hi){
+    var mid=(lo+hi+1)>>1;          /* ceil — biased toward upper half */
+    if(s[mid].t<=ts) lo=mid; else hi=mid-1;
+  }
+  return (ts - s[lo].t) <= staleness ? s[lo][valueKey] : null;
+}
+
+/* Step-function lookup: a floor entry's value persists until the NEXT
+   entry (carry-forward), so internal gaps never need a staleness check
+   — only the right edge (past the last known entry) applies one. Pre-
+   start gets best-effort with the same staleness window. */
+function _lookupStepFunction(s, ts, rightEdgeStaleness, valueKey){
+  if(!s || !s.length) return null;
+  if(ts < s[0].t){
+    return (s[0].t - ts) <= rightEdgeStaleness ? s[0][valueKey] : null;
+  }
+  var lo=0, hi=s.length-1;
+  while(lo<hi){
+    var mid=(lo+hi+1)>>1;
+    if(s[mid].t<=ts) lo=mid; else hi=mid-1;
+  }
+  /* Later entry exists → the step-function value is valid until then. */
+  if(lo < s.length-1) return s[lo][valueKey];
+  /* At/past the last known entry → apply right-edge staleness. */
+  return (ts - s[lo].t) <= rightEdgeStaleness ? s[lo][valueKey] : null;
+}
+
+/* ─── FX series — USD/INR ───
+   For the EPS (USD) chart line. The worker returns a full historical
+   series from D1 (FMP-sourced market rates, appended daily by the 17:30
+   IST cron) so each EPS data point is converted at the rate in effect
+   on its own date — a 2010 EPS gets 2010's rate, today's gets today's.
+   Lazy-loaded on first toggle of the EPS (USD) metric and cached for
+   the session. Range 10-500 INR/USD: the rupee has traded ~40-95
+   historically; outside this is almost certainly a feed bug. */
+var FX_URL=WORKER_BASE+'/fx';
+var FX_SERIES=null;             /* sorted array of {t:msSinceEpoch, r:INRperUSD} */
+var FX_LOADING=null;
+/* If the nearest FX entry is more than this far from a row's date we
+   drop the point rather than render with stale data. 5 days absorbs a
+   normal weekend + a holiday; anything longer is a real feed problem. */
+var FX_STALENESS_MS=5*MS_DAY;
+function loadFxSeries(){
+  if(FX_SERIES) return Promise.resolve(FX_SERIES);
+  if(FX_LOADING) return FX_LOADING;
+  FX_LOADING=_fetchMacroSeries(FX_URL, 'r', 10, 500, 'FX')
+    .then(function(s){ FX_SERIES=s; return s; })
+    .catch(function(e){ FX_LOADING=null; console.warn('[fx] USD/INR fetch failed:', e.message); throw e; });
+  return FX_LOADING;
+}
+function fxRateAt(timestamp){ return _lookupFloor(FX_SERIES, timestamp, FX_STALENESS_MS, 'r'); }
+
+/* ─── G-Sec series — 10Y bond yield ───
+   Macro overlay for rate-sensitive sectors (Bank, PSU Bank, Fin Services,
+   Realty). D1-backed feed via the worker (10Y yield scraped daily by the
+   india10y service-binding worker), lazy-loaded once into a sorted {t, y}
+   array, looked up at row's own date with the same 5-day staleness as FX.
+   Range 1-25%: Indian 10Y has historically been ~5-15%, outside this is
+   almost certainly a feed bug (e.g. basis points like 685 vs 6.85). */
+var GSEC_URL=WORKER_BASE+'/gsec';
+var GSEC_SERIES=null;           /* sorted array of {t:msSinceEpoch, y:percentYield} */
+var GSEC_LOADING=null;
+var GSEC_STALENESS_MS=5*MS_DAY; /* same rationale as FX_STALENESS_MS */
+function loadGsecSeries(){
+  if(GSEC_SERIES) return Promise.resolve(GSEC_SERIES);
+  if(GSEC_LOADING) return GSEC_LOADING;
+  GSEC_LOADING=_fetchMacroSeries(GSEC_URL, 'y', 1, 25, 'G-Sec')
+    .then(function(s){ GSEC_SERIES=s; return s; })
+    .catch(function(e){ GSEC_LOADING=null; console.warn('[gsec] 10Y yield fetch failed:', e.message); throw e; });
+  return GSEC_LOADING;
+}
+function gsecYieldAt(timestamp){ return _lookupFloor(GSEC_SERIES, timestamp, GSEC_STALENESS_MS, 'y'); }
+
+/* ─── Repo series — RBI policy rate ───
+   Macro overlay for Bank, PSU Bank, Fin Services. Repo is a step
+   function: it only changes at MPC meetings (~every 6 weeks), so a
+   chart point on Aug 3 carries forward the most recent rate change
+   indefinitely. _lookupStepFunction handles this; right-edge staleness
+   of 60 days catches a genuinely stuck feed without penalising sparse
+   data. Robust to either feed shape (one row per day, or one row per
+   change). The normalize step handles a legacy fraction format (0.0650
+   = 6.50%) that historical data sometimes used; RBI repo has never
+   touched 100% so the threshold safely distinguishes the two formats.
+   Range 1-20%: historical range is ~4-14.5%; reject obvious junk. */
+var REPO_URL=WORKER_BASE+'/repo';
+var REPO_SERIES=null;           /* sorted array of {t:msSinceEpoch, r:percentRate} */
+var REPO_LOADING=null;
+var REPO_STALENESS_MS=60*MS_DAY;
+function _repoNormalize(v){ return (!isNaN(v) && v > 0 && v < 1) ? v * 100 : v; }
+function loadRepoSeries(){
+  if(REPO_SERIES) return Promise.resolve(REPO_SERIES);
+  if(REPO_LOADING) return REPO_LOADING;
+  REPO_LOADING=_fetchMacroSeries(REPO_URL, 'r', 1, 20, 'repo', _repoNormalize)
+    .then(function(s){ REPO_SERIES=s; return s; })
+    .catch(function(e){ REPO_LOADING=null; console.warn('[repo] rate fetch failed:', e.message); throw e; });
+  return REPO_LOADING;
+}
+function repoRateAt(timestamp){ return _lookupStepFunction(REPO_SERIES, timestamp, REPO_STALENESS_MS, 'r'); }
+
+
+/* ════════════════════════════════════════
    CHART MODAL — full-screen expanded chart
    - Plus-gated (uses userIsSubscribed)
    - Cap of 2 simultaneous metrics
    - Default range 3Y
    - Dual Y-axis on canvas
 ════════════════════════════════════════ */
-/* USD/INR series for the EPS (USD) chart line. The worker returns a
-   full historical time series ([["Date","INR"], [ISO_date, rate], ...])
-   from D1 (Frankfurter/ECB-sourced, appended daily by the 17:30 IST
-   cron) so we convert each EPS data point at the rate in effect on its
-   own date — a 2010 EPS gets 2010's rate, today's EPS gets today's.
-   Lazy-loaded on first toggle of the EPS (USD) metric and cached for
-   the session. Edge-cached + KV-warmed at the worker for fast cold
-   reads. */
-var FX_URL=WORKER_BASE+'/fx';
-var FX_SERIES=null;       /* sorted array of {t:msSinceEpoch, r:INRperUSD} */
-var FX_LOADING=null;
-function loadFxSeries(){
-  if(FX_SERIES) return Promise.resolve(FX_SERIES);
-  if(FX_LOADING) return FX_LOADING;
-  FX_LOADING=fetch(FX_URL,{redirect:'follow'})
-    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
-    .then(function(txt){
-      var raw;
-      try{ raw=JSON.parse(txt); }
-      catch(e){ throw new Error('Non-JSON response: '+String(txt).slice(0,120)); }
-      if(!Array.isArray(raw) || !raw.length) throw new Error('Empty FX response');
-      /* Skip a header row like ["Date","INR"] if the second column isn't numeric. */
-      var startIdx = (Array.isArray(raw[0]) && (typeof raw[0][1]!=='number' || isNaN(raw[0][1]))) ? 1 : 0;
-      var series=[];
-      for(var i=startIdx;i<raw.length;i++){
-        var row=raw[i];
-        if(!Array.isArray(row) || row.length<2) continue;
-        var t=new Date(row[0]).getTime();
-        var rate=parseFloat(row[1]);
-        if(isNaN(t) || isNaN(rate) || rate<10 || rate>500) continue;
-        series.push({t:t, r:rate});
-      }
-      if(!series.length) throw new Error('No valid FX rows parsed');
-      /* Defensive sort — the D1-backed feed returns ascending but don't trust it. */
-      series.sort(function(a,b){ return a.t - b.t; });
-      FX_SERIES=series;
-      return series;
-    })
-    .catch(function(e){
-      FX_LOADING=null;  /* allow retry on next click */
-      console.warn('[fx] USD/INR fetch failed:', e.message);
-      throw e;
-    });
-  return FX_LOADING;
-}
-/* If the nearest FX entry is more than this far from a row's date, we
-   refuse to convert and drop the point — protects against a stale or
-   broken feed silently rendering wrong values. 5 days handles a normal
-   weekend + a public holiday or two; anything longer points at a
-   feed problem the user should investigate. */
-var FX_STALENESS_MS=5*24*60*60*1000;
-
-/* Return the INR-per-USD rate as-of the given timestamp. Floor semantics:
-   uses the most recent series entry with t ≤ timestamp. Returns null if
-   the gap between the timestamp and the nearest series entry exceeds
-   FX_STALENESS_MS, regardless of which side of the series the timestamp
-   falls on. seriesFor sees null and skips the point so the chart renders
-   an honest gap rather than a clamped-stale line. */
-function fxRateAt(timestamp){
-  var s=FX_SERIES;
-  if(!s || !s.length) return null;
-  /* Before series start — only return if first entry is within staleness window. */
-  if(timestamp <= s[0].t){
-    return (s[0].t - timestamp) <= FX_STALENESS_MS ? s[0].r : null;
-  }
-  /* After series end — only return if last entry is within staleness window. */
-  if(timestamp >= s[s.length-1].t){
-    return (timestamp - s[s.length-1].t) <= FX_STALENESS_MS ? s[s.length-1].r : null;
-  }
-  /* Within range — binary search for floor entry, then check the gap. */
-  var lo=0, hi=s.length-1;
-  while(lo<hi){
-    var mid=(lo+hi+1)>>1;          /* ceil — biased toward the upper half */
-    if(s[mid].t<=timestamp) lo=mid; else hi=mid-1;
-  }
-  return (timestamp - s[lo].t) <= FX_STALENESS_MS ? s[lo].r : null;
-}
-
-/* ════════════════════════════════════════
-   10-YEAR G-SEC YIELD SERIES
-   Macro overlay for rate-sensitive sectors (Bank, PSU Bank, Fin Services,
-   Realty). Mirrors the FX series pattern: D1-backed feed via the worker
-   (10Y yield scraped daily by the india10y service-binding worker),
-   lazy-loaded once into a sorted {t, y} array, looked up at row's own
-   date with a 5-day staleness window. Unlike epsUsd this is *not* derived
-   from a sector field — it's an independent macro series — so seriesFor
-   has a small branch that calls gsecYieldAt(rowDate) directly.
-════════════════════════════════════════ */
-var GSEC_URL=WORKER_BASE+'/gsec';
-var GSEC_SERIES=null;       /* sorted array of {t:msSinceEpoch, y:percentYield} */
-var GSEC_LOADING=null;
-var GSEC_STALENESS_MS=5*24*60*60*1000;  /* same rationale as FX_STALENESS_MS */
-
-function loadGsecSeries(){
-  if(GSEC_SERIES) return Promise.resolve(GSEC_SERIES);
-  if(GSEC_LOADING) return GSEC_LOADING;
-  GSEC_LOADING=fetch(GSEC_URL,{redirect:'follow'})
-    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
-    .then(function(txt){
-      var raw;
-      try{ raw=JSON.parse(txt); }
-      catch(e){ throw new Error('Non-JSON response: '+String(txt).slice(0,120)); }
-      if(!Array.isArray(raw) || !raw.length) throw new Error('Empty G-Sec response');
-      /* Skip a header row like ["Date","Yield"] if the second column isn't numeric. */
-      var startIdx = (Array.isArray(raw[0]) && (typeof raw[0][1]!=='number' || isNaN(raw[0][1]))) ? 1 : 0;
-      var series=[];
-      for(var i=startIdx;i<raw.length;i++){
-        var row=raw[i];
-        if(!Array.isArray(row) || row.length<2) continue;
-        var t=new Date(row[0]).getTime();
-        var y=parseFloat(row[1]);
-        /* Indian 10y G-Sec has historically ranged ~5-15%. Allow 1-25 to
-           tolerate any feed format quirks; reject obvious junk (incl. a feed
-           that mistakenly reports yields in basis points like 685 vs 6.85). */
-        if(isNaN(t) || isNaN(y) || y<1 || y>25) continue;
-        series.push({t:t, y:y});
-      }
-      if(!series.length) throw new Error('No valid G-Sec rows parsed');
-      /* Defensive sort — the D1-backed feed returns ascending but don't trust it. */
-      series.sort(function(a,b){ return a.t - b.t; });
-      GSEC_SERIES=series;
-      return series;
-    })
-    .catch(function(e){
-      GSEC_LOADING=null;  /* allow retry on next click */
-      console.warn('[gsec] 10Y yield fetch failed:', e.message);
-      throw e;
-    });
-  return GSEC_LOADING;
-}
-
-/* Return the 10Y G-Sec yield (percent) as-of the given timestamp. Floor
-   semantics + 5-day staleness window — identical contract to fxRateAt.
-   seriesFor sees null and skips the point so the chart renders an honest
-   gap rather than a clamped-stale line. */
-function gsecYieldAt(timestamp){
-  var s=GSEC_SERIES;
-  if(!s || !s.length) return null;
-  if(timestamp <= s[0].t){
-    return (s[0].t - timestamp) <= GSEC_STALENESS_MS ? s[0].y : null;
-  }
-  if(timestamp >= s[s.length-1].t){
-    return (timestamp - s[s.length-1].t) <= GSEC_STALENESS_MS ? s[s.length-1].y : null;
-  }
-  var lo=0, hi=s.length-1;
-  while(lo<hi){
-    var mid=(lo+hi+1)>>1;
-    if(s[mid].t<=timestamp) lo=mid; else hi=mid-1;
-  }
-  return (timestamp - s[lo].t) <= GSEC_STALENESS_MS ? s[lo].y : null;
-}
-
-/* ════════════════════════════════════════
-   RBI REPO RATE SERIES
-   Macro overlay for Bank, PSU Bank, Fin Services. Repo rate is a step
-   function — it only changes at MPC meetings (~every 6 weeks), so a
-   chart point on Aug 3 should carry forward the most recent rate change
-   indefinitely, NOT require a data point within 5 days. The lookup
-   below uses floor semantics with right-edge-only staleness (60 days)
-   so historical chart points always resolve while obviously-stale data
-   feeds at the open right edge are still rejected.
-
-   Robust to either feed shape: the worker may return one row per day
-   (carry-forward already applied) or one row per change (sparse). Both
-   shapes give correct results with this lookup. The current D1-backed
-   implementation returns the sparse form (one row per MPC decision,
-   ~6 per year, scraped daily by the indianrepo service-binding worker).
-════════════════════════════════════════ */
-var REPO_URL=WORKER_BASE+'/repo';
-var REPO_SERIES=null;       /* sorted array of {t:msSinceEpoch, r:percentRate} */
-var REPO_LOADING=null;
-var REPO_STALENESS_MS=60*24*60*60*1000;  /* right-edge only; see lookup below */
-
-function loadRepoSeries(){
-  if(REPO_SERIES) return Promise.resolve(REPO_SERIES);
-  if(REPO_LOADING) return REPO_LOADING;
-  REPO_LOADING=fetch(REPO_URL,{redirect:'follow'})
-    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
-    .then(function(txt){
-      var raw;
-      try{ raw=JSON.parse(txt); }
-      catch(e){ throw new Error('Non-JSON response: '+String(txt).slice(0,120)); }
-      if(!Array.isArray(raw) || !raw.length) throw new Error('Empty repo response');
-      var startIdx = (Array.isArray(raw[0]) && (typeof raw[0][1]!=='number' || isNaN(raw[0][1]))) ? 1 : 0;
-      var series=[];
-      for(var i=startIdx;i<raw.length;i++){
-        var row=raw[i];
-        if(!Array.isArray(row) || row.length<2) continue;
-        var t=new Date(row[0]).getTime();
-        var r=parseFloat(row[1]);
-        /* Upstream stores repo as a fraction (0.0650 = 6.50%); convert to
-           percent for consistency with gsec and the chart's % suffix
-           formatter. Per-row detection — robust to either format if the
-           feed ever changes shape, and a no-op if values are already in
-           percent. RBI repo has never touched 100%, so the threshold is
-           safely well above any real fraction-format value. */
-        if(!isNaN(r) && r > 0 && r < 1) r *= 100;
-        /* RBI repo rate has historically ranged ~4-14.5%. Allow 1-20 to
-           tolerate any feed format quirks; reject obvious junk. */
-        if(isNaN(t) || isNaN(r) || r<1 || r>20) continue;
-        series.push({t:t, r:r});
-      }
-      if(!series.length) throw new Error('No valid repo rows parsed');
-      series.sort(function(a,b){ return a.t - b.t; });
-      REPO_SERIES=series;
-      return series;
-    })
-    .catch(function(e){
-      REPO_LOADING=null;
-      console.warn('[repo] rate fetch failed:', e.message);
-      throw e;
-    });
-  return REPO_LOADING;
-}
-
-/* Return the RBI repo rate (percent) as-of the given timestamp.
-   Step-function carry-forward semantics:
-     - if there's a later entry, the floor's rate persists until that
-       next entry → safe to return regardless of gap length;
-     - only the right edge (past the last known change) applies a
-       staleness window, since beyond that we can't be sure no newer
-       MPC decision exists. */
-function repoRateAt(timestamp){
-  var s=REPO_SERIES;
-  if(!s || !s.length) return null;
-  /* Before series start — best-effort with staleness window. Rare in
-     practice; charts rarely query pre-history-start dates. */
-  if(timestamp < s[0].t){
-    return (s[0].t - timestamp) <= REPO_STALENESS_MS ? s[0].r : null;
-  }
-  /* Floor binary search */
-  var lo=0, hi=s.length-1;
-  while(lo<hi){
-    var mid=(lo+hi+1)>>1;
-    if(s[mid].t<=timestamp) lo=mid; else hi=mid-1;
-  }
-  /* Later entry exists → the step-function rate is valid until then. */
-  if(lo < s.length-1) return s[lo].r;
-  /* At/past the last known entry → apply right-edge staleness. */
-  return (timestamp - s[lo].t) <= REPO_STALENESS_MS ? s[lo].r : null;
-}
 
 var CM_STATE={sector:null,metrics:[],range:'3Y',from:null,to:null,showMedian:true,showBands:false};
 var CM_DRAW=null;  /* set by cmDrawCanvas, consumed by hover handler */
@@ -5571,7 +5548,7 @@ function cmRangeWindow(){
     return {from:new Date(earliest), to:to};
   }
   var days=cmRangeDays(range);
-  var from=new Date(Date.now()-days*86400000);
+  var from=new Date(Date.now()-days*MS_DAY);
   return {from:from, to:to};
 }
 
@@ -5588,7 +5565,7 @@ function cmFilteredRows(){
   }
   var days=cmRangeDays(CM_STATE.range||'3Y');
   if(!isFinite(days)) return rows.slice();
-  var cutoff=Date.now()-days*86400000;
+  var cutoff=Date.now()-days*MS_DAY;
   return rows.filter(function(r){return new Date(r.date).getTime()>=cutoff;});
 }
 
@@ -5621,13 +5598,12 @@ function cmRollingRef(sectorName, field){
   var TARGET=250;
   var stride=Math.max(1, Math.floor(pts.length/TARGET));
 
-  var MS_YR=365.25*86400000;
   var h3s=0, h5s=0, h10s=0;  /* sliding window start pointers */
   var out=[];
   for(var i=0;i<pts.length;i++){
     var T=pts[i].t;
     /* advance window starts (O(1) amortised) */
-    var c3=T-3*MS_YR, c5=T-5*MS_YR, c10=T-10*MS_YR;
+    var c3=T-3*MS_YEAR, c5=T-5*MS_YEAR, c10=T-10*MS_YEAR;
     while(h3s<=i  && pts[h3s].t  <c3 ) h3s++;
     while(h5s<=i  && pts[h5s].t  <c5 ) h5s++;
     while(h10s<=i && pts[h10s].t<c10) h10s++;
@@ -5637,7 +5613,7 @@ function cmRollingRef(sectorName, field){
     if((i % stride)!==0 && i!==pts.length-1) continue;
 
     /* Need at least one full year of history before the curve makes sense. */
-    if(T-pts[0].t < 365*86400000) continue;
+    if(T-pts[0].t < 365*MS_DAY) continue;
 
     var w3=[],w5=[],w10=[];
     for(var k=h3s;  k<=i; k++) w3.push(pts[k].v);
@@ -5652,7 +5628,7 @@ function cmRollingRef(sectorName, field){
     var m10=w10.length?median(winsorise(w10)):NaN;
     /* Pick the right blend at this point in time. Same threshold as
        computeStats — <5yr of data → alternate blend (40% all-time + 60% × 3yr). */
-    var elapsedAtPt=(T - pts[0].t)/MS_YR;
+    var elapsedAtPt=(T - pts[0].t)/MS_YEAR;
     var hasFullAtPt=elapsedAtPt>=5;
     var mAll=NaN;
     if(!hasFullAtPt){
@@ -6105,7 +6081,7 @@ function cmDrawCanvas(canvas, rows){
     if(t<xMin) xMin=t;
     if(t>xMax) xMax=t;
   });
-  if(xMin===xMax){xMin-=86400000;xMax+=86400000;}
+  if(xMin===xMax){xMin-=MS_DAY;xMax+=MS_DAY;}
 
   function xPx(t){return ml+((t-xMin)/(xMax-xMin))*pw;}
   function yLeftPx(v){return mt+ph-((v-leftRng[0])/(leftRng[1]-leftRng[0]))*ph;}
@@ -6150,7 +6126,7 @@ function cmDrawCanvas(canvas, rows){
   for(var j=0;j<=nx;j++){
     var t=xMin+(j/nx)*(xMax-xMin);
     var d=new Date(t);
-    var lbl=d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+(((xMax-xMin)>365*86400000)?(' '+String(d.getFullYear()).slice(2)):'');
+    var lbl=d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+(((xMax-xMin)>365*MS_DAY)?(' '+String(d.getFullYear()).slice(2)):'');
     ctx.fillText(lbl, xPx(t), mt+ph+7);
   }
 
@@ -6454,7 +6430,7 @@ function cmAttachDragMeasure(){
     return dd.getDate()+' '+mons[dd.getMonth()]+' '+dd.getFullYear();
   }
   function fmtDuration(ms){
-    var days=Math.round(ms/86400000);
+    var days=Math.round(ms/MS_DAY);
     if(days<60) return days+'d';
     var months=Math.round(days/30.4);
     if(months<12) return months+'mo';
@@ -7324,8 +7300,8 @@ function loadRazorpay(){
 ════════════════════════════════════════ */
 var donorLastAt=null;                           /* ISO string from /subscription */
 var SS_DONATE_SNOOZE_KEY='ss_donate_snooze_until';
-var DONATE_SNOOZE_LATER_MS=24*60*60*1000;           /* 1 day */
-var DONATE_SNOOZE_POSTDONO_MS=6*30*24*60*60*1000;   /* approx 6 months */
+var DONATE_SNOOZE_LATER_MS=MS_DAY;           /* 1 day */
+var DONATE_SNOOZE_POSTDONO_MS=6*30*MS_DAY;   /* approx 6 months */
 var dnSelectedAmount=100;
 var dnInFlight=false;
 
@@ -7461,7 +7437,7 @@ function donateUpdatePrimaryLabel(){
 
 function dismissDonatePane(snoozeDays){
   try{
-    var ms=(snoozeDays||7)*24*60*60*1000;
+    var ms=(snoozeDays||7)*MS_DAY;
     localStorage.setItem(SS_DONATE_SNOOZE_KEY,String(Date.now()+ms));
   }catch(e){}
   var pane=document.getElementById('donate-pane');
@@ -7980,14 +7956,7 @@ async function loadAISummary(sectorName, st){
          page lazy-loads it on first Run, so on a fresh dashboard tab it's
          empty when the user opens AI summary directly. Fetch it here on
          demand. If the fetch fails, alpha will simply be null. */
-      if(!dataCache['Nifty 50']){
-        try{
-          dataCache['Nifty 50']=normalise(await fetchWithRetry(WORKER_BASE+'/sector/'+encodeURIComponent('Nifty 50')));
-        }catch(e){
-          console.warn('[ai-summary] Nifty 50 fetch failed:',e);
-          dataCache['Nifty 50']=[];
-        }
-      }
+      await _ensureNifty50Loaded();
       var thr=Math.max(50, Math.min(100, Math.round(btPctRef))) / 100;  /* clamp 50%–100%, in fraction form */
       var stats=btComputeHeadless({
         sectorName  : sectorName,
@@ -8040,9 +8009,20 @@ async function loadAISummary(sectorName, st){
     });
 
     if(!res.ok){
-      var errHtml='<div id="ai-summary-content" class="ai-error">'
-        +(res.status===429?'Daily limit reached (30/day). Resets at midnight.':'Could not generate summary. Try again later.')
-        +'</div>';
+      /* Default messages for the common non-OK paths. The worker may
+         override either of these by including a `message` field in the
+         JSON body (e.g. the UPSTREAM_OVERLOADED case for Anthropic 529s).
+         escapeHtml on the final string is defence in depth — message
+         currently comes from our own worker, but treating it as untrusted
+         text keeps the surface clean. */
+      var msg=res.status===429
+        ? 'Daily limit reached (30/day). Resets at midnight.'
+        : 'Could not generate summary. Try again later.';
+      try{
+        var errData=await res.json();
+        if(errData && typeof errData.message==='string' && errData.message) msg=errData.message;
+      }catch(_){/* non-JSON body — fall back to default */}
+      var errHtml='<div id="ai-summary-content" class="ai-error">'+escapeHtml(msg)+'</div>';
       if(blockBody) blockBody.innerHTML=errHtml;
       return;
     }
