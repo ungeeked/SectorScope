@@ -39,7 +39,7 @@
   --txt:#dce5f5;--sub:#7a8fb0;--ghost:#364460;
   --mono:'JetBrains Mono',monospace;--cond:'Barlow Condensed',sans-serif;
   --body:'Barlow',sans-serif;--ttl:'Bebas Neue',cursive;
-  --ease:cubic-bezier(.4,.2,.2,1);--card-h:430px;
+  --ease:cubic-bezier(.4,.2,.2,1);--card-h:446px;
   /* bands */
   --vchp-c:#00c853;--vchp-bg:#001a08;--vchp-bd:rgba(0,200,83,.35);   --vchp-tl:rgba(0,200,83,.10);
   --chp-c: #69f0ae;--chp-bg: #001510;--chp-bd: rgba(105,240,174,.30);--chp-tl: rgba(105,240,174,.08);
@@ -89,15 +89,11 @@ html.light header{background:rgba(238,241,248,.94)}
 html.light .ptab.active{box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .ptab:not(.active):hover{color:var(--txt)}
 .h-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
-#status-chip{font-family:var(--mono);font-size:.56rem;padding:3px 9px;border-radius:18px;border:1px solid var(--bdr);color:var(--ghost);white-space:nowrap;transition:all .4s}
 #live-chip{font-family:var(--mono);font-size:.52rem;padding:3px 9px;border-radius:18px;border:1px solid rgba(74,222,128,.3);color:#4ade80;background:rgba(74,222,128,.06);white-space:nowrap;display:none}
 html.light #live-chip{color:#15803d;border-color:rgba(21,128,61,.3);background:rgba(21,128,61,.06)}
 #live-chip.visible{display:inline-block}
-html.light #status-chip.done{color:#15803d;border-color:rgba(21,128,61,.3);background:rgba(21,128,61,.06)}
-@media(max-width:600px){#status-chip{font-size:.48rem;padding:2px 7px}}
 @media(max-width:680px){#live-chip.visible{display:none!important}.h-right{margin-left:auto}}
 @media(max-width:600px){.user-name{display:none}.user-pill{padding-right:6px}}
-@media(max-width:480px){#status-chip{display:none}}
 .icon-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;color:var(--sub);font-size:.9rem;cursor:pointer;transition:all .18s;flex-shrink:0}
 .icon-btn:hover{background:var(--sur);color:var(--txt)}
 /* ── AUTH ── */
@@ -222,9 +218,7 @@ html.light .cf-chart{background:rgba(0,0,0,.03)}
 .chart-legend{position:absolute;top:4px;left:7px;display:flex;align-items:center;gap:8px;z-index:1}
 .cl-item{display:flex;align-items:center;gap:3px;font-family:var(--mono);font-size:.48rem;color:var(--sub)}
 .cl-line{width:14px;height:2px;border-radius:1px;flex-shrink:0}
-.cf-foot{margin-top:6px;display:flex;align-items:center;justify-content:flex-end;flex-shrink:0}
-.flip-hint{font-family:var(--mono);font-size:.48rem;color:var(--ghost);letter-spacing:.3px;transition:color .2s}
-.s-card:hover .flip-hint{color:var(--sub)}
+.cf-foot{margin-top:6px;display:flex;align-items:center;justify-content:flex-end;flex-shrink:0;min-height:36px}
 
 /* ── BACK ── */
 .cb{height:100%;display:flex;flex-direction:column}
@@ -584,10 +578,14 @@ html.light .bt-tbl tbody tr:hover{background:rgba(0,0,0,.022)}
 .hp-step-body strong{display:block;margin-bottom:2px;color:var(--txt)}
 .hp-note{font-family:var(--mono);font-size:.68rem;color:var(--ghost);font-style:italic;padding:8px 0}
 /* ── EXPAND BUTTON on card foot ── */
-.expand-btn{display:flex;align-items:center;gap:4px;font-family:var(--mono);font-size:.46rem;color:var(--ghost);background:transparent;border:none;cursor:pointer;padding:0;transition:color .2s;margin-right:auto;letter-spacing:.3px}
-.expand-btn:hover{color:var(--sub)}
-.expand-btn svg{width:11px;height:11px;flex-shrink:0;opacity:.7}
-.s-card:hover .expand-btn{color:var(--sub)}
+/* Front-of-card "Set Alert" button. Replaces the older minimal text
+   affordance — outlined style makes it clearly tappable now that it's
+   the only bottom-row control after Detail was removed. Card-level
+   click goes straight to sector detail; this button is the only path
+   to the alert configuration pane on the back. */
+.set-alert-btn{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.55rem;font-weight:600;letter-spacing:.4px;color:var(--sub);background:transparent;border:1px solid var(--bdr);border-radius:7px;padding:7px 13px;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+.set-alert-btn:hover{background:var(--bg3);color:var(--txt);border-color:var(--sub)}
+.set-alert-btn:focus-visible{outline:2px solid var(--sub);outline-offset:2px}
 
 /* ── SECTOR DETAIL OVERLAY ── */
 #sector-detail{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;background:var(--bg);transform:translateY(100%);transition:transform .42s cubic-bezier(.4,.2,.2,1);visibility:hidden}
@@ -605,6 +603,14 @@ html.light .sd-header{background:rgba(238,241,248,.96)}
 .cm-icon-btn:hover{background:var(--sur);color:var(--txt)}
 .cm-icon-btn svg{display:block}
 .sd-body{flex:1;overflow-y:auto;padding:20px 22px 48px}
+/* On desktop, center the body content at a max ~860px reading width
+   while keeping .sd-body itself full-width so the scrollbar stays at
+   the viewport's right edge. Padding-based gutters (instead of
+   max-width + margin:auto on .sd-body) keep the scroll container
+   wide; the max(22px, ...) floor preserves the existing 22px gutter
+   on viewports between 681px and ~904px where the calc would round
+   below baseline. */
+@media(min-width:681px){.sd-body{padding-left:max(22px,calc((100% - 860px)/2));padding-right:max(22px,calc((100% - 860px)/2))}}
 @media(max-width:680px){.sd-body{padding:14px 12px 40px}.sd-header{padding:10px 14px}}
 /* ── AI SUMMARY ── */
 .ai-summary-wrap{margin-bottom:20px;border-radius:12px;border:1px solid var(--bdr);background:var(--bg2);overflow:hidden}
@@ -1101,7 +1107,6 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <button id="tab-help" class="ptab" role="tab" aria-selected="false" onclick="showPage('help')">Help</button>
   </nav>
   <div class="h-right">
-    <div id="status-chip" role="status" aria-live="polite">⏳ Connecting…</div>
     <div id="live-chip" title="Live intraday data · refreshes every 2 min">LIVE</div>
     <!-- Auth -->
     <button class="auth-btn" id="auth-signin-btn" onclick="authSignIn()">
@@ -1305,7 +1310,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </div>
       <div class="hp-step">
         <div class="hp-step-num">2</div>
-        <div class="hp-step-body"><strong>Open the Detail page.</strong> Tap the <em>↗ Detail</em> button at the bottom of any card. The detail page shows an AI-written summary of the situation, a snapshot of the current numbers, how today compares to the 3-year, 5-year, and 10-year medians side by side, and bar charts of the sector's earnings history. This is where you check whether earnings are healthy (good cheap) or collapsing (bad cheap).</div>
+        <div class="hp-step-body"><strong>Open the Detail page.</strong> Tap anywhere on a card (except the chart, which opens the expanded chart instead) to open the detail page. The detail page shows an AI-written summary of the situation, a snapshot of the current numbers, how today compares to the 3-year, 5-year, and 10-year medians side by side, and bar charts of the sector's earnings history. This is where you check whether earnings are healthy (good cheap) or collapsing (bad cheap).</div>
       </div>
       <div class="hp-step">
         <div class="hp-step-num">3</div>
@@ -1447,7 +1452,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
           </div>
 
           <div class="hp-mock-foot">
-            <span class="hp-mock-flip">Analysis ›</span>
+            <span class="hp-mock-flip">🔔 Set Alert</span>
           </div>
         </div>
       </div>
@@ -1488,12 +1493,12 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <div class="hp-sub-h">Three things you can do with a card</div>
     <div class="hp-p" style="margin-bottom:8px">Beyond just reading the numbers, the card has three interactive elements:</div>
     <div class="hp-card info">
-      <div class="hp-card-ttl">↗ Detail</div>
-      <div class="hp-p" style="margin-bottom:0">Tap the Detail button at the bottom-left to open a full-screen overlay with the AI-written summary, the current snapshot, historical medians, and EPS growth charts. The detail page is the deeper dive — <strong>section 5</strong> walks through every element on it.</div>
+      <div class="hp-card-ttl">↗ Tap the card</div>
+      <div class="hp-p" style="margin-bottom:0">Tap anywhere on a card to open a full-screen detail page with the AI-written summary, the current snapshot, historical medians, EPS growth charts, and live constituent stocks. This is the deeper dive — <strong>section 5</strong> walks through every element on it.</div>
     </div>
     <div class="hp-card info">
-      <div class="hp-card-ttl">🔔 Alert</div>
-      <div class="hp-p" style="margin-bottom:0">Tap the Alert button at the bottom-right to flip the card and configure an email alert for that sector — for example, "ping me when Nifty Bank P/B drops below 2.0." <em>Alerts are a Plus feature.</em> Full walkthrough in <strong>section 7</strong>.</div>
+      <div class="hp-card-ttl">🔔 Set Alert</div>
+      <div class="hp-p" style="margin-bottom:0">Tap the <em>Set Alert</em> button at the bottom of any card to flip the card and configure an email alert for that sector — for example, "ping me when Nifty Bank P/B drops below 2.0." <em>Alerts are a Plus feature.</em> Full walkthrough in <strong>section 7</strong>.</div>
     </div>
     <div class="hp-card info">
       <div class="hp-card-ttl">⤢ Tap the sparkline</div>
@@ -1674,7 +1679,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   <!-- ══ 5. THE DETAIL PAGE ══ -->
   <div class="hp-sec" id="h-detail">
     <div class="hp-sec-h">5 · The detail page</div>
-    <div class="hp-p">When you tap the <em>↗ Detail</em> button on any card, a full-screen overlay opens with everything that didn't fit on the card. There's an AI-written summary at the top (Plus only — covered in <strong>section 7</strong>), then five information sections: a snapshot of the current numbers, a side-by-side view of how today compares to historical medians at three time horizons, a pair of bar charts showing the sector's earnings trajectory, a live table of the index's constituent stocks (Plus only), and finally a scrollable quarterly history table.</div>
+    <div class="hp-p">When you tap a card, a full-screen overlay opens with everything that didn't fit on the card. There's an AI-written summary at the top (Plus only — covered in <strong>section 7</strong>), then five information sections: a snapshot of the current numbers, a side-by-side view of how today compares to historical medians at three time horizons, a pair of bar charts showing the sector's earnings trajectory, a live table of the index's constituent stocks (Plus only), and finally a scrollable quarterly history table.</div>
     <div class="hp-p">This is where you go after the dashboard tells you a sector is interesting and you want to confirm whether the cheapness is genuine or a trap.</div>
 
     <!-- 3 sections -->
@@ -2078,7 +2083,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     </div>
 
     <div class="hp-sub-h">AI sector summary — plain-language read</div>
-    <div class="hp-p">At the top of every sector's detail page (tap any card's <em>↗ Detail</em> button) you'll see a "Generate AI Summary" button. Tap it to get a 4-5 sentence plain-English read on the sector's current situation, written by Claude. The summary covers four things: the current valuation band and what it means historically, the EPS trajectory (rising, falling, flat, near peak), any divergence between P/E and P/B for dual-metric sectors, and a one-line note on whether history backs the current signal (drawn from the same backtest engine described in section 6). On IT and Pharma — where USD revenue dominates — the summary may also briefly flag the currency-effect angle, comparing INR earnings growth to USD-denominated growth, but only when the two diverge meaningfully (≳3 percentage points). When INR and USD growth are roughly aligned, the currency note is omitted to keep the summary concise.</div>
+    <div class="hp-p">At the top of every sector's detail page (tap any card to open it) you'll see a "Generate AI Summary" button. Tap it to get a 4-5 sentence plain-English read on the sector's current situation, written by Claude. The summary covers four things: the current valuation band and what it means historically, the EPS trajectory (rising, falling, flat, near peak), any divergence between P/E and P/B for dual-metric sectors, and a one-line note on whether history backs the current signal (drawn from the same backtest engine described in section 6). On IT and Pharma — where USD revenue dominates — the summary may also briefly flag the currency-effect angle, comparing INR earnings growth to USD-denominated growth, but only when the two diverge meaningfully (≳3 percentage points). When INR and USD growth are roughly aligned, the currency note is omitted to keep the summary concise.</div>
 
     <div class="hp-card tip">
       <div class="hp-card-ttl">What the AI does and doesn't do</div>
@@ -2091,7 +2096,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     </div>
 
     <div class="hp-sub-h">Index constituents — live prices for every stock</div>
-    <div class="hp-p">In the sector detail overlay (tap ↗ Detail on any card), an <strong>Index Constituents</strong> block shows every stock in that sector's NSE index with live price, intraday change, day-range position, traded volume, and traded value. The data refreshes every 60 seconds while the overlay is open and again the instant you switch back to the tab — so coming back from another window always shows fresh numbers.</div>
+    <div class="hp-p">In the sector detail overlay (tap any card to open it), an <strong>Index Constituents</strong> block shows every stock in that sector's NSE index with live price, intraday change, day-range position, traded volume, and traded value. The data refreshes every 60 seconds while the overlay is open and again the instant you switch back to the tab — so coming back from another window always shows fresh numbers.</div>
     <div class="hp-p">At the top of the block sits a <strong>breadth strip</strong>: a quick read of how many constituents are up vs down vs flat. Useful for distinguishing broad-based sector moves (9 up · 1 down) from narrow ones driven by one or two heavyweights (3 up · 7 down with the index still green). Every column is sortable — click "% Chg" descending for top gainers, click "Volume" to find the day's most-traded names, click "Day Range" to find stocks near intraday highs vs lows. See <strong>section 5</strong> for the full column breakdown with a screenshot.</div>
 
     <div class="hp-card info">
@@ -2100,7 +2105,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     </div>
 
     <div class="hp-sub-h">Email alerts — get notified at your level</div>
-    <div class="hp-p">Tap the <em>🔔 Alert</em> button at the bottom-right of any card to flip the card and configure an alert. The form has four sections, top to bottom:</div>
+    <div class="hp-p">Tap the <em>🔔 Set Alert</em> button at the bottom of any card to flip the card and configure an alert. The form has four sections, top to bottom:</div>
     <dl class="hp-kv">
       <dt>Metric checkboxes — P/E, P/B</dt><dd>Pick which valuation metric should trigger the alert. For single-metric sectors (IT, Bank, etc.), the appropriate one is pre-ticked. For dual-metric sectors (Realty, Energy, Infra, Metal) both are pre-ticked by default — you can untick either if you want only one to fire.</dd>
       <dt>Threshold sliders</dt><dd>One slider per ticked metric, ranging 50%–150% of the weighted reference. Drag to your threshold — for example, set the P/B slider to <strong>85%</strong> to mean "alert me when Nifty Bank P/B drops to 85% of its weighted historical median." The slider's default starts at the sector's <em>current</em> % of ref, so you can quickly anchor your alert to where things are right now.</dd>
@@ -3114,7 +3119,7 @@ function buildCard(sec,st){
             +'</div>'
           +'</div>'
           +frontChart
-          +'<div class="cf-foot"><button class="expand-btn" data-action="detail" data-sector="'+sec.name+'" aria-label="Expand '+fullName+' detail"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>Detail</button><span class="flip-hint">🔔 Alert &nbsp;›</span></div>'
+          +'<div class="cf-foot"><button class="set-alert-btn" data-action="flip" data-sector="'+sec.name+'" aria-label="Set alert for '+fullName+'">🔔 Set Alert</button></div>'
         +'</div>'
       +'</div>'
     +'</div>';
@@ -3160,7 +3165,7 @@ function buildCard(sec,st){
           +'</div>'
         +'</div>'
         +frontChart
-        +'<div class="cf-foot"><button class="expand-btn" data-action="detail" data-sector="'+sec.name+'" aria-label="Expand '+fullName+' detail"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>Detail</button><span class="flip-hint">🔔 Alert &nbsp;›</span></div>'
+        +'<div class="cf-foot"><button class="set-alert-btn" data-action="flip" data-sector="'+sec.name+'" aria-label="Set alert for '+fullName+'">🔔 Set Alert</button></div>'
       +'</div>'
     +'</div>';
     var back='<div class="card-face card-back '+bnd.cls+'" style="--acc:'+sc+'">'
@@ -3202,7 +3207,7 @@ function buildCard(sec,st){
         +'</div>'
       +'</div>'
       +frontChart
-      +'<div class="cf-foot"><button class="expand-btn" data-action="detail" data-sector="'+sec.name+'" aria-label="Expand '+fullName+' detail"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M1 11L11 1M7 1h4v4M5 11H1V7"/></svg>Detail</button><span class="flip-hint">🔔 Alert &nbsp;›</span></div>'
+      +'<div class="cf-foot"><button class="set-alert-btn" data-action="flip" data-sector="'+sec.name+'" aria-label="Set alert for '+fullName+'">🔔 Set Alert</button></div>'
     +'</div>'
   +'</div>';
   var back='<div class="card-face card-back '+bnd.cls+'" style="--acc:'+sc+'">'
@@ -3337,12 +3342,14 @@ function renderCard(sec,st){
   el.dataset.sortName=sec.name;
   el.dataset.sortChange=isNaN(st.priceChange)?'':String(st.priceChange);
   el.dataset.rendered='1';
-  /* Keyboard accessibility: real content is flippable, so expose as a button
-     with tabindex. Error/skeleton states strip these attributes. The flip
-     click+keydown handlers live on #grid as delegated listeners (see initGridEvents). */
+  /* Keyboard accessibility: rendered cards open the sector detail on
+     Enter/Space (matches click). The Set Alert button on the front is
+     reachable via Tab and lives inside the card. Error/skeleton states
+     strip these attributes. Handlers are delegated on #grid (see
+     initGridEvents). */
   el.setAttribute('role','button');
   el.setAttribute('tabindex','0');
-  el.setAttribute('aria-label','Nifty '+sec.name+' — press Enter to flip');
+  el.setAttribute('aria-label','Nifty '+sec.name+' — press Enter to open detail');
   el.innerHTML='<div class="card-inner">'+buildCard(sec,st)+'</div>';
 }
 function showErr(sec,msg){
@@ -3360,8 +3367,13 @@ function skelHTML(sec){
     +'</div></div></div>';
 }
 function setStatus(msg,cls){
+  /* The visible status chip was removed; this function now only handles
+     the 'done' side effects (header timestamp + theme-pill aria state).
+     The chip lookup is null-guarded so any future re-introduction of
+     an element with this id just works without code changes. msg is
+     unused when no chip is present. */
   var c=document.getElementById('status-chip');
-  c.textContent=msg;c.className=cls||'';
+  if(c){c.textContent=msg; c.className=cls||'';}
   if(cls==='done'){
     var upd=document.getElementById('h-updated');
     if(upd){
@@ -3540,37 +3552,53 @@ function initPlaceholders(){
 function initGridEvents(){
   var grid=document.getElementById('grid');if(!grid) return;
 
-  /* Click: either an action button (Detail / Retry) or a flip on the card body. */
+  /* Click: an action button (Chart / Detail / Retry / Flip-to-alerts)
+     or a generic card-body click that opens the sector detail on the
+     front, or flips back to the front from the alert pane on the back. */
   grid.addEventListener('click',function(e){
     var actionEl=e.target.closest('[data-action]');
     if(actionEl){
       var action=actionEl.dataset.action, name=actionEl.dataset.sector;
       e.stopPropagation();
-      if(action==='chart')  openChartModal(name);
-      else if(action==='detail') openSectorDetail(name);
-      else if(action==='retry') retrySector(name);
+      if(action==='chart')        openChartModal(name);
+      else if(action==='detail')  openSectorDetail(name);
+      else if(action==='retry')   retrySector(name);
+      else if(action==='flip'){
+        /* Set Alert button on the front — flip to the alert pane and
+           populate it. Always front-to-back (add, not toggle); the
+           button only exists on the front face. */
+        var c=actionEl.closest('.s-card');
+        if(c){
+          var inner=c.querySelector('.card-inner');
+          if(inner){
+            inner.classList.add('flipped');
+            renderAlertPane(c.id.replace('c-',''));
+          }
+        }
+      }
       return;
     }
-    /* Clicks on interactive elements inside the alert pane should not flip —
-       but tapping anywhere else on the back (background, labels area) should flip back. */
+    /* Background click on the card itself. Interactive elements on the
+       back (form inputs, alert-pane buttons, deletion handles) opt out
+       so the flip-back doesn't fire mid-typing. */
     if(e.target.closest('input, button, select, a, label, .ab-existing-del')) return;
     var card=e.target.closest('.s-card');
     if(!card||card.dataset.rendered!=='1') return;  /* skeleton/error: ignore */
     var inner=card.querySelector('.card-inner');
-    if(inner){
-      inner.classList.toggle('flipped');
-      /* Populate alert pane when flipping to back */
-      if(inner.classList.contains('flipped')){
-        var sectorName=card.id.replace('c-','');
-        renderAlertPane(sectorName);
-      }
+    if(!inner) return;
+    if(inner.classList.contains('flipped')){
+      /* On the back (alert pane) — tap background flips back to front. */
+      inner.classList.remove('flipped');
+    } else {
+      /* On the front — open the sector detail overlay. */
+      openSectorDetail(card.id.replace('c-',''));
     }
   });
 
-  /* Keyboard flip: Enter or Space when focus is on the card itself.
-     Space would otherwise scroll the page, so we preventDefault. If focus
-     is on an inner <button>, let the browser's native Enter/Space handling
-     activate that button (its click event will bubble up and be handled above). */
+  /* Keyboard: Enter/Space on a focused card matches click semantics.
+     On the front it opens detail; on the back it flips back. The Set
+     Alert button itself is reachable via Tab and handled by the
+     delegated click handler above when activated. */
   grid.addEventListener('keydown',function(e){
     if(e.key!=='Enter'&&e.key!==' ') return;
     var card=e.target.closest('.s-card');
@@ -3578,7 +3606,12 @@ function initGridEvents(){
     if(card.dataset.rendered!=='1') return;
     e.preventDefault();
     var inner=card.querySelector('.card-inner');
-    if(inner) inner.classList.toggle('flipped');
+    if(!inner) return;
+    if(inner.classList.contains('flipped')){
+      inner.classList.remove('flipped');
+    } else {
+      openSectorDetail(card.id.replace('c-',''));
+    }
   });
 }
 
@@ -3629,11 +3662,18 @@ function initBtSectorOptions(){
   if(!sel) return;
   /* Guard against double-populate if this is called twice. */
   if(sel.dataset.populated==='1') return;
+  /* Sort by displayed label — uses BT_LABEL_OVERRIDES for the few
+     sectors where the label differs from "Nifty <name>" — so the
+     dropdown reads alphabetically to the user. */
+  var entries=SECTORS.map(function(s){
+    return {value:s.name, label:BT_LABEL_OVERRIDES[s.name]||('Nifty '+s.name)};
+  });
+  entries.sort(function(a,b){return a.label.localeCompare(b.label);});
   var frag=document.createDocumentFragment();
-  SECTORS.forEach(function(s){
+  entries.forEach(function(e){
     var opt=document.createElement('option');
-    opt.value=s.name;
-    opt.textContent=BT_LABEL_OVERRIDES[s.name]||('Nifty '+s.name);
+    opt.value=e.value;
+    opt.textContent=e.label;
     frag.appendChild(opt);
   });
   sel.appendChild(frag);
@@ -8223,6 +8263,72 @@ function buildPlusFreeHTML(){
   h += "<span><span style='color:#38bdf8'>P/E</span> <strong style='color:#fff'>17.4</strong> &middot; <span style='color:#34d399'>EPS</span> <strong style='color:#fff'>3,206</strong></span>";
   h += "</div>";
   h += "</div></div></div>";
+  /* FEATURE 5 — MACRO OVERLAYS */
+  h += "<div class='pp-feature' id='pp-feat-5'>";
+  h += "<div>";
+  h += "<div class='pp-feat-num'>05 &middot; Macro Overlays</div>";
+  h += "<div class='pp-feat-title'>See the macro behind the valuation</div>";
+  h += "<div class='pp-feat-desc'>Strip out rupee noise on export-heavy sectors. Anchor rate-sensitive sectors to the bond market and the RBI&#39;s policy rate. One-tap toggles on the expanded chart &#8212; each metric on its own scale, colour-coded.</div>";
+  h += "<ul class='pp-bullets'>";
+  h += "<li><strong>EPS (USD)</strong> for IT and Pharma &#8212; the earnings story without the rupee&#39;s drift baked in</li>";
+  h += "<li><strong>10Y G-Sec yield</strong> overlay for rate-sensitive sectors (Bank, PSU Bank, Fin Services, Realty)</li>";
+  h += "<li><strong>RBI repo rate</strong> &#8212; step-function path of every MPC decision, 20+ years</li>";
+  h += "<li>Up to <strong>two metrics at once</strong> on the same dual-axis chart</li>";
+  h += "</ul></div>";
+  h += "<div class='pp-mock'>";
+  h += "<div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div>";
+  h += "<div class='pp-mock-body' style='padding:10px 9px'>";
+  h += "<div style='display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap'>";
+  h += "<span style='padding:3px 7px;border-radius:5px;background:rgba(56,189,248,.15);color:#38bdf8;font-family:var(--mono);font-size:.46rem;font-weight:700'>&#9679; P/E</span>";
+  h += "<span style='padding:3px 7px;border-radius:5px;background:rgba(250,204,21,.18);color:#facc15;font-family:var(--mono);font-size:.46rem;font-weight:700'>&#9679; 10Y G-SEC</span>";
+  h += "<span style='padding:3px 7px;border-radius:5px;background:rgba(248,113,113,.18);color:#f87171;font-family:var(--mono);font-size:.46rem;font-weight:700'>&#9679; REPO</span>";
+  h += "<span style='padding:3px 7px;border-radius:5px;background:#3b82f6;color:#fff;font-family:var(--mono);font-size:.46rem;font-weight:700;margin-left:auto'>5Y</span>";
+  h += "</div>";
+  h += "<svg viewBox='0 0 280 110' width='100%' height='110' preserveAspectRatio='none' style='display:block;background:rgba(0,0,0,.18);border-radius:6px'>";
+  h += "<line x1='0' y1='27.5' x2='280' y2='27.5' stroke='rgba(255,255,255,.05)' stroke-width='.5'/>";
+  h += "<line x1='0' y1='55' x2='280' y2='55' stroke='rgba(255,255,255,.05)' stroke-width='.5'/>";
+  h += "<line x1='0' y1='82.5' x2='280' y2='82.5' stroke='rgba(255,255,255,.05)' stroke-width='.5'/>";
+  /* P/E series — smooth curve */
+  h += "<path d='M0,45 C28,42 55,58 80,55 C108,52 135,72 165,68 C195,62 220,50 250,42 C268,38 280,34 280,34' fill='none' stroke='#38bdf8' stroke-width='1.6' vector-effect='non-scaling-stroke'/>";
+  /* 10Y G-Sec — gentler curve */
+  h += "<path d='M0,70 C30,68 60,65 90,62 C120,60 150,58 180,55 C210,52 240,48 280,46' fill='none' stroke='#facc15' stroke-width='1.4' vector-effect='non-scaling-stroke'/>";
+  /* Repo — step function */
+  h += "<path d='M0,85 L60,85 L60,78 L120,78 L120,72 L180,72 L180,62 L240,62 L240,58 L280,58' fill='none' stroke='#f87171' stroke-width='1.4' vector-effect='non-scaling-stroke'/>";
+  h += "</svg>";
+  h += "<div style='margin-top:8px;padding:6px 9px;border-radius:6px;background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.08);font-family:var(--mono);font-size:.46rem;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap'>";
+  h += "<span style='color:var(--ghost)'>NIFTY BANK</span>";
+  h += "<span><span style='color:#38bdf8'>P/E</span> <strong style='color:#fff'>12.8</strong> &middot; <span style='color:#facc15'>G-Sec</span> <strong style='color:#fff'>6.92%</strong> &middot; <span style='color:#f87171'>Repo</span> <strong style='color:#fff'>5.50%</strong></span>";
+  h += "</div>";
+  h += "</div></div></div>";
+  /* FEATURE 6 — INDEX CONSTITUENTS */
+  h += "<div class='pp-feature rev' id='pp-feat-6'>";
+  h += "<div>";
+  h += "<div class='pp-feat-num'>06 &middot; Index Constituents</div>";
+  h += "<div class='pp-feat-title'>See what&#39;s moving inside</div>";
+  h += "<div class='pp-feat-desc'>When a sector is cheap or expensive, see which stocks are driving the signal. Every constituent of the underlying NSE index &#8212; live price, day&#39;s change, traded volume &#8212; sortable, auto-refreshing.</div>";
+  h += "<ul class='pp-bullets'>";
+  h += "<li>Every stock with <strong>live price and intraday % change</strong></li>";
+  h += "<li>Sort by <strong>change, traded value, volume</strong>, or symbol</li>";
+  h += "<li><strong>Auto-refreshes</strong> during market hours</li>";
+  h += "<li>Day&#39;s <strong>high / low / range position</strong> visible per stock</li>";
+  h += "</ul></div>";
+  h += "<div class='pp-mock'>";
+  h += "<div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div>";
+  h += "<div class='pp-mock-body' style='padding:10px 9px'>";
+  h += "<div style='display:flex;justify-content:space-between;font-family:var(--mono);font-size:.46rem;margin-bottom:6px;color:var(--ghost)'>";
+  h += "<span><span style='color:var(--vchp-c);font-weight:700'>&#8593; 9 up</span> &middot; <span style='color:var(--exp-c);font-weight:700'>&#8595; 3 down</span></span>";
+  h += "<span>NIFTY IT &middot; AS OF 2:47 PM</span>";
+  h += "</div>";
+  h += "<table class='ppm-tbl'>";
+  h += "<thead><tr><th style='text-align:left'>Symbol</th><th>Price</th><th>Chg</th><th>% Chg</th><th>Vol</th></tr></thead>";
+  h += "<tbody>";
+  h += "<tr><td style='text-align:left;font-weight:700'>INFY</td><td>1,548</td><td style='color:var(--vchp-c);font-weight:700'>+22</td><td style='color:var(--vchp-c);font-weight:700'>+1.45%</td><td>4.2M</td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>TCS</td><td>3,891</td><td style='color:var(--vchp-c);font-weight:700'>+42</td><td style='color:var(--vchp-c);font-weight:700'>+1.09%</td><td>2.1M</td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>HCLTECH</td><td>1,432</td><td style='color:var(--vchp-c);font-weight:700'>+11</td><td style='color:var(--vchp-c);font-weight:700'>+0.78%</td><td>1.8M</td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>WIPRO</td><td>475</td><td style='color:var(--exp-c);font-weight:700'>&#8722;3</td><td style='color:var(--exp-c);font-weight:700'>&#8722;0.63%</td><td>3.4M</td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>TECHM</td><td>1,612</td><td style='color:var(--exp-c);font-weight:700'>&#8722;8</td><td style='color:var(--exp-c);font-weight:700'>&#8722;0.49%</td><td>1.1M</td></tr>";
+  h += "</tbody></table>";
+  h += "</div></div></div>";
   h += "<hr class='pp-divider'>";
   h += "<div class='pp-pricing'>";
   h += "<div class='pp-pricing-card'>";
@@ -8232,6 +8338,7 @@ function buildPlusFreeHTML(){
   h += "<li><strong>Email alerts</strong> on any sector</li>";
   h += "<li><strong>AI summaries</strong> powered by Claude &#8212; 30/day</li>";
   h += "<li><strong>Live index constituents</strong> &#8212; every stock, sortable, auto-refreshing</li>";
+  h += "<li><strong>Macro overlays</strong> &#8212; USD EPS, 10Y G-Sec, RBI repo rate</li>";
   h += "<li><strong>Alpha vs Nifty 50</strong> in every backtest</li>";
   h += "<li><strong>Expanded charts</strong> &#8212; multi-metric, drag-to-measure, rolling median</li>";
   h += "<li>All future Plus features, automatically</li>";
@@ -8285,6 +8392,42 @@ function buildPlusPaidHTML(){
   h += "<circle cx='200' cy='40' r='3' fill='#34d399' stroke='#0b0d12' stroke-width='1.2'/>";
   h += "</svg>";
   h += "<div style='margin-top:8px;padding:6px 9px;border-radius:6px;background:rgba(15,23,42,.6);border:1px solid rgba(255,255,255,.08);font-family:var(--mono);font-size:.46rem;display:flex;justify-content:space-between;gap:14px'><span style='color:var(--ghost)'>14 NOV 2023</span><span><span style='color:#38bdf8'>P/E</span> <strong style='color:#fff'>17.4</strong> &middot; <span style='color:#34d399'>EPS</span> <strong style='color:#fff'>3,206</strong></span></div>";
+  h += "</div></div></div>";
+  /* FEATURE 5 — MACRO OVERLAYS (active) */
+  h += "<div class='pp-feature' id='pp-feat-5' style='margin-top:8px'>";
+  h += "<div><div class='pp-feat-num' style='color:var(--vchp-c)'>&#10003; Active</div><div class='pp-feat-title'>Macro Overlays</div><div class='pp-feat-desc'>On the expanded chart, toggle USD-denominated EPS, the 10Y G-Sec yield, or the RBI repo rate alongside any sector&#39;s P/E or P/B &#8212; up to two metrics on the same dual-axis chart.</div></div>";
+  h += "<div class='pp-mock'><div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div><div class='pp-mock-body' style='padding:10px 9px'>";
+  h += "<div style='display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap'>";
+  h += "<span style='padding:3px 7px;border-radius:5px;background:rgba(56,189,248,.15);color:#38bdf8;font-family:var(--mono);font-size:.46rem;font-weight:700'>&#9679; P/E</span>";
+  h += "<span style='padding:3px 7px;border-radius:5px;background:rgba(250,204,21,.18);color:#facc15;font-family:var(--mono);font-size:.46rem;font-weight:700'>&#9679; 10Y G-SEC</span>";
+  h += "<span style='padding:3px 7px;border-radius:5px;background:rgba(248,113,113,.18);color:#f87171;font-family:var(--mono);font-size:.46rem;font-weight:700'>&#9679; REPO</span>";
+  h += "</div>";
+  h += "<svg viewBox='0 0 280 110' width='100%' height='110' preserveAspectRatio='none' style='display:block;background:rgba(0,0,0,.18);border-radius:6px'>";
+  h += "<line x1='0' y1='27.5' x2='280' y2='27.5' stroke='rgba(255,255,255,.05)' stroke-width='.5'/>";
+  h += "<line x1='0' y1='55' x2='280' y2='55' stroke='rgba(255,255,255,.05)' stroke-width='.5'/>";
+  h += "<line x1='0' y1='82.5' x2='280' y2='82.5' stroke='rgba(255,255,255,.05)' stroke-width='.5'/>";
+  h += "<path d='M0,45 C28,42 55,58 80,55 C108,52 135,72 165,68 C195,62 220,50 250,42 C268,38 280,34 280,34' fill='none' stroke='#38bdf8' stroke-width='1.6' vector-effect='non-scaling-stroke'/>";
+  h += "<path d='M0,70 C30,68 60,65 90,62 C120,60 150,58 180,55 C210,52 240,48 280,46' fill='none' stroke='#facc15' stroke-width='1.4' vector-effect='non-scaling-stroke'/>";
+  h += "<path d='M0,85 L60,85 L60,78 L120,78 L120,72 L180,72 L180,62 L240,62 L240,58 L280,58' fill='none' stroke='#f87171' stroke-width='1.4' vector-effect='non-scaling-stroke'/>";
+  h += "</svg>";
+  h += "</div></div></div>";
+  /* FEATURE 6 — INDEX CONSTITUENTS (active) */
+  h += "<div class='pp-feature rev' id='pp-feat-6' style='margin-top:8px'>";
+  h += "<div><div class='pp-feat-num' style='color:var(--vchp-c)'>&#10003; Active</div><div class='pp-feat-title'>Index Constituents</div><div class='pp-feat-desc'>Inside every sector&#39;s detail page, the live constituents table shows every stock in the underlying NSE index &#8212; sortable by change, traded value, volume, or symbol, auto-refreshing during market hours.</div></div>";
+  h += "<div class='pp-mock'><div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div><div class='pp-mock-body' style='padding:10px 9px'>";
+  h += "<div style='display:flex;justify-content:space-between;font-family:var(--mono);font-size:.46rem;margin-bottom:6px;color:var(--ghost)'>";
+  h += "<span><span style='color:var(--vchp-c);font-weight:700'>&#8593; 9 up</span> &middot; <span style='color:var(--exp-c);font-weight:700'>&#8595; 3 down</span></span>";
+  h += "<span>NIFTY IT &middot; AS OF 2:47 PM</span>";
+  h += "</div>";
+  h += "<table class='ppm-tbl'>";
+  h += "<thead><tr><th style='text-align:left'>Symbol</th><th>Price</th><th>Chg</th><th>% Chg</th><th>Vol</th></tr></thead>";
+  h += "<tbody>";
+  h += "<tr><td style='text-align:left;font-weight:700'>INFY</td><td>1,548</td><td style='color:var(--vchp-c);font-weight:700'>+22</td><td style='color:var(--vchp-c);font-weight:700'>+1.45%</td><td>4.2M</td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>TCS</td><td>3,891</td><td style='color:var(--vchp-c);font-weight:700'>+42</td><td style='color:var(--vchp-c);font-weight:700'>+1.09%</td><td>2.1M</td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>HCLTECH</td><td>1,432</td><td style='color:var(--vchp-c);font-weight:700'>+11</td><td style='color:var(--vchp-c);font-weight:700'>+0.78%</td><td>1.8M</td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>WIPRO</td><td>475</td><td style='color:var(--exp-c);font-weight:700'>&#8722;3</td><td style='color:var(--exp-c);font-weight:700'>&#8722;0.63%</td><td>3.4M</td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>TECHM</td><td>1,612</td><td style='color:var(--exp-c);font-weight:700'>&#8722;8</td><td style='color:var(--exp-c);font-weight:700'>&#8722;0.49%</td><td>1.1M</td></tr>";
+  h += "</tbody></table>";
   h += "</div></div></div>";
   return h;
 }
