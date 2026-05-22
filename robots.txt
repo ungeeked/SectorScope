@@ -1,0 +1,29 @@
+# SectorScope — robots.txt
+# https://sectorscope.in/
+
+User-agent: *
+Allow: /
+
+# Disallow any URL with query strings to prevent infinite crawl traps
+# (e.g. /?utm_source=... variants of the homepage). The canonical link
+# in index.html already collapses these for Google, but this is belt+braces.
+Disallow: /*?
+
+# Some AI training crawlers — opt in or out as you prefer. Google-Extended
+# is Google's AI training crawler (separate from Googlebot which handles
+# Search). Allow it for now; you can flip to Disallow later if you change
+# your mind.
+User-agent: Google-Extended
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# Sitemap location — Search Console and other crawlers will read this.
+Sitemap: https://sectorscope.in/sitemap.xml
