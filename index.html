@@ -1,27 +1,104 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-IN">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+
+<!-- ══ PRIMARY SEO ══ -->
+<title>SectorScope — NSE Sector Valuations, Backtests & PE Percentile Ranks</title>
+<meta name="description" content="Track valuation metrics and see which NSE sectors are cheap or expensive — ranked against history. Backtests, alerts, AI summaries built in.">
+<link rel="canonical" href="https://sectorscope.in/">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="author" content="Prashant Gupta">
+<meta name="application-name" content="SectorScope">
+<link rel="alternate" hreflang="en-in" href="https://sectorscope.in/">
+<link rel="alternate" hreflang="x-default" href="https://sectorscope.in/">
+<meta name="theme-color" content="#080b12" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#eef1f8" media="(prefers-color-scheme: light)">
+
+<!-- ══ OPEN GRAPH ══ -->
+<meta property="og:site_name" content="SectorScope">
+<meta property="og:title" content="SectorScope — Sector analysis, simplified">
+<meta property="og:description" content="Track valuation metrics and see which NSE sectors are cheap or expensive — ranked against history. Backtests, alerts, AI summaries built in.">
+<meta property="og:image" content="https://sectorscope.in/assets/og-image.png">
+<meta property="og:image:alt" content="SectorScope dashboard showing NSE sector valuation cards ranked from cheap to expensive">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://sectorscope.in/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="en_IN">
+
+<!-- ══ TWITTER ══ -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="SectorScope — NSE Sector Valuations & Backtests">
+<meta name="twitter:description" content="See which NSE sectors are cheap or expensive — ranked against history. Backtests, alerts, AI summaries built in.">
+<meta name="twitter:image" content="https://sectorscope.in/assets/og-image.png">
+<meta name="twitter:image:alt" content="SectorScope dashboard showing NSE sector valuation cards">
+
+<!-- ══ ICONS ══ -->
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+
+<!-- ══ STRUCTURED DATA: WebApplication ══ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "SectorScope",
+  "url": "https://sectorscope.in/",
+  "description": "Track valuation metrics across NSE sector indices — IT, Bank, Pharma, Auto, FMCG, Metal, Energy and more. PE/PB percentile ranks vs 10-year history, sector rotation backtests, alerts and AI summaries.",
+  "applicationCategory": "FinanceApplication",
+  "operatingSystem": "Any",
+  "browserRequirements": "Requires JavaScript. Modern browser.",
+  "inLanguage": "en-IN",
+  "offers": [
+    {"@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "INR"},
+    {"@type": "Offer", "name": "SectorScope Plus", "price": "99", "priceCurrency": "INR", "category": "subscription"}
+  ],
+  "creator": {"@type": "Person", "name": "Prashant Gupta"},
+  "featureList": [
+    "NSE sector valuation dashboard (13+ sectors)",
+    "PE and PB percentile ranks vs 10-year history",
+    "Sector rotation backtests",
+    "Price and valuation alerts",
+    "AI-written sector summaries",
+    "Detail pages with earnings history"
+  ]
+}
+</script>
+
+<!-- ══ STRUCTURED DATA: Organization (enables brand sitelinks) ══ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "SectorScope",
+  "url": "https://sectorscope.in/",
+  "logo": "https://sectorscope.in/assets/og-image.png",
+  "description": "Sector valuation dashboard for the Indian stock market."
+}
+</script>
+
+<!-- ══ STRUCTURED DATA: BreadcrumbList (declares logical sections of the SPA) ══ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Dashboard", "item": "https://sectorscope.in/"},
+    {"@type": "ListItem", "position": 2, "name": "Backtest", "item": "https://sectorscope.in/#backtest"},
+    {"@type": "ListItem", "position": 3, "name": "Help", "item": "https://sectorscope.in/#help"}
+  ]
+}
+</script>
+
 <!-- Warm up DNS+TLS to the Cloudflare Worker domain in parallel with HTML
      parse so the first sector fetch doesn't pay handshake latency.
      crossorigin attribute: our fetches are CORS (different origin from
      sectorscope.in), so the preconnection must be marked CORS-capable to
      actually be reused. -->
 <link rel="preconnect" href="https://sectorscope.prashant-06f.workers.dev" crossorigin>
-<title>SectorScope</title>
-<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
-<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-<meta name="description" content="Track valuation metrics and see which NSE sectors are cheap or expensive — ranked against history. Backtests, alerts, AI summaries built in.">
-<meta property="og:title" content="SectorScope — Sector analysis, simplified">
-<meta property="og:description" content="Track valuation metrics and see which NSE sectors are cheap or expensive — ranked against history. Backtests, alerts, AI summaries built in.">
-<meta property="og:image" content="https://sectorscope.in/assets/og-image.png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:url" content="https://sectorscope.in">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary_large_image">
 <!-- Set theme class before any CSS is parsed to kill the dark→light flash on cold load. -->
 <script>(function(){try{var t=localStorage.getItem('theme');if(t!=='dark') document.documentElement.classList.add('light');}catch(e){}})();</script>
 <!-- Warm TCP+TLS to the origins we hit on cold load so the handshakes overlap with HTML/CSS parse. -->
@@ -62,6 +139,11 @@ html.light{
   --na-bg:  #fff;   --na-bd: rgba(150,160,180,.22); --na-tl: rgba(150,160,180,.05);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+/* Visually hidden for sighted users but still indexed by crawlers and
+   read by screen readers. Used for the page-level H1 that gives the
+   document a proper SEO heading without affecting the visual design
+   (the brand mark in the header is an SVG, not a heading). */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 /* `scrollbar-gutter:stable` reserves space for the vertical scrollbar
    whether or not the page actually needs one. Without this, switching
    from Dashboard (long, has scrollbar) to Backtest (short, no scrollbar)
@@ -1089,6 +1171,20 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 </style>
 </head>
 <body>
+<!-- ══ SEO: page-level H1 (sr-only — invisible to sighted users, picked up by crawlers/screen readers) ══ -->
+<h1 class="sr-only">SectorScope — NSE Sector Valuation Dashboard, Backtest Engine &amp; Alerts</h1>
+
+<!-- ══ SEO: content fallback for crawlers/clients that don't run JS ══ -->
+<noscript>
+  <div style="max-width:780px;margin:40px auto;padding:24px;font-family:sans-serif;line-height:1.6;color:#dce5f5;background:#0d1120;border:1px solid rgba(255,255,255,.08);border-radius:12px">
+    <h2 style="font-size:1.4rem;margin-bottom:12px">SectorScope needs JavaScript</h2>
+    <p style="margin-bottom:12px"><strong>SectorScope</strong> is a free valuation dashboard for NSE sector indices. It tracks PE and PB ratios across IT, Bank, Pharma, Auto, FMCG, Metal, Energy, Realty, Infra, PSU Bank, Fin Services, Defence and Healthcare — and ranks each sector against its own 10-year history so you can see at a glance which sectors are cheap and which are expensive.</p>
+    <p style="margin-bottom:12px">Features include sector rotation backtests (test "buy when PE percentile &lt; 20" type rules against 10 years of NSE data), email alerts when a sector hits a valuation band, and AI-written summaries of each sector's current setup.</p>
+    <p style="margin-bottom:12px">Please enable JavaScript to use the dashboard. The site is free; SectorScope Plus is ₹99/month for power features.</p>
+    <p>Contact: <a href="https://sectorscope.in/" style="color:#69f0ae">sectorscope.in</a></p>
+  </div>
+</noscript>
+
 <header>
   <div class="h-brand">
     <svg class="h-brandmark" viewBox="0 0 175 36" role="img" aria-label="SectorScope">
@@ -1172,7 +1268,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 <div id="page-bt" style="display:none">
   <div class="bt-card">
     <div class="bt-card-head">
-      <div class="bt-card-title">Backtest Configuration</div>
+      <h2 class="bt-card-title">Backtest Configuration</h2>
       <div class="bt-load-chip" id="bt-load-chip"></div>
     </div>
     <div class="bt-card-body">
@@ -1277,7 +1373,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 <div id="page-help" style="display:none">
 
   <div class="hp-hero">
-    <div class="hp-hero-ttl">How this works</div>
+    <h2 class="hp-hero-ttl">How this works</h2>
     <div class="hp-hero-sub">A friendly walkthrough — no jargon assumed. We'll start with what each number on a card means, then build up to how the signals are calculated and how to use the Backtest page to sanity-check today's call against history. Takes about ten minutes start to finish.</div>
   </div>
 
@@ -1298,7 +1394,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 1. QUICK START ══ -->
   <div class="hp-sec" id="h-quickstart">
-    <div class="hp-sec-h">1 · Quick start</div>
+    <h2 class="hp-sec-h">1 · Quick start</h2>
     <div class="hp-p">SectorScope answers one question: <strong>which Indian sectors are cheap or expensive right now, compared to how they've traded over the past several years?</strong> It doesn't pick stocks. It looks at whole sectors — IT, Banks, Pharma, Auto, and so on — and tells you whether each one is trading at an unusual discount or premium to its own history.</div>
     <div class="hp-p">Every sector gets a coloured card. <span style="color:var(--vchp-c);font-weight:700">Green</span> means cheap vs history; <span style="color:var(--vexp-c);font-weight:700">red</span> means expensive vs history. Cards are sorted with the cheapest on top, so the most interesting names always rise to the front.</div>
 
@@ -1326,14 +1422,14 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 2. VALUATION BASICS ══ -->
   <div class="hp-sec" id="h-basics">
-    <div class="hp-sec-h">2 · Valuation basics</div>
+    <h2 class="hp-sec-h">2 · Valuation basics</h2>
     <div class="hp-p">If you're already comfortable with P/E, P/B, percentiles and medians, skip to section 3. Otherwise — five minutes here will make everything that follows much easier to read.</div>
 
-    <div class="hp-sub-h">What's a sector index?</div>
+    <h3 class="hp-sub-h">What's a sector index?</h3>
     <div class="hp-p">The Indian stock market is divided into sectors by the kind of business each company runs — software companies form the IT sector, banks form the Banking sector, drug companies form the Pharma sector, and so on. NSE (the National Stock Exchange) publishes a single number for each sector that tracks the combined market value of the largest companies in it. That number is the <strong>sector index</strong>. When you read "Nifty Bank is up 1.2% today," it means the average bank in that index moved up 1.2%.</div>
     <div class="hp-p">SectorScope tracks multiple sector indices: <strong>IT, Bank, PSU Bank, Auto, FMCG, Pharma, Realty, Metal, Energy, Infra, Fin Services, Defence, Healthcare</strong>. Plus the broad Nifty 50, used as a benchmark inside the Backtest engine.</div>
 
-    <div class="hp-sub-h">P/E — Price to Earnings</div>
+    <h3 class="hp-sub-h">P/E — Price to Earnings</h3>
     <div class="hp-p">If a stock trades at ₹100 and the underlying business earns ₹5 per share each year, the <strong>P/E</strong> is 100 ÷ 5 = <strong>20</strong>. Read it as "investors are paying ₹20 for every ₹1 of yearly profit." Lower P/E generally means cheaper; higher P/E generally means richer (often because the market expects growth).</div>
     <div class="hp-p">Sector P/E works the same way, but uses the sector's combined earnings instead of a single company's. The same sector can have a wildly different P/E at different points in history — Nifty IT was at P/E 18 in 2020 and over 35 in 2021. SectorScope's job is to tell you where today's P/E sits inside that historical range.</div>
 
@@ -1342,14 +1438,14 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">Banks earn from lending — and reported earnings get distorted by provisioning cycles (when banks set aside money for expected bad loans). In a stressed quarter, a bank's earnings can collapse temporarily even if the underlying business is fine, which makes P/E look misleadingly high. For Bank and PSU Bank, we use P/B instead.</div>
     </div>
 
-    <div class="hp-sub-h">P/B — Price to Book</div>
+    <h3 class="hp-sub-h">P/B — Price to Book</h3>
     <div class="hp-p"><strong>Book value</strong> is what the company would be worth on paper if you summed up all its assets and subtracted all its debts. P/B compares today's stock price to that book value. A P/B of 1 means you're paying exactly what the company is "worth on paper." A P/B of 3 means you're paying three times that.</div>
     <div class="hp-p">P/B is the right lens for banks because their book value moves smoothly even when earnings are noisy. It's also useful for asset-heavy sectors like Realty, Energy, Metals, and Infra — where we use <em>both</em> P/E and P/B and look for both to agree before calling a sector cheap.</div>
 
-    <div class="hp-sub-h">EPS — Earnings Per Share</div>
+    <h3 class="hp-sub-h">EPS — Earnings Per Share</h3>
     <div class="hp-p"><strong>EPS</strong> is just the "E" in P/E, looked at on its own. It's how much profit each share is generating — for a sector, it's the combined earnings divided by the index unit. Tracking EPS over time tells you whether the underlying earnings story is healthy, growing, or breaking down. A sector that looks "cheap" because price has fallen is very different from one that looks "cheap" because earnings have collapsed faster than price.</div>
 
-    <div class="hp-sub-h">Median &amp; percentile — the "vs history" comparison</div>
+    <h3 class="hp-sub-h">Median &amp; percentile — the "vs history" comparison</h3>
     <div class="hp-p">Throughout the app you'll see numbers like "P/E is 18% below the 5-year median" or "ranked at the 12th percentile." These are two different ways of comparing today to the past — both useful, both need a one-line definition.</div>
 
     <dl class="hp-kv">
@@ -1358,7 +1454,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <dt>Why we use both</dt><dd>Median tells you <em>how far</em> below the typical value you are. Percentile tells you <em>how often</em> the sector has been this cheap before. They usually agree — a sector that's well below median is also low on percentile rank. When they disagree, we surface a small warning capsule so you don't take the cheap label at face value.</dd>
     </dl>
 
-    <div class="hp-sub-h">"Weighted reference" — putting it together</div>
+    <h3 class="hp-sub-h">"Weighted reference" — putting it together</h3>
     <div class="hp-p">Rather than picking one history window and sticking with it, we compute three medians — the 3-year, 5-year, and 10-year — and blend them: <strong>30% weight on the 3-year, 60% on the 5-year, 10% on the 10-year</strong>. The result is what we call the <strong>weighted reference</strong>, and it's the single number we compare today against to assign a band (Very Cheap, Cheap, Neutral, Expensive, Very Expensive).</div>
     <div class="hp-p">Why this blend? The 5-year median is the workhorse — long enough to absorb a couple of cycles, short enough to still be relevant. The 3-year medium adds responsiveness so a sector that has structurally re-rated higher (or lower) gets credit for its more recent regime. The 10-year is a small safety anchor that pulls in deep history so we don't lose context entirely.</div>
 
@@ -1375,10 +1471,10 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 3. THE DASHBOARD ══ -->
   <div class="hp-sec" id="h-card">
-    <div class="hp-sec-h">3 · The dashboard</div>
+    <h2 class="hp-sec-h">3 · The dashboard</h2>
     <div class="hp-p">The dashboard is the home screen — one card per sector, all visible at once. This section walks through everything that's on a card, plus the order they appear in.</div>
 
-    <div class="hp-sub-h">Sort order — why the green ones are on top</div>
+    <h3 class="hp-sub-h">Sort order — why the green ones are on top</h3>
     <div class="hp-p">Cards are sorted by <strong>how cheap each sector is right now relative to its own history</strong>. The cheapest sit on top, the richest at the bottom. Specifically, the sort key is each sector's current valuation expressed as a percentage of its weighted reference (the blended median we covered in section 2).</div>
     <div class="hp-p">For sectors where we track <em>both</em> P/E and P/B, we use whichever metric is showing as <strong>more expensive</strong>. The reasoning: we only want to flag a sector as cheap when both lenses agree. If P/E says cheap but P/B says expensive, that's a yellow flag worth surfacing rather than burying.</div>
 
@@ -1387,7 +1483,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">If Nifty IT is at 78% of its weighted reference (very cheap) and Nifty Auto is at 92% (slightly cheap), IT lands above Auto on the dashboard. If Nifty Realty (a dual-metric sector) is at 75% on P/E but 110% on P/B, we use the 110% — so it sorts as if it were Neutral, not Very Cheap. The colour and band on the card reflect the same logic.</div>
     </div>
 
-    <div class="hp-sub-h">Anatomy of a card</div>
+    <h3 class="hp-sub-h">Anatomy of a card</h3>
     <div class="hp-p">Each card packs a lot into a small footprint. Here's an annotated example of <strong>Nifty Auto</strong> — every element explained.</div>
 
     <div class="hp-mock-outer">
@@ -1490,7 +1586,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </div>
     </div>
 
-    <div class="hp-sub-h">Three things you can do with a card</div>
+    <h3 class="hp-sub-h">Three things you can do with a card</h3>
     <div class="hp-p" style="margin-bottom:8px">Beyond just reading the numbers, the card has three interactive elements:</div>
     <div class="hp-card info">
       <div class="hp-card-ttl">↗ Tap the card</div>
@@ -1505,7 +1601,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">Tap directly on the chart inside any card to open an expanded version — full-screen, with selectable metrics (P/E, P/B, EPS, Price, Dividend Yield), date-range pills, drag-to-measure, and toggleable historical-median overlays. <em>Plus only.</em> Full walkthrough in <strong>section 7</strong>.</div>
     </div>
 
-    <div class="hp-sub-h">Which metric does each sector use?</div>
+    <h3 class="hp-sub-h">Which metric does each sector use?</h3>
     <div class="hp-p">The tool picks the right metric automatically — you don't need to change anything.</div>
     <dl class="hp-kv">
       <dt>P/E only</dt><dd>IT, Auto, FMCG, Pharma, Defence, Healthcare — stable, earnings-driven businesses where P/E is the primary lens.</dd>
@@ -1517,11 +1613,11 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 4. HOW SIGNALS WORK ══ -->
   <div class="hp-sec" id="h-bands">
-    <div class="hp-sec-h">4 · How signals work</div>
+    <h2 class="hp-sec-h">4 · How signals work</h2>
     <div class="hp-p">Every coloured band, percentile rank, and pill on a dashboard card comes from one of three signals: the <strong>band</strong> (how far below or above the historical anchor), the <strong>percentile</strong> cross-check (how often the sector has been at this level), and the <strong>EPS pill</strong> (whether the underlying earnings story supports the cheapness). This section walks through each, with concrete numbers.</div>
     <div class="hp-p">A quick refresher: the <em>weighted reference</em> we'll keep referring to is a blend of three rolling medians (30% · 3-year, 60% · 5-year, 10% · 10-year). Newer sectors with less than 5 years of history use a different blend (40% all-time + 60% × 3-year) and get a small "N yrs history" badge on the card. If that's already feeling fuzzy, jump back to <strong>section 2</strong> for the full explanation.</div>
 
-    <div class="hp-sub-h">The band — your first read</div>
+    <h3 class="hp-sub-h">The band — your first read</h3>
     <div class="hp-p">The card colour is determined by a single number: <strong>current value ÷ weighted reference</strong>. Call this the <em>ratio</em>. Here's how each ratio maps to a verdict:</div>
 
     <!-- Band spectrum -->
@@ -1535,7 +1631,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
     <div class="hp-p">The Neutral band is slightly wider on the right (up to 105%) rather than symmetric around 100%. This is because sectors naturally drift a little above their own long-run median over time as the underlying businesses scale — being 5% above your median is not yet a warning.</div>
 
-    <div class="hp-sub-h">Worked example — how the band is calculated</div>
+    <h3 class="hp-sub-h">Worked example — how the band is calculated</h3>
     <div class="hp-p">Nifty Auto's P/E today is <strong>24.5</strong>. Its historical medians over different windows are:</div>
 
     <div class="hp-calc">
@@ -1578,7 +1674,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">The 5-year window covers roughly one full business cycle in India — close enough to reflect today's regime, long enough to include both peaks and troughs. The 10-year leg gets only 10% weight so that sectors that have permanently re-rated (like IT after 2020, or PSU Banks after 2022) aren't forever compared against a baseline that no longer applies.</div>
     </div>
 
-    <div class="hp-sub-h">The two signals on each card</div>
+    <h3 class="hp-sub-h">The two signals on each card</h3>
     <div class="hp-p">Each card shows <em>two</em> valuation signals side-by-side, like <code class="hp-c">P18 · 82% of ref</code>. They measure different things and can sometimes disagree.</div>
 
     <div class="hp-2sig">
@@ -1600,7 +1696,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </div>
     </div>
 
-    <div class="hp-sub-h">When the two signals disagree — the caution capsule</div>
+    <h3 class="hp-sub-h">When the two signals disagree — the caution capsule</h3>
     <div class="hp-p">Sometimes a sector looks cheap vs its anchor (% of ref says Cheap) but is <em>not unusual at all</em> in its recent 5-year distribution (percentile says P45 — it's been here half the time). That's a much weaker signal than a sector that is both below its anchor <em>and</em> historically unusual.</div>
 
     <div class="hp-2sig">
@@ -1618,7 +1714,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </div>
     </div>
 
-    <div class="hp-sub-h">The EPS pill — the third signal</div>
+    <h3 class="hp-sub-h">The EPS pill — the third signal</h3>
     <div class="hp-p">The band tells you whether the sector is cheap on multiples. The percentile tells you whether that cheapness is unusual. But neither tells you <em>why</em> it's cheap — and a sector trading at a discount because its earnings are collapsing is very different from one trading at a discount because price has dropped while earnings hold steady.</div>
     <div class="hp-p">That's where the EPS pill comes in. It's a small badge that appears on the EPS tile of the dashboard card, and it fires only when EPS is currently <em>low</em> compared to the sector's own all-time peak — meaning the cheapness on multiples might be a genuine opportunity (price has fallen but earnings will recover) or might be a value trap (earnings keep falling and price hasn't caught down yet). The pill tells you which.</div>
 
@@ -1634,7 +1730,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">On defensive sectors like FMCG, Pharma, and IT, EPS rarely falls far below its peak — these businesses earn through cycles. So the "low" gate fails most of the time, and the pill stays absent. That's not a bug; it just means the EPS signal isn't applicable. For these sectors, the valuation band alone carries the weight.</div>
     </div>
 
-    <div class="hp-sub-h">Three scenarios — putting the signals together</div>
+    <h3 class="hp-sub-h">Three scenarios — putting the signals together</h3>
     <div class="hp-p">A sector can look cheap for very different reasons. The combination of valuation band, % of peak EPS, and the EPS pill tells you which scenario you're looking at:</div>
 
     <div class="hp-eps-scen">
@@ -1678,7 +1774,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 5. THE DETAIL PAGE ══ -->
   <div class="hp-sec" id="h-detail">
-    <div class="hp-sec-h">5 · The detail page</div>
+    <h2 class="hp-sec-h">5 · The detail page</h2>
     <div class="hp-p">When you tap a card, a full-screen overlay opens with everything that didn't fit on the card. There's an AI-written summary at the top (Plus only — covered in <strong>section 7</strong>), then five information sections: a snapshot of the current numbers, a side-by-side view of how today compares to historical medians at three time horizons, a pair of bar charts showing the sector's earnings trajectory, a live table of the index's constituent stocks (Plus only), and finally a scrollable quarterly history table.</div>
     <div class="hp-p">This is where you go after the dashboard tells you a sector is interesting and you want to confirm whether the cheapness is genuine or a trap.</div>
 
@@ -1925,7 +2021,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 6. BACKTEST ══ -->
   <div class="hp-sec" id="h-backtest">
-    <div class="hp-sec-h">6 · Backtest</div>
+    <h2 class="hp-sec-h">6 · Backtest</h2>
     <div class="hp-p">The dashboard tells you which sectors look cheap right now. The Backtest page tells you whether <em>cheap-looking sectors have actually rewarded buyers in the past</em>. It's the historical sanity check before you act on today's signal.</div>
     <div class="hp-p">The setup: pick a sector, pick a valuation threshold (e.g. "82% of reference — what the dashboard shows today"), and the engine walks through every day in history and finds matching dates. For each match, it shows you what the price did over the next 6 months and 1 year. If the historical hit rate at this threshold is good, today's signal is more credible. If it's bad, today's signal is probably a value trap — back away.</div>
 
@@ -1934,7 +2030,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">The threshold slider on the Backtest page maps directly to the <code class="hp-c">% of ref</code> badge on a dashboard card. If a card shows <code class="hp-c">82% of ref</code> today, set the threshold to <strong>82%</strong> on the Backtest page and ask: "the last time this sector was at 82% of its reference, what happened over the next year?" — that's your historical precedent for today's signal.</div>
     </div>
 
-    <div class="hp-sub-h">How signals fire — visual</div>
+    <h3 class="hp-sub-h">How signals fire — visual</h3>
 
     <div class="hp-bt-timeline">
       <div class="hp-bt-tl-head">Backtest timeline — when signals fire and what happens next (illustrative)</div>
@@ -1976,7 +2072,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
     <div class="hp-p">Each green circle is a <strong>signal date</strong> — a date when the ratio crossed your threshold. The numbers show what actually happened to the sector's price over the next 12 months from that date. The backtest table shows all of these with full detail.</div>
 
-    <div class="hp-sub-h">Setting up a backtest — step by step</div>
+    <h3 class="hp-sub-h">Setting up a backtest — step by step</h3>
     <div class="hp-card info">
       <div class="hp-step">
         <div class="hp-step-num">1</div>
@@ -2012,7 +2108,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
     <div class="hp-p">Rule of thumb: your cooldown should be at least as long as your intended holding period. If you plan to hold a sector for 6 months after buying, a cooldown shorter than that will count overlapping trades as separate signals.</div>
 
-    <div class="hp-sub-h">Reading the results table</div>
+    <h3 class="hp-sub-h">Reading the results table</h3>
     <dl class="hp-kv">
       <dt>Date</dt><dd>The exact calendar date the signal fired — shown in full (day · month · year).</dd>
       <dt>Price at Buy</dt><dd>The index level of the sector on the signal date. Useful as a reference point when comparing to current levels.</dd>
@@ -2026,7 +2122,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <dt>Hit rate</dt><dd>% of signals that were in profit at that horizon. Hit rate above 70% is strong. Below 50% means more losers than winners — inspect the EPS % column to see if value traps are responsible.</dd>
     </dl>
 
-    <div class="hp-sub-h">Row shading — what the colors mean</div>
+    <h3 class="hp-sub-h">Row shading — what the colors mean</h3>
     <div class="hp-shade-legend">
       <div class="hp-shade-row green">
         <div class="hp-shade-icon">🟢</div>
@@ -2042,7 +2138,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </div>
     </div>
 
-    <div class="hp-sub-h">Quick-reference: what to look for</div>
+    <h3 class="hp-sub-h">Quick-reference: what to look for</h3>
     <div class="hp-card warn">
       <div class="hp-card-ttl">Interpreting your backtest result</div>
       <ul class="hp-list" style="margin:0">
@@ -2053,13 +2149,13 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </ul>
     </div>
 
-    <div class="hp-sub-h">How to use the EPS % column to filter</div>
+    <h3 class="hp-sub-h">How to use the EPS % column to filter</h3>
     <div class="hp-p">Uncheck the red rows where EPS % was very low (below 50%), then re-check the summary stats. If the hit rate and average return improve significantly when you exclude low-EPS signals, that tells you: <em>this sector's cheap-valuation signals only work when earnings are healthy</em>. That's important context for acting on today's signal — check the current EPS tile before committing.</div>
   </div>
 
   <!-- ══ 7. SECTORSCOPE PLUS ══ -->
   <div class="hp-sec" id="h-plus">
-    <div class="hp-sec-h">7 · SectorScope Plus</div>
+    <h2 class="hp-sec-h">7 · SectorScope Plus</h2>
     <div class="hp-p">Plus unlocks five features layered on top of the free dashboard: <strong>expanded charts</strong>, <strong>AI sector summaries</strong>, <strong>live index constituents</strong>, <strong>email alerts</strong>, and <strong>vs-Nifty-50 alpha in backtests</strong>. This section walks through each one in the order you're likely to encounter it, with the concrete UI elements you'll see.</div>
 
     <div class="hp-card tip">
@@ -2067,7 +2163,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">SectorScope Plus is in soft launch. Until <strong>31 October 2026</strong>, all five features are free for any signed-in user — no payment, no subscription required. Just sign in with Google from the top-right corner of any page. After 31 October, Plus moves to a paid tier; existing users will get advance notice and a grandfathered offer.</div>
     </div>
 
-    <div class="hp-sub-h">Expanded chart — full historical view</div>
+    <h3 class="hp-sub-h">Expanded chart — full historical view</h3>
     <div class="hp-p">Tap any sector's sparkline (the small chart on a card) to open the full-screen expanded chart for that sector. This is the most useful Plus feature for getting a feel for where a sector sits in its historical context — far more than the 3-year sparkline can show. The expanded view has four sets of controls:</div>
     <dl class="hp-kv">
       <dt>Metric checkboxes</dt><dd>Pick any combination of <strong>P/E, P/B, EPS, Price, Dividend Yield</strong> to overlay on the chart. P/E and P/B are on the left axis; EPS, Price, and Dividend Yield each get their own right-side scale when selected. The defaults match the sector's primary metrics — so Banks open with P/B+EPS already ticked, IT opens with P/E+EPS, dual-metric sectors open with both P/E and P/B.</dd>
@@ -2082,7 +2178,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">A static "5-year median" line would be misleading on a 10-year chart — the median changes as the window slides forward. The expanded chart computes the median <em>at every historical date using only data available up to that point</em> and plots the result as a moving curve. Looking at the curve in 2018 shows you what the reference value would have looked like to a 2018 viewer — no look-ahead. This is the same logic the backtest uses to evaluate signals at each historical date.</div>
     </div>
 
-    <div class="hp-sub-h">AI sector summary — plain-language read</div>
+    <h3 class="hp-sub-h">AI sector summary — plain-language read</h3>
     <div class="hp-p">At the top of every sector's detail page (tap any card to open it) you'll see a "Generate AI Summary" button. Tap it to get a 4-5 sentence plain-English read on the sector's current situation, written by Claude. The summary covers four things: the current valuation band and what it means historically, the EPS trajectory (rising, falling, flat, near peak), any divergence between P/E and P/B for dual-metric sectors, and a one-line note on whether history backs the current signal (drawn from the same backtest engine described in section 6). On IT and Pharma — where USD revenue dominates — the summary may also briefly flag the currency-effect angle, comparing INR earnings growth to USD-denominated growth, but only when the two diverge meaningfully (≳3 percentage points). When INR and USD growth are roughly aligned, the currency note is omitted to keep the summary concise.</div>
 
     <div class="hp-card tip">
@@ -2095,7 +2191,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </ul>
     </div>
 
-    <div class="hp-sub-h">Index constituents — live prices for every stock</div>
+    <h3 class="hp-sub-h">Index constituents — live prices for every stock</h3>
     <div class="hp-p">In the sector detail overlay (tap any card to open it), an <strong>Index Constituents</strong> block shows every stock in that sector's NSE index with live price, intraday change, day-range position, traded volume, and traded value. The data refreshes every 60 seconds while the overlay is open and again the instant you switch back to the tab — so coming back from another window always shows fresh numbers.</div>
     <div class="hp-p">At the top of the block sits a <strong>breadth strip</strong>: a quick read of how many constituents are up vs down vs flat. Useful for distinguishing broad-based sector moves (9 up · 1 down) from narrow ones driven by one or two heavyweights (3 up · 7 down with the index still green). Every column is sortable — click "% Chg" descending for top gainers, click "Volume" to find the day's most-traded names, click "Day Range" to find stocks near intraday highs vs lows. See <strong>section 5</strong> for the full column breakdown with a screenshot.</div>
 
@@ -2104,7 +2200,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">The dashboard tells you whether a sector is cheap; the constituents table tells you what's actually moving inside it today. A sector that's "Cheap" on the band and has 8 of 10 stocks green is showing genuine participation. A sector that's "Cheap" but has 7 of 10 red while the index is up — because one mega-cap is rallying — is a much more fragile setup, and worth a second look at the per-stock breakdown before acting.</div>
     </div>
 
-    <div class="hp-sub-h">Email alerts — get notified at your level</div>
+    <h3 class="hp-sub-h">Email alerts — get notified at your level</h3>
     <div class="hp-p">Tap the <em>🔔 Set Alert</em> button at the bottom of any card to flip the card and configure an alert. The form has four sections, top to bottom:</div>
     <dl class="hp-kv">
       <dt>Metric checkboxes — P/E, P/B</dt><dd>Pick which valuation metric should trigger the alert. For single-metric sectors (IT, Bank, etc.), the appropriate one is pre-ticked. For dual-metric sectors (Realty, Energy, Infra, Metal) both are pre-ticked by default — you can untick either if you want only one to fire.</dd>
@@ -2118,7 +2214,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">The system checks live NSE data every 15 minutes during market hours (9:15am–3:30pm IST, Mon–Fri) and emails the address you signed in with. You'll get up to 2 active alerts per sector. Manage or delete existing alerts from the same flipped-card view — saved alerts appear as a list at the top of the form.</div>
     </div>
 
-    <div class="hp-sub-h">Alpha vs Nifty 50 — in the backtest results table</div>
+    <h3 class="hp-sub-h">Alpha vs Nifty 50 — in the backtest results table</h3>
     <div class="hp-p">In the Backtest results table (covered in section 6), each forward-return column has a sub-column labelled <strong>vs Nifty 50</strong>. This shows the sector's return <em>minus</em> the Nifty 50's return over the same forward window — the genuine alpha generated, separate from whatever the broader market did.</div>
     <div class="hp-p">Why this matters: a sector earning +22% CAGR over 12 months sounds strong, but if Nifty 50 returned +20% over the same period, only +2% was sector-specific. The vs-Nifty column does this comparison automatically for every signal row. A robust backtest setup shows not just a high hit rate and positive CAGR, but consistently positive vs-Nifty values too — confirming the sector was beating the market, not just rising with it.</div>
 
@@ -2130,7 +2226,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 8. LIMITS &amp; HONEST CAVEATS ══ -->
   <div class="hp-sec" id="h-limits">
-    <div class="hp-sec-h">8 · Limits &amp; honest caveats</div>
+    <h2 class="hp-sec-h">8 · Limits &amp; honest caveats</h2>
     <div class="hp-p">SectorScope is a <em>decision-sharpening tool</em>, not a forecasting engine. Before you act on what it shows, here's what to keep in mind:</div>
 
     <ul class="hp-list">
@@ -2159,7 +2255,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 9. CONTACT ══ -->
   <div class="hp-sec" id="h-contact">
-    <div class="hp-sec-h">9 · Get in touch</div>
+    <h2 class="hp-sec-h">9 · Get in touch</h2>
     <div class="hp-p">Found a bug, have feedback, or want a feature added? We'd love to hear from you. Drop a note — every email gets read.</div>
 
     <div class="hp-card info">
