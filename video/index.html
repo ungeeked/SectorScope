@@ -38,6 +38,7 @@
         --peach-d: #f59e42;
         --sky: #aee0ff;
         --sky-d: #38a8e6;
+        --acc: #8b5cf6;
       }
 
       /* ---------- background ---------- */
@@ -49,9 +50,7 @@
           linear-gradient(135deg, #f7f2ff 0%, #fdf4fb 45%, #f1fbff 100%);
         overflow: hidden;
       }
-      .blob {
-        position: absolute; border-radius: 50%; filter: blur(34px); opacity: 0.5;
-      }
+      .blob { position: absolute; border-radius: 50%; filter: blur(34px); opacity: 0.5; }
       .b1 { width: 760px; height: 760px; left: -160px; top: -180px;
         background: radial-gradient(circle at 30% 30%, var(--lav), transparent 68%);
         animation: float1 16s ease-in-out infinite; }
@@ -77,56 +76,76 @@
         mask-image: radial-gradient(circle at 50% 50%, #000 40%, transparent 78%);
       }
 
-      /* ---------- agenda ---------- */
-      #stage {
+      /* ---------- slides ---------- */
+      .slide {
         position: absolute; inset: 0; width: 1920px; height: 1080px;
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        padding: 90px 150px;
+        padding: 150px 170px; display: flex; flex-direction: column; justify-content: center;
       }
+      .slide.center { align-items: center; text-align: center; }
+
+      .bignum {
+        position: absolute; top: 118px; right: 170px;
+        font-family: "Sora"; font-weight: 800; font-size: 230px; line-height: 1;
+        -webkit-text-stroke: 3px var(--acc); color: transparent; opacity: 0.5;
+      }
+      .kicker {
+        display: inline-flex; align-items: center; gap: 14px;
+        font-family: "Sora"; font-weight: 700; letter-spacing: 0.3em;
+        font-size: 28px; color: var(--acc); text-transform: uppercase;
+      }
+      .kicker .dot { width: 13px; height: 13px; border-radius: 50%; background: var(--acc); }
+      h2 {
+        font-family: "Sora"; font-weight: 800; color: var(--ink);
+        font-size: 100px; line-height: 1.02; letter-spacing: -0.02em; margin: 22px 0 0;
+        max-width: 1450px;
+      }
+      .rule {
+        height: 8px; width: 200px; border-radius: 999px; transform-origin: left center;
+        background: var(--acc); margin: 34px 0; opacity: 0.9;
+      }
+      .lead {
+        font-family: "Manrope"; font-weight: 600; color: var(--ink-soft);
+        font-size: 50px; line-height: 1.32; max-width: 1320px;
+      }
+      .lead b { color: var(--ink); font-weight: 700; }
+
+      /* title + outro */
       .eyebrow {
         display: inline-flex; align-items: center; gap: 14px;
         font-family: "Sora"; font-weight: 700; letter-spacing: 0.34em;
-        font-size: 26px; color: var(--lav-d); text-transform: uppercase;
+        font-size: 28px; color: var(--lav-d); text-transform: uppercase;
       }
-      .eyebrow .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--mint-d); }
-      #title {
+      .eyebrow .dot { width: 13px; height: 13px; border-radius: 50%; background: var(--mint-d); }
+      h1 {
         font-family: "Sora"; font-weight: 800; color: var(--ink); text-align: center;
-        font-size: 92px; line-height: 1.02; letter-spacing: -0.02em; margin: 22px 0 8px;
+        font-size: 108px; line-height: 1.02; letter-spacing: -0.02em; margin: 24px 0 0;
       }
-      #rule {
-        height: 7px; width: 360px; border-radius: 999px; transform-origin: center;
+      .crule {
+        height: 8px; width: 360px; border-radius: 999px; transform-origin: center; margin-top: 40px;
         background: linear-gradient(90deg, var(--lav-d), var(--blush-d), var(--mint-d));
-        margin-bottom: 50px;
       }
-      .list { display: flex; flex-direction: column; gap: 22px; width: 1080px; }
-      .item {
-        display: flex; align-items: center; gap: 30px;
-        background: rgba(255,255,255,0.82); border: 2px solid rgba(255,255,255,0.9);
-        border-radius: 22px; padding: 20px 32px;
-        box-shadow: 0 16px 40px rgba(34,27,58,0.09);
+      .pill {
+        display: inline-flex; align-items: center; gap: 16px; margin-top: 44px;
+        background: rgba(255,255,255,0.82); border: 2px solid rgba(139,92,246,0.25);
+        padding: 18px 32px; border-radius: 999px;
+        font-family: "Sora"; font-weight: 700; font-size: 30px; color: var(--ink);
       }
-      .item .badge {
-        flex: 0 0 auto; width: 72px; height: 72px; border-radius: 18px;
-        display: grid; place-items: center; color: #fff;
-        font-family: "Sora"; font-weight: 800; font-size: 34px;
-        box-shadow: 0 12px 26px rgba(34,27,58,0.16);
-      }
-      .item .topic {
-        font-family: "Sora"; font-weight: 700; font-size: 46px; color: var(--ink);
-        letter-spacing: -0.01em;
+      .pill .logo {
+        width: 38px; height: 38px; border-radius: 11px;
+        background: linear-gradient(135deg, var(--mint-d), var(--sky-d)); display: inline-block;
       }
     </style>
   </head>
   <body>
-    <div id="root" data-composition-id="main" data-start="0" data-duration="12"
+    <div id="root" data-composition-id="main" data-start="0" data-duration="28.8"
          data-width="1920" data-height="1080">
 
       <!-- audio: original synthesized chillhop beat -->
-      <audio id="beat" class="clip" src="assets/beat.wav" data-start="0" data-duration="12"
+      <audio id="beat" class="clip" src="assets/beat.wav" data-start="0" data-duration="28.8"
              data-track-index="0" data-volume="0.9"></audio>
 
       <!-- persistent background -->
-      <div id="bg" class="clip" data-start="0" data-duration="12" data-track-index="1">
+      <div id="bg" class="clip" data-start="0" data-duration="28.8" data-track-index="1">
         <div class="blob b1" data-layout-allow-overflow></div>
         <div class="blob b2" data-layout-allow-overflow></div>
         <div class="blob b3" data-layout-allow-overflow></div>
@@ -134,54 +153,114 @@
         <div id="grid"></div>
       </div>
 
-      <!-- agenda -->
-      <div id="stage" class="clip" data-start="0" data-duration="12" data-track-index="2">
-        <div class="eyebrow" id="eyebrow"><span class="dot"></span>What We'll Cover</div>
-        <h1 id="title">Basics of Sectoral Rotation</h1>
-        <div id="rule"></div>
-        <div class="list">
-          <div class="item">
-            <span class="badge" style="background:linear-gradient(135deg,var(--lav-d),var(--sky-d))">01</span>
-            <span class="topic">P/E &amp; P/B Valuation</span>
-          </div>
-          <div class="item">
-            <span class="badge" style="background:linear-gradient(135deg,var(--blush-d),var(--peach-d))">02</span>
-            <span class="topic">Reversion to the Mean</span>
-          </div>
-          <div class="item">
-            <span class="badge" style="background:linear-gradient(135deg,var(--mint-d),var(--sky-d))">03</span>
-            <span class="topic">Finding Opportunities</span>
-          </div>
-          <div class="item">
-            <span class="badge" style="background:linear-gradient(135deg,var(--sky-d),var(--lav-d))">04</span>
-            <span class="topic">Backtesting Your Entry</span>
-          </div>
-          <div class="item">
-            <span class="badge" style="background:linear-gradient(135deg,var(--peach-d),var(--blush-d))">05</span>
-            <span class="topic">Advanced Features</span>
-          </div>
-        </div>
+      <!-- ===== TITLE ===== -->
+      <div id="s0" class="slide center clip" data-start="0" data-duration="3.6" data-track-index="2">
+        <div class="eyebrow"><span class="dot"></span>What We'll Cover</div>
+        <h1>Basics of<br />Sectoral Rotation</h1>
+        <div class="crule"></div>
+      </div>
+
+      <!-- ===== TOPIC 1 ===== -->
+      <div id="s1" class="slide clip" data-start="3.6" data-duration="3.6" data-track-index="3" style="--acc:#8b5cf6">
+        <div class="bignum">01</div>
+        <div class="kicker"><span class="dot"></span>Valuation</div>
+        <h2>P/E &amp; P/B Valuation</h2>
+        <div class="rule"></div>
+        <p class="lead">Use <b>simple-looking ratios</b> like P/E and P/B to evaluate entire sectors.</p>
+      </div>
+
+      <!-- ===== TOPIC 2 ===== -->
+      <div id="s2" class="slide clip" data-start="7.2" data-duration="3.6" data-track-index="4" style="--acc:#34c98a">
+        <div class="bignum">02</div>
+        <div class="kicker"><span class="dot"></span>Opportunity</div>
+        <h2>Find Opportunities</h2>
+        <div class="rule"></div>
+        <p class="lead">How to <b>spot opportunities</b> for sectoral investment.</p>
+      </div>
+
+      <!-- ===== TOPIC 3 ===== -->
+      <div id="s3" class="slide clip" data-start="10.8" data-duration="3.6" data-track-index="5" style="--acc:#f06fab">
+        <div class="bignum">03</div>
+        <div class="kicker"><span class="dot"></span>Risk</div>
+        <h2>The Falling Knife</h2>
+        <div class="rule"></div>
+        <p class="lead">Learn to identify <b>&ldquo;falling knife&rdquo;</b> scenarios — cheap for the wrong reasons.</p>
+      </div>
+
+      <!-- ===== TOPIC 4 ===== -->
+      <div id="s4" class="slide clip" data-start="14.4" data-duration="3.6" data-track-index="6" style="--acc:#38a8e6">
+        <div class="bignum">04</div>
+        <div class="kicker"><span class="dot"></span>Timing</div>
+        <h2>Backtesting Entries</h2>
+        <div class="rule"></div>
+        <p class="lead">Use backtests to <b>identify entry points</b>, reduce risk, and build conviction.</p>
+      </div>
+
+      <!-- ===== TOPIC 5 ===== -->
+      <div id="s5" class="slide clip" data-start="18.0" data-duration="3.6" data-track-index="7" style="--acc:#f59e42">
+        <div class="bignum">05</div>
+        <div class="kicker"><span class="dot"></span>Exits</div>
+        <h2>When to Exit</h2>
+        <div class="rule"></div>
+        <p class="lead">Knowing when to exit: <b>time-based</b> vs <b>valuation-based</b> exits.</p>
+      </div>
+
+      <!-- ===== TOPIC 6 ===== -->
+      <div id="s6" class="slide clip" data-start="21.6" data-duration="3.6" data-track-index="8" style="--acc:#7c5cff">
+        <div class="bignum">06</div>
+        <div class="kicker"><span class="dot"></span>Go Deeper</div>
+        <h2>Advanced SectorScope</h2>
+        <div class="rule"></div>
+        <p class="lead">Dig deeper into sectors using <b>advanced SectorScope features</b>.</p>
+      </div>
+
+      <!-- ===== OUTRO ===== -->
+      <div id="s7" class="slide center clip" data-start="25.2" data-duration="3.6" data-track-index="9">
+        <div class="eyebrow"><span class="dot"></span>Let's Begin</div>
+        <h1>Ready to read<br />the sectors?</h1>
+        <div class="pill"><span class="logo"></span>SectorScope · educational use only</div>
       </div>
     </div>
 
     <script>
       window.__timelines = window.__timelines || {};
       const tl = gsap.timeline({ paused: true });
+      const SLIDE = 3.6;
 
-      // header
-      tl.from("#eyebrow", { opacity: 0, y: -28, duration: 0.5, ease: "power3.out" }, 0.2);
-      tl.from("#title", { opacity: 0, y: 48, scale: 0.96, duration: 0.7, ease: "power3.out" }, 0.45);
-      tl.fromTo("#rule", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power2.out" }, 1.1);
+      function frame(id, t0) {
+        tl.fromTo("#" + id, { opacity: 0 }, { opacity: 1, duration: 0.45, ease: "power2.out" }, t0);
+        tl.to("#" + id, { opacity: 0, duration: 0.4, ease: "power2.in" }, t0 + SLIDE - 0.45);
+      }
 
-      // agenda items pop in one per beat-ish, accumulating into the full list
-      const items = gsap.utils.toArray(".item");
-      const START = 2.0, STEP = 1.1;
-      items.forEach((el, i) => {
-        const t = START + i * STEP;
-        tl.from(el, { opacity: 0, x: -60, duration: 0.5, ease: "power3.out" }, t);
-        tl.from(el.querySelector(".badge"),
-          { scale: 0.3, rotation: -18, duration: 0.5, ease: "back.out(2.2)" }, t);
-      });
+      function topic(n, t0) {
+        const s = "#s" + n + " ";
+        frame("s" + n, t0);
+        tl.from(s + ".bignum", { opacity: 0, scale: 0.6, rotation: -12, duration: 0.55, ease: "back.out(2)" }, t0 + 0.1);
+        tl.from(s + ".kicker", { opacity: 0, x: -40, duration: 0.45, ease: "power3.out" }, t0 + 0.2);
+        tl.from(s + "h2", { opacity: 0, y: 44, duration: 0.55, ease: "power3.out" }, t0 + 0.38);
+        tl.fromTo(s + ".rule", { scaleX: 0 }, { scaleX: 1, duration: 0.5, ease: "power2.out" }, t0 + 0.68);
+        tl.from(s + ".lead", { opacity: 0, y: 28, duration: 0.5, ease: "power2.out" }, t0 + 0.85);
+      }
+
+      // title
+      frame("s0", 0);
+      tl.from("#s0 .eyebrow", { opacity: 0, y: -28, duration: 0.5, ease: "power3.out" }, 0.2);
+      tl.from("#s0 h1", { opacity: 0, y: 50, scale: 0.96, duration: 0.7, ease: "power3.out" }, 0.45);
+      tl.fromTo("#s0 .crule", { scaleX: 0 }, { scaleX: 1, duration: 0.6, ease: "power2.out" }, 1.15);
+
+      // topics
+      topic(1, 3.6);
+      topic(2, 7.2);
+      topic(3, 10.8);
+      topic(4, 14.4);
+      topic(5, 18.0);
+      topic(6, 21.6);
+
+      // outro
+      frame("s7", 25.2);
+      tl.from("#s7 .eyebrow", { opacity: 0, y: -28, duration: 0.5, ease: "power3.out" }, 25.4);
+      tl.from("#s7 h1", { opacity: 0, y: 50, scale: 0.96, duration: 0.7, ease: "power3.out" }, 25.65);
+      tl.from("#s7 .pill", { opacity: 0, scale: 0.7, duration: 0.6, ease: "back.out(2)" }, 26.3);
 
       window.__timelines["main"] = tl;
     </script>
