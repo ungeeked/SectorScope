@@ -1,0 +1,494 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="assets/gsap.min.js"></script>
+    <style>
+      @font-face {
+        font-family: "Sora";
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: block;
+        src: url("assets/fonts/Sora.woff2") format("woff2");
+      }
+      @font-face {
+        font-family: "Manrope";
+        font-style: normal;
+        font-weight: 100 900;
+        font-display: block;
+        src: url("assets/fonts/Manrope.woff2") format("woff2");
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body {
+        width: 1920px; height: 1080px; overflow: hidden;
+        background: #faf7ff;
+        font-family: "Manrope", system-ui, sans-serif;
+      }
+      :root {
+        --ink: #221b3a;
+        --ink-soft: #5b5470;
+        --mint: #8ef0c9;
+        --mint-d: #34c98a;
+        --blush: #ffc7e0;
+        --blush-d: #f06fab;
+        --lav: #c9b6ff;
+        --lav-d: #8b5cf6;
+        --peach: #ffd6a8;
+        --peach-d: #f59e42;
+        --sky: #aee0ff;
+        --sky-d: #38a8e6;
+      }
+
+      /* ---------- background ---------- */
+      #bg {
+        width: 1920px; height: 1080px; position: absolute; inset: 0;
+        background:
+          radial-gradient(1200px 900px at 78% 18%, #fff0f7 0%, rgba(255,240,247,0) 60%),
+          radial-gradient(1100px 900px at 14% 86%, #eafff6 0%, rgba(234,255,246,0) 60%),
+          linear-gradient(135deg, #f7f2ff 0%, #fdf4fb 45%, #f1fbff 100%);
+        overflow: hidden;
+      }
+      .blob {
+        position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.55;
+        mix-blend-mode: multiply;
+      }
+      .b1 { width: 760px; height: 760px; left: -160px; top: -180px;
+        background: radial-gradient(circle at 30% 30%, var(--lav), transparent 70%);
+        animation: float1 16s ease-in-out infinite; }
+      .b2 { width: 680px; height: 680px; right: -140px; top: 40px;
+        background: radial-gradient(circle at 60% 40%, var(--blush), transparent 70%);
+        animation: float2 19s ease-in-out infinite; }
+      .b3 { width: 720px; height: 720px; left: 36%; bottom: -260px;
+        background: radial-gradient(circle at 50% 50%, var(--mint), transparent 70%);
+        animation: float3 22s ease-in-out infinite; }
+      .b4 { width: 460px; height: 460px; right: 22%; bottom: 8%;
+        background: radial-gradient(circle at 50% 50%, var(--sky), transparent 70%);
+        animation: float1 18s ease-in-out infinite reverse; }
+      @keyframes float1 { 0%,100% { transform: translate(0,0) scale(1);} 50% { transform: translate(60px,40px) scale(1.08);} }
+      @keyframes float2 { 0%,100% { transform: translate(0,0) scale(1);} 50% { transform: translate(-50px,60px) scale(1.1);} }
+      @keyframes float3 { 0%,100% { transform: translate(0,0) scale(1);} 50% { transform: translate(40px,-50px) scale(1.06);} }
+      #grid {
+        position: absolute; inset: 0; opacity: 0.05;
+        background-image:
+          linear-gradient(var(--ink) 1px, transparent 1px),
+          linear-gradient(90deg, var(--ink) 1px, transparent 1px);
+        background-size: 64px 64px;
+        -webkit-mask-image: radial-gradient(circle at 50% 50%, #000 40%, transparent 78%);
+        mask-image: radial-gradient(circle at 50% 50%, #000 40%, transparent 78%);
+      }
+
+      /* ---------- slide frame ---------- */
+      .slide {
+        position: absolute; inset: 0; width: 1920px; height: 1080px;
+        padding: 132px 150px;
+        display: flex; flex-direction: column; justify-content: center;
+      }
+      .slide.center { align-items: center; text-align: center; }
+
+      .eyebrow {
+        display: inline-flex; align-items: center; gap: 14px;
+        font-family: "Sora"; font-weight: 700; letter-spacing: 0.32em;
+        font-size: 24px; color: var(--lav-d); text-transform: uppercase;
+      }
+      .eyebrow .dot { width: 12px; height: 12px; border-radius: 50%; background: var(--mint-d); }
+
+      .num {
+        font-family: "Sora"; font-weight: 800; font-size: 150px; line-height: 1;
+        -webkit-text-stroke: 3px var(--lav-d); color: transparent;
+        position: absolute; top: 120px; right: 150px;
+      }
+      .kicker {
+        font-family: "Sora"; font-weight: 700; font-size: 26px; letter-spacing: 0.18em;
+        text-transform: uppercase; color: var(--blush-d);
+      }
+      h1 {
+        font-family: "Sora"; font-weight: 800; color: var(--ink);
+        font-size: 116px; line-height: 1.02; letter-spacing: -0.02em;
+      }
+      h2 {
+        font-family: "Sora"; font-weight: 800; color: var(--ink);
+        font-size: 78px; line-height: 1.05; letter-spacing: -0.015em;
+        max-width: 1180px; margin: 18px 0 10px;
+      }
+      .sub {
+        font-family: "Manrope"; font-weight: 600; color: var(--ink-soft);
+        font-size: 38px; line-height: 1.35; max-width: 1100px;
+      }
+      .pill {
+        display: inline-flex; align-items: center; gap: 16px; margin-top: 40px;
+        background: rgba(255,255,255,0.7); border: 2px solid rgba(139,92,246,0.25);
+        padding: 18px 30px; border-radius: 999px; backdrop-filter: blur(4px);
+        font-family: "Sora"; font-weight: 700; font-size: 30px; color: var(--ink);
+      }
+      .pill .logo {
+        width: 38px; height: 38px; border-radius: 11px;
+        background: linear-gradient(135deg, var(--mint-d), var(--sky-d));
+        display: inline-block;
+      }
+
+      .bullets { list-style: none; margin-top: 46px; display: flex; flex-direction: column; gap: 30px; }
+      .bullets li {
+        display: flex; align-items: center; gap: 28px;
+        font-family: "Manrope"; font-weight: 600; font-size: 42px; color: var(--ink);
+      }
+      .bullets .mk {
+        flex: 0 0 auto; width: 58px; height: 58px; border-radius: 16px;
+        display: grid; place-items: center; color: #fff; font-family: "Sora";
+        font-weight: 800; font-size: 30px; box-shadow: 0 12px 26px rgba(34,27,58,0.12);
+      }
+
+      .row { display: flex; gap: 56px; align-items: center; }
+      .col-text { flex: 1; }
+      .col-art { flex: 0 0 720px; display: flex; align-items: center; justify-content: center; }
+
+      .card {
+        background: rgba(255,255,255,0.82); border-radius: 28px; padding: 30px 34px;
+        box-shadow: 0 22px 50px rgba(34,27,58,0.10); border: 2px solid rgba(255,255,255,0.9);
+      }
+
+      /* metric chips (slide 1) */
+      .metricwrap { display: flex; flex-direction: column; gap: 26px; width: 640px; }
+      .metric { display: flex; align-items: center; gap: 26px; }
+      .metric .tag {
+        width: 150px; height: 150px; border-radius: 30px; display: grid; place-items: center;
+        font-family: "Sora"; font-weight: 800; font-size: 52px; color: #fff;
+        box-shadow: 0 18px 40px rgba(34,27,58,0.16); flex: 0 0 auto;
+      }
+      .metric .desc { font-family: "Manrope"; font-weight: 700; font-size: 34px; color: var(--ink); }
+      .metric .desc small { display: block; font-weight: 600; font-size: 26px; color: var(--ink-soft); margin-top: 6px; }
+
+      /* sector cards (slide 3) */
+      .stack { display: flex; flex-direction: column; gap: 22px; width: 660px; }
+      .seccard {
+        display: flex; align-items: center; justify-content: space-between;
+        background: #fff; border-radius: 22px; padding: 26px 32px;
+        box-shadow: 0 16px 38px rgba(34,27,58,0.10); border-left: 14px solid var(--mint-d);
+      }
+      .seccard .nm { font-family: "Sora"; font-weight: 700; font-size: 40px; color: var(--ink); }
+      .seccard .band {
+        font-family: "Manrope"; font-weight: 700; font-size: 26px; padding: 10px 20px;
+        border-radius: 999px;
+      }
+
+      /* backtest bars (slide 4) */
+      .bars { display: flex; gap: 56px; align-items: flex-end; height: 360px; }
+      .barcol { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+      .bar {
+        width: 150px; border-radius: 22px 22px 8px 8px;
+        background: linear-gradient(180deg, var(--mint), var(--mint-d));
+        box-shadow: 0 18px 40px rgba(52,201,138,0.30);
+        display: flex; align-items: flex-start; justify-content: center; padding-top: 18px;
+        font-family: "Sora"; font-weight: 800; font-size: 40px; color: #0c5c3d; overflow: hidden;
+      }
+      .barlabel { font-family: "Sora"; font-weight: 700; font-size: 32px; color: var(--ink-soft); }
+
+      /* feature chips (slide 5) */
+      .chips { display: flex; flex-wrap: wrap; gap: 22px; max-width: 1320px; }
+      .chip {
+        background: rgba(255,255,255,0.86); border: 2px solid rgba(139,92,246,0.18);
+        border-radius: 20px; padding: 22px 28px; font-family: "Manrope"; font-weight: 700;
+        font-size: 32px; color: var(--ink); box-shadow: 0 14px 32px rgba(34,27,58,0.08);
+        display: flex; align-items: center; gap: 18px;
+      }
+      .chip .ic { width: 16px; height: 16px; border-radius: 5px; flex: 0 0 auto; }
+
+      svg { overflow: visible; }
+      .progress {
+        position: absolute; left: 150px; right: 150px; bottom: 70px; height: 8px;
+        background: rgba(34,27,58,0.10); border-radius: 999px; overflow: hidden;
+      }
+      .progress .fill {
+        height: 100%; width: 100%; transform-origin: left center;
+        background: linear-gradient(90deg, var(--lav-d), var(--blush-d), var(--mint-d));
+        border-radius: 999px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="84"
+         data-width="1920" data-height="1080">
+
+      <!-- audio: original synthesized chillhop beat -->
+      <audio id="beat" class="clip" src="assets/beat.wav" data-start="0" data-duration="84"
+             data-track-index="0" data-volume="0.9"></audio>
+
+      <!-- persistent background -->
+      <div id="bg" class="clip" data-start="0" data-duration="84" data-track-index="1">
+        <div class="blob b1" data-layout-allow-overflow></div>
+        <div class="blob b2" data-layout-allow-overflow></div>
+        <div class="blob b3" data-layout-allow-overflow></div>
+        <div class="blob b4" data-layout-allow-overflow></div>
+        <div id="grid"></div>
+      </div>
+
+      <!-- progress bar (persistent) -->
+      <div id="progressbar" class="progress clip" data-start="0" data-duration="84" data-track-index="9">
+        <div class="fill" id="prog"></div>
+      </div>
+
+      <!-- ============ SLIDE 0 — TITLE ============ -->
+      <div id="s0" class="slide center clip" data-start="0" data-duration="12" data-track-index="2">
+        <div class="eyebrow s0-eb"><span class="dot"></span>ONLINE CLASS</div>
+        <h1 class="s0-title" style="margin-top:26px;">Basics of<br />Sectoral Rotation</h1>
+        <div class="sub s0-sub" style="margin-top:30px;">
+          Spot under- &amp; over-valued sectors using P/E &amp; P/B,<br />measured against their own history.
+        </div>
+        <div class="pill s0-pill"><span class="logo"></span>SectorScope</div>
+      </div>
+
+      <!-- ============ SLIDE 1 — PE / PB ============ -->
+      <div id="s1" class="slide clip" data-start="12" data-duration="12" data-track-index="3">
+        <div class="num s1-num">01</div>
+        <div class="row">
+          <div class="col-text">
+            <div class="kicker s1-k">Valuation Basics</div>
+            <h2 class="s1-t">P/E &amp; P/B Valuation,<br />Per Sector</h2>
+            <ul class="bullets">
+              <li class="s1-b"><span class="mk" style="background:linear-gradient(135deg,var(--lav-d),var(--sky-d))">P</span>Price vs earnings, price vs book value</li>
+              <li class="s1-b"><span class="mk" style="background:linear-gradient(135deg,var(--mint-d),var(--sky-d))">H</span>Compare a sector to its own history</li>
+              <li class="s1-b"><span class="mk" style="background:linear-gradient(135deg,var(--blush-d),var(--peach-d))">M</span>Cheap or expensive vs the median</li>
+            </ul>
+          </div>
+          <div class="col-art">
+            <div class="metricwrap">
+              <div class="metric s1-m">
+                <div class="tag" style="background:linear-gradient(135deg,var(--lav-d),var(--sky-d))">P/E</div>
+                <div class="desc">Price &divide; Earnings<small>What you pay per ₹ of profit</small></div>
+              </div>
+              <div class="metric s1-m">
+                <div class="tag" style="background:linear-gradient(135deg,var(--mint-d),var(--sky-d))">P/B</div>
+                <div class="desc">Price &divide; Book value<small>What you pay per ₹ of net assets</small></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SLIDE 2 — REVERSION TO MEAN ============ -->
+      <div id="s2" class="slide clip" data-start="24" data-duration="12" data-track-index="4">
+        <div class="num s2-num">02</div>
+        <div class="kicker s2-k">The Core Idea</div>
+        <h2 class="s2-t">Reversion to the Mean</h2>
+        <div class="sub s2-sub">Valuations swing above and below the median — then pull back.</div>
+        <div class="card s2-chart" style="margin-top:40px; width:1300px;">
+          <svg width="1232" height="300" viewBox="0 0 1232 300">
+            <line x1="0" y1="150" x2="1232" y2="150" stroke="#8b5cf6" stroke-width="4"
+                  stroke-dasharray="14 12" opacity="0.7" />
+            <text x="0" y="138" font-family="Manrope" font-weight="700" font-size="26"
+                  fill="#8b5cf6">Historical median</text>
+            <path id="wave" d="M0,150 C120,60 200,40 300,70 C400,100 470,255 600,250
+                  C720,246 770,90 900,80 C1010,72 1090,210 1232,168"
+                  fill="none" stroke="#34c98a" stroke-width="7" stroke-linecap="round" />
+            <circle id="dot" r="13" fill="#34c98a" stroke="#fff" stroke-width="4" cx="0" cy="150" />
+            <g class="mark m-cheap">
+              <circle cx="600" cy="250" r="11" fill="#34c98a" />
+              <text x="600" y="294" text-anchor="middle" font-family="Sora" font-weight="800"
+                    font-size="28" fill="#1d9966">CHEAP — buy</text>
+            </g>
+            <g class="mark m-exp">
+              <circle cx="300" cy="70" r="11" fill="#f06fab" />
+              <text x="300" y="46" text-anchor="middle" font-family="Sora" font-weight="800"
+                    font-size="28" fill="#d24f8e">EXPENSIVE — trim</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+
+      <!-- ============ SLIDE 3 — FIND OPPORTUNITIES ============ -->
+      <div id="s3" class="slide clip" data-start="36" data-duration="12" data-track-index="5">
+        <div class="num s3-num">03</div>
+        <div class="row">
+          <div class="col-text">
+            <div class="kicker s3-k">Put It To Work</div>
+            <h2 class="s3-t">Find Opportunities<br />with SectorScope</h2>
+            <ul class="bullets">
+              <li class="s3-b"><span class="mk" style="background:linear-gradient(135deg,var(--mint-d),var(--sky-d))">&uarr;</span>10 NSE sectors ranked cheap &rarr; expensive</li>
+              <li class="s3-b"><span class="mk" style="background:linear-gradient(135deg,var(--lav-d),var(--blush-d))">&asymp;</span>Green floats up, red sinks down</li>
+              <li class="s3-b"><span class="mk" style="background:linear-gradient(135deg,var(--peach-d),var(--blush-d))">!</span>EPS pills flag falling-knife traps</li>
+            </ul>
+          </div>
+          <div class="col-art">
+            <div class="stack">
+              <div class="seccard s3-card" style="border-left-color:var(--mint-d)">
+                <span class="nm">PSU Bank</span>
+                <span class="band" style="background:#dffaee;color:#1d9966">Very Cheap</span>
+              </div>
+              <div class="seccard s3-card" style="border-left-color:var(--mint-d)">
+                <span class="nm">Pharma</span>
+                <span class="band" style="background:#dffaee;color:#1d9966">Cheap</span>
+              </div>
+              <div class="seccard s3-card" style="border-left-color:var(--peach-d)">
+                <span class="nm">Auto</span>
+                <span class="band" style="background:#fff0dd;color:#b9711e">Neutral</span>
+              </div>
+              <div class="seccard s3-card" style="border-left-color:var(--blush-d)">
+                <span class="nm">Realty</span>
+                <span class="band" style="background:#ffe3f0;color:#d24f8e">Expensive</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SLIDE 4 — BACKTESTS ============ -->
+      <div id="s4" class="slide clip" data-start="48" data-duration="12" data-track-index="6">
+        <div class="num s4-num">04</div>
+        <div class="row">
+          <div class="col-text">
+            <div class="kicker s4-k">Build Conviction</div>
+            <h2 class="s4-t">Time Entry<br />with Backtests</h2>
+            <ul class="bullets">
+              <li class="s4-b"><span class="mk" style="background:linear-gradient(135deg,var(--sky-d),var(--lav-d))">&#8635;</span>Every past time the sector hit today's level</li>
+              <li class="s4-b"><span class="mk" style="background:linear-gradient(135deg,var(--mint-d),var(--sky-d))">%</span>The 6-month &amp; 1-year returns that followed</li>
+              <li class="s4-b"><span class="mk" style="background:linear-gradient(135deg,var(--lav-d),var(--blush-d))">&check;</span>Evidence, not gut feel</li>
+            </ul>
+          </div>
+          <div class="col-art">
+            <div class="card" style="padding:46px 54px;">
+              <div class="bars">
+                <div class="barcol">
+                  <div class="bar s4-bar" data-h="200" style="height:0;">+18%</div>
+                  <div class="barlabel">6-month</div>
+                </div>
+                <div class="barcol">
+                  <div class="bar s4-bar" data-h="320" style="height:0;">+31%</div>
+                  <div class="barlabel">1-year</div>
+                </div>
+              </div>
+              <div class="sub" style="font-size:26px;margin-top:26px;text-align:center;max-width:520px;">
+                Illustrative forward return after a “Cheap” signal
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ SLIDE 5 — ADVANCED ============ -->
+      <div id="s5" class="slide clip" data-start="60" data-duration="12" data-track-index="7">
+        <div class="num s5-num">05</div>
+        <div class="kicker s5-k">Go Deeper</div>
+        <h2 class="s5-t">Advanced SectorScope Features</h2>
+        <div class="chips" style="margin-top:46px;">
+          <div class="chip s5-c"><span class="ic" style="background:var(--lav-d)"></span>Percentile rank + % of weighted reference</div>
+          <div class="chip s5-c"><span class="ic" style="background:var(--mint-d)"></span>Quarterly EPS &amp; fiscal-quarter detail</div>
+          <div class="chip s5-c"><span class="ic" style="background:var(--sky-d)"></span>Annual EPS-growth charts</div>
+          <div class="chip s5-c"><span class="ic" style="background:var(--blush-d)"></span>Divergence signals</div>
+          <div class="chip s5-c"><span class="ic" style="background:var(--peach-d)"></span>Live intraday feed</div>
+        </div>
+      </div>
+
+      <!-- ============ SLIDE 6 — OUTRO ============ -->
+      <div id="s6" class="slide center clip" data-start="72" data-duration="12" data-track-index="8">
+        <div class="eyebrow s6-eb"><span class="dot"></span>LET'S BEGIN</div>
+        <h1 class="s6-title" style="margin-top:26px; font-size:104px;">Ready to read<br />the sectors?</h1>
+        <div class="sub s6-sub" style="margin-top:30px;">Basics of Sectoral Rotation</div>
+        <div class="pill s6-pill"><span class="logo"></span>SectorScope · educational use only</div>
+      </div>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const D = 12;            // seconds per slide
+      const B = 0.6;           // one beat @ 100 BPM
+
+      // progress bar across the whole video
+      tl.fromTo("#prog", { scaleX: 0 }, { scaleX: 1, duration: 84, ease: "none" }, 0);
+
+      // generic slide frame fade in / out (uses the clip container)
+      function frame(id, t0) {
+        tl.fromTo("#" + id, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: "power2.out" }, t0);
+        tl.to("#" + id, { opacity: 0, duration: 0.45, ease: "power2.in" }, t0 + D - 0.55);
+      }
+
+      // stagger a set of elements in, snapped to the beat grid
+      function popIn(sel, t0, step) {
+        step = step || B * 0.5;
+        gsap.utils.toArray(sel).forEach((el, i) => {
+          tl.from(el, { opacity: 0, y: 44, duration: 0.55, ease: "back.out(1.5)" }, t0 + i * step);
+        });
+      }
+
+      // ---- slide 0: title ----
+      frame("s0", 0);
+      tl.from(".s0-eb", { opacity: 0, y: -30, duration: 0.5, ease: "power3.out" }, 0.3);
+      tl.from(".s0-title", { opacity: 0, y: 60, duration: 0.7, ease: "power3.out" }, 0.6);
+      tl.from(".s0-sub", { opacity: 0, y: 30, duration: 0.6, ease: "power2.out" }, 1.2);
+      tl.from(".s0-pill", { opacity: 0, scale: 0.7, duration: 0.6, ease: "back.out(2)" }, 1.7);
+
+      // ---- slide 1: P/E & P/B ----
+      frame("s1", 12);
+      tl.from(".s1-num", { opacity: 0, scale: 0.6, rotation: -12, duration: 0.6, ease: "back.out(2)" }, 12.2);
+      tl.from(".s1-k", { opacity: 0, x: -40, duration: 0.5, ease: "power3.out" }, 12.3);
+      tl.from(".s1-t", { opacity: 0, y: 40, duration: 0.6, ease: "power3.out" }, 12.55);
+      popIn(".s1-b", 13.1);
+      gsap.utils.toArray(".s1-m").forEach((el, i) => {
+        tl.from(el, { opacity: 0, x: 60, duration: 0.6, ease: "power3.out" }, 13.0 + i * 0.4);
+      });
+
+      // ---- slide 2: reversion to mean ----
+      frame("s2", 24);
+      tl.from(".s2-num", { opacity: 0, scale: 0.6, rotation: -12, duration: 0.6, ease: "back.out(2)" }, 24.2);
+      tl.from(".s2-k", { opacity: 0, x: -40, duration: 0.5, ease: "power3.out" }, 24.3);
+      tl.from(".s2-t", { opacity: 0, y: 40, duration: 0.6, ease: "power3.out" }, 24.5);
+      tl.from(".s2-sub", { opacity: 0, y: 24, duration: 0.5, ease: "power2.out" }, 24.95);
+      tl.from(".s2-chart", { opacity: 0, y: 40, duration: 0.6, ease: "power2.out" }, 25.3);
+      const wave = document.getElementById("wave");
+      const len = wave.getTotalLength();
+      wave.style.strokeDasharray = len;
+      const dot = document.getElementById("dot");
+      const drawObj = { v: 0 };
+      tl.fromTo(wave, { strokeDashoffset: len }, { strokeDashoffset: 0, duration: 3.4, ease: "power1.inOut" }, 25.7);
+      tl.fromTo(drawObj, { v: 0 }, {
+        v: len, duration: 3.4, ease: "power1.inOut",
+        onUpdate: () => {
+          const p = wave.getPointAtLength(drawObj.v);
+          dot.setAttribute("cx", p.x);
+          dot.setAttribute("cy", p.y);
+        }
+      }, 25.7);
+      tl.from(".m-exp", { opacity: 0, scale: 0.4, duration: 0.5, ease: "back.out(2)", transformOrigin: "center" }, 26.5);
+      tl.from(".m-cheap", { opacity: 0, scale: 0.4, duration: 0.5, ease: "back.out(2)", transformOrigin: "center" }, 28.0);
+
+      // ---- slide 3: find opportunities ----
+      frame("s3", 36);
+      tl.from(".s3-num", { opacity: 0, scale: 0.6, rotation: -12, duration: 0.6, ease: "back.out(2)" }, 36.2);
+      tl.from(".s3-k", { opacity: 0, x: -40, duration: 0.5, ease: "power3.out" }, 36.3);
+      tl.from(".s3-t", { opacity: 0, y: 40, duration: 0.6, ease: "power3.out" }, 36.55);
+      popIn(".s3-b", 37.1);
+      gsap.utils.toArray(".s3-card").forEach((el, i) => {
+        tl.from(el, { opacity: 0, x: 80, duration: 0.55, ease: "power3.out" }, 36.9 + i * 0.32);
+      });
+
+      // ---- slide 4: backtests ----
+      frame("s4", 48);
+      tl.from(".s4-num", { opacity: 0, scale: 0.6, rotation: -12, duration: 0.6, ease: "back.out(2)" }, 48.2);
+      tl.from(".s4-k", { opacity: 0, x: -40, duration: 0.5, ease: "power3.out" }, 48.3);
+      tl.from(".s4-t", { opacity: 0, y: 40, duration: 0.6, ease: "power3.out" }, 48.55);
+      popIn(".s4-b", 49.1);
+      gsap.utils.toArray(".s4-bar").forEach((el, i) => {
+        const h = parseInt(el.getAttribute("data-h"), 10);
+        tl.fromTo(el, { height: 0 }, { height: h, duration: 0.9, ease: "power3.out" }, 49.4 + i * 0.3);
+      });
+
+      // ---- slide 5: advanced ----
+      frame("s5", 60);
+      tl.from(".s5-num", { opacity: 0, scale: 0.6, rotation: -12, duration: 0.6, ease: "back.out(2)" }, 60.2);
+      tl.from(".s5-k", { opacity: 0, x: -40, duration: 0.5, ease: "power3.out" }, 60.3);
+      tl.from(".s5-t", { opacity: 0, y: 40, duration: 0.6, ease: "power3.out" }, 60.5);
+      gsap.utils.toArray(".s5-c").forEach((el, i) => {
+        tl.from(el, { opacity: 0, scale: 0.7, y: 30, duration: 0.5, ease: "back.out(1.8)" }, 61.0 + i * 0.28);
+      });
+
+      // ---- slide 6: outro ----
+      frame("s6", 72);
+      tl.from(".s6-eb", { opacity: 0, y: -30, duration: 0.5, ease: "power3.out" }, 72.3);
+      tl.from(".s6-title", { opacity: 0, y: 60, duration: 0.7, ease: "power3.out" }, 72.6);
+      tl.from(".s6-sub", { opacity: 0, y: 30, duration: 0.6, ease: "power2.out" }, 73.2);
+      tl.from(".s6-pill", { opacity: 0, scale: 0.7, duration: 0.6, ease: "back.out(2)" }, 73.7);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
