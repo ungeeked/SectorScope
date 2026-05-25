@@ -2,7 +2,7 @@
 """Generate an original, royalty-free chillhop beat for the SectorScope class intro.
 
 Deterministic synthesis (no samples, no external audio) -> assets/beat.wav.
-Tempo 100 BPM, 35 bars = 84.0s, to match the video timeline.
+Tempo 100 BPM, 5 bars = 12.0s, to match the video timeline.
 """
 import os
 import struct
@@ -14,7 +14,7 @@ SR = 44100
 BPM = 100.0
 BEAT = 60.0 / BPM          # 0.60s
 BAR = 4 * BEAT             # 2.40s
-BARS = 35                  # -> 84.0s total
+BARS = 5                   # -> 12.0s total
 TOTAL = BARS * BAR
 N = int(TOTAL * SR)
 
