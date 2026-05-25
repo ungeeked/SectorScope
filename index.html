@@ -1,104 +1,27 @@
 <!DOCTYPE html>
-<html lang="en-IN">
+<html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-
-<!-- ══ PRIMARY SEO ══ -->
-<title>SectorScope — NSE Sector Valuations, Backtests & PE Percentile Ranks</title>
-<meta name="description" content="Track valuation metrics and see which NSE sectors are cheap or expensive — ranked against history. Backtests, alerts, AI summaries built in.">
-<link rel="canonical" href="https://sectorscope.in/">
-<meta name="robots" content="index,follow,max-image-preview:large">
-<meta name="author" content="Prashant Gupta">
-<meta name="application-name" content="SectorScope">
-<link rel="alternate" hreflang="en-in" href="https://sectorscope.in/">
-<link rel="alternate" hreflang="x-default" href="https://sectorscope.in/">
-<meta name="theme-color" content="#080b12" media="(prefers-color-scheme: dark)">
-<meta name="theme-color" content="#eef1f8" media="(prefers-color-scheme: light)">
-
-<!-- ══ OPEN GRAPH ══ -->
-<meta property="og:site_name" content="SectorScope">
-<meta property="og:title" content="SectorScope — Sector analysis, simplified">
-<meta property="og:description" content="Track valuation metrics and see which NSE sectors are cheap or expensive — ranked against history. Backtests, alerts, AI summaries built in.">
-<meta property="og:image" content="https://sectorscope.in/assets/og-image.png">
-<meta property="og:image:alt" content="SectorScope dashboard showing NSE sector valuation cards ranked from cheap to expensive">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:url" content="https://sectorscope.in/">
-<meta property="og:type" content="website">
-<meta property="og:locale" content="en_IN">
-
-<!-- ══ TWITTER ══ -->
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="SectorScope — NSE Sector Valuations & Backtests">
-<meta name="twitter:description" content="See which NSE sectors are cheap or expensive — ranked against history. Backtests, alerts, AI summaries built in.">
-<meta name="twitter:image" content="https://sectorscope.in/assets/og-image.png">
-<meta name="twitter:image:alt" content="SectorScope dashboard showing NSE sector valuation cards">
-
-<!-- ══ ICONS ══ -->
-<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
-<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
-<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
-
-<!-- ══ STRUCTURED DATA: WebApplication ══ -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "SectorScope",
-  "url": "https://sectorscope.in/",
-  "description": "Track valuation metrics across NSE sector indices — IT, Bank, Pharma, Auto, FMCG, Metal, Energy and more. PE/PB percentile ranks vs 10-year history, sector rotation backtests, alerts and AI summaries.",
-  "applicationCategory": "FinanceApplication",
-  "operatingSystem": "Any",
-  "browserRequirements": "Requires JavaScript. Modern browser.",
-  "inLanguage": "en-IN",
-  "offers": [
-    {"@type": "Offer", "name": "Free", "price": "0", "priceCurrency": "INR"},
-    {"@type": "Offer", "name": "SectorScope Plus", "price": "99", "priceCurrency": "INR", "category": "subscription"}
-  ],
-  "creator": {"@type": "Person", "name": "Prashant Gupta"},
-  "featureList": [
-    "NSE sector valuation dashboard (13+ sectors)",
-    "PE and PB percentile ranks vs 10-year history",
-    "Sector rotation backtests",
-    "Price and valuation alerts",
-    "AI-written sector summaries",
-    "Detail pages with earnings history"
-  ]
-}
-</script>
-
-<!-- ══ STRUCTURED DATA: Organization (enables brand sitelinks) ══ -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": "SectorScope",
-  "url": "https://sectorscope.in/",
-  "logo": "https://sectorscope.in/assets/og-image.png",
-  "description": "Sector valuation dashboard for the Indian stock market."
-}
-</script>
-
-<!-- ══ STRUCTURED DATA: BreadcrumbList (declares logical sections of the SPA) ══ -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {"@type": "ListItem", "position": 1, "name": "Dashboard", "item": "https://sectorscope.in/"},
-    {"@type": "ListItem", "position": 2, "name": "Backtest", "item": "https://sectorscope.in/#backtest"},
-    {"@type": "ListItem", "position": 3, "name": "Help", "item": "https://sectorscope.in/#help"}
-  ]
-}
-</script>
-
 <!-- Warm up DNS+TLS to the Cloudflare Worker domain in parallel with HTML
      parse so the first sector fetch doesn't pay handshake latency.
      crossorigin attribute: our fetches are CORS (different origin from
      sectorscope.in), so the preconnection must be marked CORS-capable to
      actually be reused. -->
 <link rel="preconnect" href="https://sectorscope.prashant-06f.workers.dev" crossorigin>
+<title>SectorScope</title>
+<link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
+<link rel="icon" type="image/x-icon" href="/assets/favicon.ico">
+<link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+<meta name="description" content="Track valuation metrics and see which NSE sectors are cheap or expensive — ranked against history. Backtests, alerts, AI summaries built in.">
+<meta property="og:title" content="SectorScope — Sector analysis, simplified">
+<meta property="og:description" content="Track valuation metrics and see which NSE sectors are cheap or expensive — ranked against history. Backtests, alerts, AI summaries built in.">
+<meta property="og:image" content="https://sectorscope.in/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="https://sectorscope.in">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <!-- Set theme class before any CSS is parsed to kill the dark→light flash on cold load. -->
 <script>(function(){try{var t=localStorage.getItem('theme');if(t!=='dark') document.documentElement.classList.add('light');}catch(e){}})();</script>
 <!-- Warm TCP+TLS to the origins we hit on cold load so the handshakes overlap with HTML/CSS parse. -->
@@ -139,11 +62,6 @@ html.light{
   --na-bg:  #fff;   --na-bd: rgba(150,160,180,.22); --na-tl: rgba(150,160,180,.05);
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-/* Visually hidden for sighted users but still indexed by crawlers and
-   read by screen readers. Used for the page-level H1 that gives the
-   document a proper SEO heading without affecting the visual design
-   (the brand mark in the header is an SVG, not a heading). */
-.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 /* `scrollbar-gutter:stable` reserves space for the vertical scrollbar
    whether or not the page actually needs one. Without this, switching
    from Dashboard (long, has scrollbar) to Backtest (short, no scrollbar)
@@ -197,6 +115,9 @@ html.light #live-chip{color:#15803d;border-color:rgba(21,128,61,.3);background:r
 .user-menu-item.upgrade-item:hover{background:rgba(99,102,241,.12)}
 .user-menu-item.cancel-item{color:var(--ghost);font-size:.74rem}
 .user-menu-item.cancel-item:hover{color:#f87171;background:rgba(248,113,113,.07)}
+.user-menu-divider{height:1px;background:var(--bdr);margin:4px 4px}
+.user-menu-item.delete-account-item{color:var(--ghost);font-size:.74rem}
+.user-menu-item.delete-account-item:hover{color:#f87171;background:rgba(248,113,113,.07)}
 .plus-badge{font-family:var(--mono);font-size:.44rem;font-weight:700;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:2px 5px;border-radius:4px;margin-left:4px;vertical-align:middle;letter-spacing:.3px}
 .user-sub-status{font-family:var(--mono);font-size:.48rem;color:var(--ghost);padding:2px 8px 6px;}
 .theme-pill{width:50px;height:26px;background:var(--bg3);border:1px solid var(--bdr);border-radius:26px;cursor:pointer;position:relative;transition:background .3s;flex-shrink:0;padding:0}
@@ -557,6 +478,14 @@ html.light .sk{background:linear-gradient(90deg,rgba(0,0,0,.04) 0%,rgba(0,0,0,.0
 .bt-metric-block.bt-disabled{opacity:.4}
 .bt-metric-block.bt-disabled .bt-cb-lbl{text-decoration:line-through}
 .bt-cb-row input[type=checkbox]:disabled{cursor:not-allowed;opacity:.5}
+/* Sell-trigger field — radio toggle + revealed content block.
+   Spans both columns on desktop (the row is short enough that two
+   side-by-side fields would look cramped). On mobile it inherits the
+   1-column collapse from .bt-ctrl-grid. */
+.bt-trig-row{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:3px}
+.bt-trig-opt{display:inline-flex;align-items:center;gap:7px;cursor:pointer;font-family:var(--body);font-size:.8rem;font-weight:600;color:var(--txt)}
+.bt-trig-opt input[type=radio]{width:15px;height:15px;accent-color:#6366f1;cursor:pointer;flex-shrink:0}
+.bt-trig-content{max-width:380px}
 /* run */
 .bt-run-row{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:6px}
 .bt-spinner{display:none;align-items:center;gap:7px;font-family:var(--mono);font-size:.68rem;color:var(--sub)}
@@ -1171,20 +1100,6 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 </style>
 </head>
 <body>
-<!-- ══ SEO: page-level H1 (sr-only — invisible to sighted users, picked up by crawlers/screen readers) ══ -->
-<h1 class="sr-only">SectorScope — NSE Sector Valuation Dashboard, Backtest Engine &amp; Alerts</h1>
-
-<!-- ══ SEO: content fallback for crawlers/clients that don't run JS ══ -->
-<noscript>
-  <div style="max-width:780px;margin:40px auto;padding:24px;font-family:sans-serif;line-height:1.6;color:#dce5f5;background:#0d1120;border:1px solid rgba(255,255,255,.08);border-radius:12px">
-    <h2 style="font-size:1.4rem;margin-bottom:12px">SectorScope needs JavaScript</h2>
-    <p style="margin-bottom:12px"><strong>SectorScope</strong> is a free valuation dashboard for NSE sector indices. It tracks PE and PB ratios across IT, Bank, Pharma, Auto, FMCG, Metal, Energy, Realty, Infra, PSU Bank, Fin Services, Defence and Healthcare — and ranks each sector against its own 10-year history so you can see at a glance which sectors are cheap and which are expensive.</p>
-    <p style="margin-bottom:12px">Features include sector rotation backtests (test "buy when PE percentile &lt; 20" type rules against 10 years of NSE data), email alerts when a sector hits a valuation band, and AI-written summaries of each sector's current setup.</p>
-    <p style="margin-bottom:12px">Please enable JavaScript to use the dashboard. The site is free; SectorScope Plus is ₹99/month for power features.</p>
-    <p>Contact: <a href="https://sectorscope.in/" style="color:#69f0ae">sectorscope.in</a></p>
-  </div>
-</noscript>
-
 <header>
   <div class="h-brand">
     <svg class="h-brandmark" viewBox="0 0 175 36" role="img" aria-label="SectorScope">
@@ -1244,6 +1159,13 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
           Sign out
         </div>
+        <!-- Divider — visually separates destructive action from the rest. -->
+        <div class="user-menu-divider"></div>
+        <!-- Delete account: opens typed-confirmation pane, calls DELETE /account. -->
+        <div class="user-menu-item delete-account-item" onclick="openDeleteAccountPane();closeUserMenu()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          Delete account
+        </div>
       </div>
     </div>
     <button class="theme-pill" id="theme-pill-btn" onclick="toggleTheme()" aria-label="Toggle light/dark theme" aria-pressed="false">
@@ -1268,7 +1190,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 <div id="page-bt" style="display:none">
   <div class="bt-card">
     <div class="bt-card-head">
-      <h2 class="bt-card-title">Backtest Configuration</h2>
+      <div class="bt-card-title">Backtest Configuration</div>
       <div class="bt-load-chip" id="bt-load-chip"></div>
     </div>
     <div class="bt-card-body">
@@ -1321,7 +1243,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
           <div class="bt-slider-note">Minimum gap between consecutive signal dates</div>
         </div>
         <div class="bt-field">
-          <div class="bt-lbl">Metrics &amp; Thresholds</div>
+          <div class="bt-lbl">Buy Trigger</div>
           <div class="bt-metric-row">
             <!-- PE -->
             <div class="bt-metric-block" id="bt-pe-block">
@@ -1353,6 +1275,42 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
             </div>
           </div>
         </div>
+        <div class="bt-field" style="grid-column:1/-1">
+          <div class="bt-lbl">Sell Trigger</div>
+          <div class="bt-trig-row">
+            <label class="bt-trig-opt">
+              <input type="radio" name="bt-trig-mode" value="time" checked onchange="btUpdateSellTrigger()">
+              <span>Time-based</span>
+            </label>
+            <label class="bt-trig-opt">
+              <input type="radio" name="bt-trig-mode" value="val" onchange="btUpdateSellTrigger()">
+              <span>Valuation-based</span>
+            </label>
+          </div>
+          <!-- Time-based: fixed-duration dropdown. Default 12m matches the
+               1-yr column the table used to show by default. -->
+          <div id="bt-sell-time-wrap" class="bt-trig-content">
+            <select class="bt-select" id="bt-sell-time">
+              <option value="3">3 months</option>
+              <option value="6">6 months</option>
+              <option value="9">9 months</option>
+              <option value="12" selected>12 months</option>
+              <option value="18">18 months</option>
+              <option value="24">24 months</option>
+            </select>
+            <div class="bt-slider-note">Hold for a fixed duration after buy, then sell</div>
+          </div>
+          <!-- Valuation-based: sell when sector recovers to chosen % of
+               weighted ref. Same metric(s) the buy fired on, opposite
+               direction. Both-mode buys exit on EITHER PE OR PB crossing. -->
+          <div id="bt-sell-val-wrap" class="bt-trig-content" style="display:none">
+            <div class="bt-slider-row">
+              <input type="range" class="bt-slider" id="bt-sell-val-sl" min="50" max="150" value="100" oninput="btSellValSlideLbl(this.value)"/>
+              <span class="bt-slider-val" id="bt-sell-val-lbl">100%</span>
+            </div>
+            <div class="bt-slider-note" id="bt-sell-val-note">Sell on first close at or above 100% of weighted ref</div>
+          </div>
+        </div>
         <div class="bt-field" style="justify-content:flex-end;grid-column:1/-1">
           <div class="bt-run-row">
             <div class="bt-spinner" id="bt-spinner"><div class="spin-ring"></div><span>Computing…</span></div>
@@ -1373,7 +1331,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 <div id="page-help" style="display:none">
 
   <div class="hp-hero">
-    <h2 class="hp-hero-ttl">How this works</h2>
+    <div class="hp-hero-ttl">How this works</div>
     <div class="hp-hero-sub">A friendly walkthrough — no jargon assumed. We'll start with what each number on a card means, then build up to how the signals are calculated and how to use the Backtest page to sanity-check today's call against history. Takes about ten minutes start to finish.</div>
   </div>
 
@@ -1394,7 +1352,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 1. QUICK START ══ -->
   <div class="hp-sec" id="h-quickstart">
-    <h2 class="hp-sec-h">1 · Quick start</h2>
+    <div class="hp-sec-h">1 · Quick start</div>
     <div class="hp-p">SectorScope answers one question: <strong>which Indian sectors are cheap or expensive right now, compared to how they've traded over the past several years?</strong> It doesn't pick stocks. It looks at whole sectors — IT, Banks, Pharma, Auto, and so on — and tells you whether each one is trading at an unusual discount or premium to its own history.</div>
     <div class="hp-p">Every sector gets a coloured card. <span style="color:var(--vchp-c);font-weight:700">Green</span> means cheap vs history; <span style="color:var(--vexp-c);font-weight:700">red</span> means expensive vs history. Cards are sorted with the cheapest on top, so the most interesting names always rise to the front.</div>
 
@@ -1422,14 +1380,14 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 2. VALUATION BASICS ══ -->
   <div class="hp-sec" id="h-basics">
-    <h2 class="hp-sec-h">2 · Valuation basics</h2>
+    <div class="hp-sec-h">2 · Valuation basics</div>
     <div class="hp-p">If you're already comfortable with P/E, P/B, percentiles and medians, skip to section 3. Otherwise — five minutes here will make everything that follows much easier to read.</div>
 
-    <h3 class="hp-sub-h">What's a sector index?</h3>
+    <div class="hp-sub-h">What's a sector index?</div>
     <div class="hp-p">The Indian stock market is divided into sectors by the kind of business each company runs — software companies form the IT sector, banks form the Banking sector, drug companies form the Pharma sector, and so on. NSE (the National Stock Exchange) publishes a single number for each sector that tracks the combined market value of the largest companies in it. That number is the <strong>sector index</strong>. When you read "Nifty Bank is up 1.2% today," it means the average bank in that index moved up 1.2%.</div>
     <div class="hp-p">SectorScope tracks multiple sector indices: <strong>IT, Bank, PSU Bank, Auto, FMCG, Pharma, Realty, Metal, Energy, Infra, Fin Services, Defence, Healthcare</strong>. Plus the broad Nifty 50, used as a benchmark inside the Backtest engine.</div>
 
-    <h3 class="hp-sub-h">P/E — Price to Earnings</h3>
+    <div class="hp-sub-h">P/E — Price to Earnings</div>
     <div class="hp-p">If a stock trades at ₹100 and the underlying business earns ₹5 per share each year, the <strong>P/E</strong> is 100 ÷ 5 = <strong>20</strong>. Read it as "investors are paying ₹20 for every ₹1 of yearly profit." Lower P/E generally means cheaper; higher P/E generally means richer (often because the market expects growth).</div>
     <div class="hp-p">Sector P/E works the same way, but uses the sector's combined earnings instead of a single company's. The same sector can have a wildly different P/E at different points in history — Nifty IT was at P/E 18 in 2020 and over 35 in 2021. SectorScope's job is to tell you where today's P/E sits inside that historical range.</div>
 
@@ -1438,14 +1396,14 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">Banks earn from lending — and reported earnings get distorted by provisioning cycles (when banks set aside money for expected bad loans). In a stressed quarter, a bank's earnings can collapse temporarily even if the underlying business is fine, which makes P/E look misleadingly high. For Bank and PSU Bank, we use P/B instead.</div>
     </div>
 
-    <h3 class="hp-sub-h">P/B — Price to Book</h3>
+    <div class="hp-sub-h">P/B — Price to Book</div>
     <div class="hp-p"><strong>Book value</strong> is what the company would be worth on paper if you summed up all its assets and subtracted all its debts. P/B compares today's stock price to that book value. A P/B of 1 means you're paying exactly what the company is "worth on paper." A P/B of 3 means you're paying three times that.</div>
     <div class="hp-p">P/B is the right lens for banks because their book value moves smoothly even when earnings are noisy. It's also useful for asset-heavy sectors like Realty, Energy, Metals, and Infra — where we use <em>both</em> P/E and P/B and look for both to agree before calling a sector cheap.</div>
 
-    <h3 class="hp-sub-h">EPS — Earnings Per Share</h3>
+    <div class="hp-sub-h">EPS — Earnings Per Share</div>
     <div class="hp-p"><strong>EPS</strong> is just the "E" in P/E, looked at on its own. It's how much profit each share is generating — for a sector, it's the combined earnings divided by the index unit. Tracking EPS over time tells you whether the underlying earnings story is healthy, growing, or breaking down. A sector that looks "cheap" because price has fallen is very different from one that looks "cheap" because earnings have collapsed faster than price.</div>
 
-    <h3 class="hp-sub-h">Median &amp; percentile — the "vs history" comparison</h3>
+    <div class="hp-sub-h">Median &amp; percentile — the "vs history" comparison</div>
     <div class="hp-p">Throughout the app you'll see numbers like "P/E is 18% below the 5-year median" or "ranked at the 12th percentile." These are two different ways of comparing today to the past — both useful, both need a one-line definition.</div>
 
     <dl class="hp-kv">
@@ -1454,7 +1412,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <dt>Why we use both</dt><dd>Median tells you <em>how far</em> below the typical value you are. Percentile tells you <em>how often</em> the sector has been this cheap before. They usually agree — a sector that's well below median is also low on percentile rank. When they disagree, we surface a small warning capsule so you don't take the cheap label at face value.</dd>
     </dl>
 
-    <h3 class="hp-sub-h">"Weighted reference" — putting it together</h3>
+    <div class="hp-sub-h">"Weighted reference" — putting it together</div>
     <div class="hp-p">Rather than picking one history window and sticking with it, we compute three medians — the 3-year, 5-year, and 10-year — and blend them: <strong>30% weight on the 3-year, 60% on the 5-year, 10% on the 10-year</strong>. The result is what we call the <strong>weighted reference</strong>, and it's the single number we compare today against to assign a band (Very Cheap, Cheap, Neutral, Expensive, Very Expensive).</div>
     <div class="hp-p">Why this blend? The 5-year median is the workhorse — long enough to absorb a couple of cycles, short enough to still be relevant. The 3-year medium adds responsiveness so a sector that has structurally re-rated higher (or lower) gets credit for its more recent regime. The 10-year is a small safety anchor that pulls in deep history so we don't lose context entirely.</div>
 
@@ -1471,10 +1429,10 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 3. THE DASHBOARD ══ -->
   <div class="hp-sec" id="h-card">
-    <h2 class="hp-sec-h">3 · The dashboard</h2>
+    <div class="hp-sec-h">3 · The dashboard</div>
     <div class="hp-p">The dashboard is the home screen — one card per sector, all visible at once. This section walks through everything that's on a card, plus the order they appear in.</div>
 
-    <h3 class="hp-sub-h">Sort order — why the green ones are on top</h3>
+    <div class="hp-sub-h">Sort order — why the green ones are on top</div>
     <div class="hp-p">Cards are sorted by <strong>how cheap each sector is right now relative to its own history</strong>. The cheapest sit on top, the richest at the bottom. Specifically, the sort key is each sector's current valuation expressed as a percentage of its weighted reference (the blended median we covered in section 2).</div>
     <div class="hp-p">For sectors where we track <em>both</em> P/E and P/B, we use whichever metric is showing as <strong>more expensive</strong>. The reasoning: we only want to flag a sector as cheap when both lenses agree. If P/E says cheap but P/B says expensive, that's a yellow flag worth surfacing rather than burying.</div>
 
@@ -1483,7 +1441,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">If Nifty IT is at 78% of its weighted reference (very cheap) and Nifty Auto is at 92% (slightly cheap), IT lands above Auto on the dashboard. If Nifty Realty (a dual-metric sector) is at 75% on P/E but 110% on P/B, we use the 110% — so it sorts as if it were Neutral, not Very Cheap. The colour and band on the card reflect the same logic.</div>
     </div>
 
-    <h3 class="hp-sub-h">Anatomy of a card</h3>
+    <div class="hp-sub-h">Anatomy of a card</div>
     <div class="hp-p">Each card packs a lot into a small footprint. Here's an annotated example of <strong>Nifty Auto</strong> — every element explained.</div>
 
     <div class="hp-mock-outer">
@@ -1586,7 +1544,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </div>
     </div>
 
-    <h3 class="hp-sub-h">Three things you can do with a card</h3>
+    <div class="hp-sub-h">Three things you can do with a card</div>
     <div class="hp-p" style="margin-bottom:8px">Beyond just reading the numbers, the card has three interactive elements:</div>
     <div class="hp-card info">
       <div class="hp-card-ttl">↗ Tap the card</div>
@@ -1601,7 +1559,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">Tap directly on the chart inside any card to open an expanded version — full-screen, with selectable metrics (P/E, P/B, EPS, Price, Dividend Yield), date-range pills, drag-to-measure, and toggleable historical-median overlays. <em>Plus only.</em> Full walkthrough in <strong>section 7</strong>.</div>
     </div>
 
-    <h3 class="hp-sub-h">Which metric does each sector use?</h3>
+    <div class="hp-sub-h">Which metric does each sector use?</div>
     <div class="hp-p">The tool picks the right metric automatically — you don't need to change anything.</div>
     <dl class="hp-kv">
       <dt>P/E only</dt><dd>IT, Auto, FMCG, Pharma, Defence, Healthcare — stable, earnings-driven businesses where P/E is the primary lens.</dd>
@@ -1613,11 +1571,11 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 4. HOW SIGNALS WORK ══ -->
   <div class="hp-sec" id="h-bands">
-    <h2 class="hp-sec-h">4 · How signals work</h2>
+    <div class="hp-sec-h">4 · How signals work</div>
     <div class="hp-p">Every coloured band, percentile rank, and pill on a dashboard card comes from one of three signals: the <strong>band</strong> (how far below or above the historical anchor), the <strong>percentile</strong> cross-check (how often the sector has been at this level), and the <strong>EPS pill</strong> (whether the underlying earnings story supports the cheapness). This section walks through each, with concrete numbers.</div>
     <div class="hp-p">A quick refresher: the <em>weighted reference</em> we'll keep referring to is a blend of three rolling medians (30% · 3-year, 60% · 5-year, 10% · 10-year). Newer sectors with less than 5 years of history use a different blend (40% all-time + 60% × 3-year) and get a small "N yrs history" badge on the card. If that's already feeling fuzzy, jump back to <strong>section 2</strong> for the full explanation.</div>
 
-    <h3 class="hp-sub-h">The band — your first read</h3>
+    <div class="hp-sub-h">The band — your first read</div>
     <div class="hp-p">The card colour is determined by a single number: <strong>current value ÷ weighted reference</strong>. Call this the <em>ratio</em>. Here's how each ratio maps to a verdict:</div>
 
     <!-- Band spectrum -->
@@ -1631,7 +1589,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
     <div class="hp-p">The Neutral band is slightly wider on the right (up to 105%) rather than symmetric around 100%. This is because sectors naturally drift a little above their own long-run median over time as the underlying businesses scale — being 5% above your median is not yet a warning.</div>
 
-    <h3 class="hp-sub-h">Worked example — how the band is calculated</h3>
+    <div class="hp-sub-h">Worked example — how the band is calculated</div>
     <div class="hp-p">Nifty Auto's P/E today is <strong>24.5</strong>. Its historical medians over different windows are:</div>
 
     <div class="hp-calc">
@@ -1674,7 +1632,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">The 5-year window covers roughly one full business cycle in India — close enough to reflect today's regime, long enough to include both peaks and troughs. The 10-year leg gets only 10% weight so that sectors that have permanently re-rated (like IT after 2020, or PSU Banks after 2022) aren't forever compared against a baseline that no longer applies.</div>
     </div>
 
-    <h3 class="hp-sub-h">The two signals on each card</h3>
+    <div class="hp-sub-h">The two signals on each card</div>
     <div class="hp-p">Each card shows <em>two</em> valuation signals side-by-side, like <code class="hp-c">P18 · 82% of ref</code>. They measure different things and can sometimes disagree.</div>
 
     <div class="hp-2sig">
@@ -1696,7 +1654,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </div>
     </div>
 
-    <h3 class="hp-sub-h">When the two signals disagree — the caution capsule</h3>
+    <div class="hp-sub-h">When the two signals disagree — the caution capsule</div>
     <div class="hp-p">Sometimes a sector looks cheap vs its anchor (% of ref says Cheap) but is <em>not unusual at all</em> in its recent 5-year distribution (percentile says P45 — it's been here half the time). That's a much weaker signal than a sector that is both below its anchor <em>and</em> historically unusual.</div>
 
     <div class="hp-2sig">
@@ -1714,7 +1672,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </div>
     </div>
 
-    <h3 class="hp-sub-h">The EPS pill — the third signal</h3>
+    <div class="hp-sub-h">The EPS pill — the third signal</div>
     <div class="hp-p">The band tells you whether the sector is cheap on multiples. The percentile tells you whether that cheapness is unusual. But neither tells you <em>why</em> it's cheap — and a sector trading at a discount because its earnings are collapsing is very different from one trading at a discount because price has dropped while earnings hold steady.</div>
     <div class="hp-p">That's where the EPS pill comes in. It's a small badge that appears on the EPS tile of the dashboard card, and it fires only when EPS is currently <em>low</em> compared to the sector's own all-time peak — meaning the cheapness on multiples might be a genuine opportunity (price has fallen but earnings will recover) or might be a value trap (earnings keep falling and price hasn't caught down yet). The pill tells you which.</div>
 
@@ -1730,7 +1688,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">On defensive sectors like FMCG, Pharma, and IT, EPS rarely falls far below its peak — these businesses earn through cycles. So the "low" gate fails most of the time, and the pill stays absent. That's not a bug; it just means the EPS signal isn't applicable. For these sectors, the valuation band alone carries the weight.</div>
     </div>
 
-    <h3 class="hp-sub-h">Three scenarios — putting the signals together</h3>
+    <div class="hp-sub-h">Three scenarios — putting the signals together</div>
     <div class="hp-p">A sector can look cheap for very different reasons. The combination of valuation band, % of peak EPS, and the EPS pill tells you which scenario you're looking at:</div>
 
     <div class="hp-eps-scen">
@@ -1774,7 +1732,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 5. THE DETAIL PAGE ══ -->
   <div class="hp-sec" id="h-detail">
-    <h2 class="hp-sec-h">5 · The detail page</h2>
+    <div class="hp-sec-h">5 · The detail page</div>
     <div class="hp-p">When you tap a card, a full-screen overlay opens with everything that didn't fit on the card. There's an AI-written summary at the top (Plus only — covered in <strong>section 7</strong>), then five information sections: a snapshot of the current numbers, a side-by-side view of how today compares to historical medians at three time horizons, a pair of bar charts showing the sector's earnings trajectory, a live table of the index's constituent stocks (Plus only), and finally a scrollable quarterly history table.</div>
     <div class="hp-p">This is where you go after the dashboard tells you a sector is interesting and you want to confirm whether the cheapness is genuine or a trap.</div>
 
@@ -1851,12 +1809,12 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-ov-section">
         <div class="hp-ov-head">③ EPS Growth</div>
         <div class="hp-ov-body">
-          <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">Two bar charts showing how the sector's earnings have evolved — one at annual resolution, one at quarterly resolution. Green bars = positive growth, red bars = contraction. Use these to sanity-check the valuation signal: a cheap sector with accelerating EPS is far more interesting than a cheap sector with collapsing EPS.</div>
+          <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">Two bar charts showing how the sector's earnings have evolved — one at annual resolution (anchored to Indian fiscal years), one at quarterly resolution. Green bars = positive growth, red bars = contraction. Use these to sanity-check the valuation signal: a cheap sector with accelerating EPS is far more interesting than a cheap sector with collapsing EPS.</div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 4px">
             <!-- Annual YoY mock -->
             <div style="background:var(--bg3);border:1px solid var(--bdr2);border-radius:8px;padding:8px 10px 6px">
-              <div style="font-family:var(--mono);font-size:.5rem;color:var(--ghost);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">EPS YoY Growth <span style="text-transform:none;letter-spacing:0;color:var(--sub)">· annual · last 10 yrs</span></div>
+              <div style="font-family:var(--mono);font-size:.5rem;color:var(--ghost);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">EPS YoY Growth <span style="text-transform:none;letter-spacing:0;color:var(--sub)">· annual · 10 FYs + current (partial)</span></div>
               <svg viewBox="0 0 280 110" style="width:100%;height:auto;display:block">
                 <!-- y axis + zero line -->
                 <line x1="30" y1="10" x2="30" y2="85" stroke="rgba(255,255,255,.11)" stroke-width="0.8" vector-effect="non-scaling-stroke"/>
@@ -1865,23 +1823,26 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
                 <text x="26" y="14" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.4)">+30%</text>
                 <text x="26" y="50.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.4)">0</text>
                 <text x="26" y="88" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.4)">-30%</text>
-                <!-- bars: year → pct -->
+                <!-- bars: 10 completed FYs (solid) + 1 partial FY (dashed, translucent) -->
                 <g>
-                  <rect x="35"  y="33"   width="17" height="14.5" rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="59"  y="19"   width="17" height="28.5" rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="83"  y="47.5" width="17" height="14"   rx="2" fill="rgba(255,82,82,.72)"/>
-                  <rect x="107" y="38"   width="17" height="9.5"  rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="131" y="26"   width="17" height="21.5" rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="155" y="47.5" width="17" height="7"    rx="2" fill="rgba(255,82,82,.72)"/>
-                  <rect x="179" y="31"   width="17" height="16.5" rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="203" y="22"   width="17" height="25.5" rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="227" y="15"   width="17" height="32.5" rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="251" y="28"   width="17" height="19.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="34"  y="33"   width="14" height="14.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="56"  y="19"   width="14" height="28.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="79"  y="47.5" width="14" height="14"   rx="2" fill="rgba(255,82,82,.72)"/>
+                  <rect x="101" y="38"   width="14" height="9.5"  rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="123" y="26"   width="14" height="21.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="145" y="47.5" width="14" height="7"    rx="2" fill="rgba(255,82,82,.72)"/>
+                  <rect x="168" y="31"   width="14" height="16.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="190" y="22"   width="14" height="25.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="212" y="15"   width="14" height="32.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="234" y="28"   width="14" height="19.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="257" y="40.5" width="14" height="7"    rx="2" fill="rgba(0,200,83,.72)" fill-opacity="0.42" stroke="rgba(0,200,83,.72)" stroke-width="1" stroke-dasharray="2.5,2" vector-effect="non-scaling-stroke"/>
                 </g>
-                <!-- x labels -->
-                <g font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(255,255,255,.36)" text-anchor="middle">
-                  <text x="43.5"  y="98">'16</text><text x="67.5" y="98">'17</text><text x="91.5" y="98">'18</text><text x="115.5" y="98">'19</text><text x="139.5" y="98">'20</text>
-                  <text x="163.5" y="98">'21</text><text x="187.5" y="98">'22</text><text x="211.5" y="98">'23</text><text x="235.5" y="98">'24</text><text x="259.5" y="98">'25</text>
+                <!-- x labels: FY-anchored, last bar = partial current FY (two-line) -->
+                <g font-family="JetBrains Mono,monospace" font-size="6" fill="rgba(255,255,255,.36)" text-anchor="middle">
+                  <text x="41"  y="98">FY16</text><text x="63"  y="98">FY17</text><text x="86"  y="98">FY18</text><text x="108" y="98">FY19</text><text x="130" y="98">FY20</text>
+                  <text x="152" y="98">FY21</text><text x="175" y="98">FY22</text><text x="197" y="98">FY23</text><text x="219" y="98">FY24</text><text x="241" y="98">FY25</text>
+                  <text x="264" y="97" fill="rgba(255,255,255,.55)" font-weight="600">FY26</text>
+                  <text x="264" y="105" font-size="4.8" font-style="italic" fill="rgba(255,255,255,.45)">(partial)</text>
                 </g>
               </svg>
             </div>
@@ -1910,13 +1871,15 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
           <div class="hp-p" style="margin-top:10px;margin-bottom:6px;font-size:.8rem"><strong>Two chart types · two different questions</strong></div>
           <dl class="hp-kv" style="margin-top:4px">
-            <dt>Annual YoY</dt><dd>Each bar = EPS today vs EPS 1 year earlier, stepping back 10 years. Answers "is this sector's earnings trajectory fundamentally up or down across cycles?"</dd>
+            <dt>Annual YoY</dt><dd>Each solid bar = one completed Indian fiscal year, comparing TTM EPS at Mar 31 of that FY vs Mar 31 of the prior FY. Because NSE-reported EPS is itself trailing-12-month, the value at FY-end is the full year's earnings — so the % is that FY's growth. The dashed translucent bar on the right (labeled <strong>FY26 (partial)</strong>, for example) is the <em>current FY in progress</em> — same comparison but with TTM at the latest data point instead of Mar 31. It starts near zero right after FY rollover and sharpens as new quarterly results roll into TTM (Q1 results land ~Aug, Q2 ~Nov, etc.). Answers "is this sector's earnings trajectory fundamentally up or down across cycles, and how is the current year tracking?"</dd>
             <dt>Quarterly QoQ</dt><dd>Each bar = that quarter's average EPS vs the prior quarter. Answers "is earnings momentum <em>right now</em> accelerating, flat, or turning negative?" A run of green QoQ bars after a red YoY is a classic "earnings turning" setup.</dd>
           </dl>
 
           <div class="hp-p" style="margin-top:8px;margin-bottom:0;font-size:.8rem;color:var(--sub)">Y-axis auto-scales to the biggest absolute value in the chart — so a quiet sector with ±8% moves shows the same visual weight as a volatile one swinging ±40%. Compare <em>shape and sign</em>, not bar heights across two sectors. Each bar also has its exact percentage printed above (or below, for negatives).</div>
 
-          <div class="hp-p" style="margin-top:14px;margin-bottom:0;font-size:.82rem"><strong>USD growth charts — IT and Pharma only.</strong> On the IT and Pharma sector detail pages, two additional charts appear beneath the INR ones — <em>USD EPS YoY Growth</em> and <em>USD EPS QoQ Growth</em>. Same shape and same green/red palette as the INR charts, but the underlying EPS series is converted to USD: each EPS data point uses the USD/INR rate that was in effect on <em>its own historical date</em>, not today's rate, and the % growth is calculated on that derived USD series. Reading the two YoY charts side-by-side tells you the cumulative currency effect: when INR growth substantially exceeds USD growth in a given year, the rupee depreciated; when they roughly match, the rupee was steady. For sectors like IT (~90% USD-billed revenue) and Pharma (~30–50% from US generics), the USD chart is arguably the cleaner read of underlying business performance — it strips out the rupee-tailwind that's flattered INR earnings growth across the last decade. Years where FX coverage isn't sufficient on both endpoints render as empty slots in the USD chart so x-axis years stay aligned with the INR chart above.</div>
+          <div class="hp-p" style="margin-top:10px;margin-bottom:0;font-size:.78rem;color:var(--sub)"><strong>One subtle point:</strong> the <em>EPS YoY pill</em> on the front card and on the metric strip uses a rolling 365-day comparison (TTM today vs TTM one year ago today), while the annual chart's latest <em>completed</em> bar is anchored Mar-to-Mar. These usually agree closely but can diverge by a few percentage points — especially mid-FY, when "one year ago today" and "last FY-end" point to different snapshots. Both are correct; they're answering slightly different questions. The pill is "right-now YoY," the chart is "completed FY-by-FY."</div>
+
+          <div class="hp-p" style="margin-top:14px;margin-bottom:0;font-size:.82rem"><strong>USD growth charts — IT and Pharma only.</strong> On the IT and Pharma sector detail pages, two additional charts appear beneath the INR ones — <em>USD EPS YoY Growth</em> and <em>USD EPS QoQ Growth</em>. Same shape, same green/red palette, same FY anchoring with a dashed partial bar for the current FY, but the underlying EPS series is converted to USD: each EPS data point uses the USD/INR rate that was in effect on <em>its own historical date</em>, not today's rate, and the % growth is calculated on that derived USD series. Reading the two YoY charts side-by-side tells you the cumulative currency effect: when INR growth substantially exceeds USD growth in a given FY, the rupee depreciated; when they roughly match, the rupee was steady. For sectors like IT (~90% USD-billed revenue) and Pharma (~30–50% from US generics), the USD chart is arguably the cleaner read of underlying business performance — it strips out the rupee-tailwind that's flattered INR earnings growth across the last decade. FYs where FX coverage isn't sufficient on both endpoints render as empty slots in the USD chart so x-axis labels stay aligned with the INR chart above.</div>
         </div>
       </div>
 
@@ -2021,7 +1984,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 6. BACKTEST ══ -->
   <div class="hp-sec" id="h-backtest">
-    <h2 class="hp-sec-h">6 · Backtest</h2>
+    <div class="hp-sec-h">6 · Backtest</div>
     <div class="hp-p">The dashboard tells you which sectors look cheap right now. The Backtest page tells you whether <em>cheap-looking sectors have actually rewarded buyers in the past</em>. It's the historical sanity check before you act on today's signal.</div>
     <div class="hp-p">The setup: pick a sector, pick a valuation threshold (e.g. "82% of reference — what the dashboard shows today"), and the engine walks through every day in history and finds matching dates. For each match, it shows you what the price did over the next 6 months and 1 year. If the historical hit rate at this threshold is good, today's signal is more credible. If it's bad, today's signal is probably a value trap — back away.</div>
 
@@ -2030,7 +1993,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">The threshold slider on the Backtest page maps directly to the <code class="hp-c">% of ref</code> badge on a dashboard card. If a card shows <code class="hp-c">82% of ref</code> today, set the threshold to <strong>82%</strong> on the Backtest page and ask: "the last time this sector was at 82% of its reference, what happened over the next year?" — that's your historical precedent for today's signal.</div>
     </div>
 
-    <h3 class="hp-sub-h">How signals fire — visual</h3>
+    <div class="hp-sub-h">How signals fire — visual</div>
 
     <div class="hp-bt-timeline">
       <div class="hp-bt-tl-head">Backtest timeline — when signals fire and what happens next (illustrative)</div>
@@ -2072,7 +2035,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
     <div class="hp-p">Each green circle is a <strong>signal date</strong> — a date when the ratio crossed your threshold. The numbers show what actually happened to the sector's price over the next 12 months from that date. The backtest table shows all of these with full detail.</div>
 
-    <h3 class="hp-sub-h">Setting up a backtest — step by step</h3>
+    <div class="hp-sub-h">Setting up a backtest — step by step</div>
     <div class="hp-card info">
       <div class="hp-step">
         <div class="hp-step-num">1</div>
@@ -2092,7 +2055,11 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </div>
       <div class="hp-step">
         <div class="hp-step-num">5</div>
-        <div class="hp-step-body"><strong>Hit Run.</strong> The results show every past signal date, the valuation at that date, and the 6-month and 1-year annualised return from that point forward.</div>
+        <div class="hp-step-body"><strong>Choose a sell trigger.</strong> Two options. <em>Time-based</em> holds for a fixed duration (3 / 6 / 9 / 12 / 18 / 24 months) and sells at the close on that date — simple and matches a buy-and-hold investor's plan. <em>Valuation-based</em> sells when the same metric that triggered the buy recovers to your chosen % of weighted ref (default 100% = back to historical median). Each trade then runs as long as it takes for that recovery to happen — the Duration column shows actual hold times, which is the point of the mode.</div>
+      </div>
+      <div class="hp-step">
+        <div class="hp-step-num">6</div>
+        <div class="hp-step-body"><strong>Hit Run.</strong> The results show every past signal date, the valuation at that date, and the annualised return from buy to whichever sell trigger you picked.</div>
       </div>
     </div>
 
@@ -2108,54 +2075,57 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
     <div class="hp-p">Rule of thumb: your cooldown should be at least as long as your intended holding period. If you plan to hold a sector for 6 months after buying, a cooldown shorter than that will count overlapping trades as separate signals.</div>
 
-    <h3 class="hp-sub-h">Reading the results table</h3>
+    <div class="hp-sub-h">Reading the results table</div>
     <dl class="hp-kv">
       <dt>Date</dt><dd>The exact calendar date the signal fired — shown in full (day · month · year).</dd>
       <dt>Price at Buy</dt><dd>The index level of the sector on the signal date. Useful as a reference point when comparing to current levels.</dd>
       <dt>Value at Buy</dt><dd>The P/E or P/B ratio on the signal date. For dual-metric sectors this shows both PE and PB side by side.</dd>
       <dt>Weighted Ref</dt><dd>The weighted historical reference on that date — computed from data available up to that point only (no look-ahead). Confirms what the signal was comparing against.</dd>
       <dt>EPS %</dt><dd>EPS as a % of the sector's max-ever EPS at that signal date. Low values (below 50%) flag potential value traps — the sector was cheap because earnings had collapsed. High values (above 85%) mean the cheapness was price-driven, not earnings-driven — usually higher quality signals.</dd>
-      <dt>Outcome · 6M</dt><dd>Three sub-columns for the 6-month forward window: <strong>Price at Sell</strong> (index level ~6 months later), <strong>CAGR</strong> (annualised return), and <strong>vs Nifty 50</strong> (sector CAGR minus Nifty 50 CAGR over the same period — positive means the sector beat the index). The vs Nifty 50 column requires <strong>SectorScope Plus</strong>.</dd>
-      <dt>Outcome · 1Yr</dt><dd>Same three sub-columns for the 1-year forward window.</dd>
+      <dt>Duration <em>(valuation-mode only)</em></dt><dd>Months from buy to sell. Closed trades reached the recovery threshold within the data window; trades labelled <em>(open)</em> never crossed the threshold — their CAGR is extrapolated from the latest available price over the elapsed time, so treat them as estimates, not realised outcomes.</dd>
+      <dt>Outcome</dt><dd>Four sub-columns reflecting your chosen sell trigger: <strong>Price at Sell</strong> (the index level when the trade closed), <strong>Absolute Return</strong> (total price change, not annualised), <strong>CAGR</strong> (annualised return), and <strong>vs Nifty 50</strong> (sector CAGR minus Nifty 50 CAGR over the same period — positive means the sector beat the index). The vs Nifty 50 column requires <strong>SectorScope Plus</strong>.</dd>
       <dt>Signals count</dt><dd>How many matching dates the engine found. Very low counts (1–3) should be treated as anecdote, not statistics.</dd>
-      <dt>Avg 6m / 1yr CAGR</dt><dd>Annualised return averaged across all signal dates. The vs Nifty 50 column lets you see whether these returns were genuinely alpha or just riding the broader market.</dd>
-      <dt>Hit rate</dt><dd>% of signals that were in profit at that horizon. Hit rate above 70% is strong. Below 50% means more losers than winners — inspect the EPS % column to see if value traps are responsible.</dd>
+      <dt>Avg CAGR</dt><dd>Annualised return averaged across all closed signal dates. The vs Nifty 50 column lets you see whether these returns were genuinely alpha or just riding the broader market.</dd>
+      <dt>Avg Absolute Return</dt><dd>Total price-change return averaged across all closed signal dates — not annualised. Especially useful in valuation-based mode, where hold times scatter widely and CAGR alone can flatter short trades. A 5% absolute return over 3 months annualises to ~22% CAGR, the same headline number as a 50% absolute return over 24 months — very different bets that this stat lets you see at a glance.</dd>
+      <dt>Hit rate</dt><dd>% of closed signals that were in profit. Hit rate above 70% is strong. Below 50% means more losers than winners — inspect the EPS % column to see if value traps are responsible.</dd>
+      <dt>Avg Hold <em>(valuation-mode only)</em></dt><dd>Average months held across closed trades. A high open-trade count alongside this stat means the recovery threshold is rarely reached within available data — consider a lower target.</dd>
     </dl>
 
-    <h3 class="hp-sub-h">Row shading — what the colors mean</h3>
+    <div class="hp-sub-h">Row shading — what the colors mean</div>
     <div class="hp-shade-legend">
       <div class="hp-shade-row green">
         <div class="hp-shade-icon">🟢</div>
-        <div><strong>Green row</strong><small>Either the 6m or 1yr CAGR was above +15%. This was a strong outcome.</small></div>
+        <div><strong>Green row</strong><small>CAGR above +15%. A strong outcome.</small></div>
       </div>
       <div class="hp-shade-row yellow">
         <div class="hp-shade-icon">🟡</div>
-        <div><strong>Yellow row</strong><small>Positive returns but not exceptional — a win but modest. Still a hit.</small></div>
+        <div><strong>Yellow row</strong><small>Positive return but not exceptional — a win but modest. Still a hit.</small></div>
       </div>
       <div class="hp-shade-row red">
         <div class="hp-shade-icon">🔴</div>
-        <div><strong>Red row</strong><small>Either the 6m or 1yr CAGR was negative. Check the EPS % column — low values here usually explain the loss.</small></div>
+        <div><strong>Red row</strong><small>CAGR was negative. Check the EPS % column — low values here usually explain the loss.</small></div>
       </div>
     </div>
 
-    <h3 class="hp-sub-h">Quick-reference: what to look for</h3>
+    <div class="hp-sub-h">Quick-reference: what to look for</div>
     <div class="hp-card warn">
       <div class="hp-card-ttl">Interpreting your backtest result</div>
       <ul class="hp-list" style="margin:0">
-        <li><strong>Strong setup:</strong> Hit rate above 70%, average 1yr CAGR clearly positive, most rows green. Proceed with conviction.</li>
+        <li><strong>Strong setup:</strong> Hit rate above 70%, average CAGR clearly positive, most rows green. Proceed with conviction.</li>
         <li><strong>Noisy setup:</strong> High average return but low hit rate — a few huge green rows masking several red ones. A small number of outlier wins. Fragile; wait for an additional catalyst.</li>
         <li><strong>Broken setup:</strong> Mostly red rows, poor hit rate, low average return. Either the threshold is wrong for this sector, or the signals are clustering around earnings collapses. Check the EPS % column.</li>
         <li><strong>Too few signals:</strong> 1–3 hits is not a pattern — it's a handful of data points. Don't draw strong conclusions. Widen the threshold slightly or extend the date range.</li>
+        <li><strong>Valuation mode with many open trades:</strong> Your recovery target is rarely reached within available data. Either the sector tends not to mean-revert as cleanly as you assumed, or your target % is too aggressive. Try 95% before insisting on 100%.</li>
       </ul>
     </div>
 
-    <h3 class="hp-sub-h">How to use the EPS % column to filter</h3>
+    <div class="hp-sub-h">How to use the EPS % column to filter</div>
     <div class="hp-p">Uncheck the red rows where EPS % was very low (below 50%), then re-check the summary stats. If the hit rate and average return improve significantly when you exclude low-EPS signals, that tells you: <em>this sector's cheap-valuation signals only work when earnings are healthy</em>. That's important context for acting on today's signal — check the current EPS tile before committing.</div>
   </div>
 
   <!-- ══ 7. SECTORSCOPE PLUS ══ -->
   <div class="hp-sec" id="h-plus">
-    <h2 class="hp-sec-h">7 · SectorScope Plus</h2>
+    <div class="hp-sec-h">7 · SectorScope Plus</div>
     <div class="hp-p">Plus unlocks five features layered on top of the free dashboard: <strong>expanded charts</strong>, <strong>AI sector summaries</strong>, <strong>live index constituents</strong>, <strong>email alerts</strong>, and <strong>vs-Nifty-50 alpha in backtests</strong>. This section walks through each one in the order you're likely to encounter it, with the concrete UI elements you'll see.</div>
 
     <div class="hp-card tip">
@@ -2163,7 +2133,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">SectorScope Plus is in soft launch. Until <strong>31 October 2026</strong>, all five features are free for any signed-in user — no payment, no subscription required. Just sign in with Google from the top-right corner of any page. After 31 October, Plus moves to a paid tier; existing users will get advance notice and a grandfathered offer.</div>
     </div>
 
-    <h3 class="hp-sub-h">Expanded chart — full historical view</h3>
+    <div class="hp-sub-h">Expanded chart — full historical view</div>
     <div class="hp-p">Tap any sector's sparkline (the small chart on a card) to open the full-screen expanded chart for that sector. This is the most useful Plus feature for getting a feel for where a sector sits in its historical context — far more than the 3-year sparkline can show. The expanded view has four sets of controls:</div>
     <dl class="hp-kv">
       <dt>Metric checkboxes</dt><dd>Pick any combination of <strong>P/E, P/B, EPS, Price, Dividend Yield</strong> to overlay on the chart. P/E and P/B are on the left axis; EPS, Price, and Dividend Yield each get their own right-side scale when selected. The defaults match the sector's primary metrics — so Banks open with P/B+EPS already ticked, IT opens with P/E+EPS, dual-metric sectors open with both P/E and P/B.</dd>
@@ -2178,7 +2148,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">A static "5-year median" line would be misleading on a 10-year chart — the median changes as the window slides forward. The expanded chart computes the median <em>at every historical date using only data available up to that point</em> and plots the result as a moving curve. Looking at the curve in 2018 shows you what the reference value would have looked like to a 2018 viewer — no look-ahead. This is the same logic the backtest uses to evaluate signals at each historical date.</div>
     </div>
 
-    <h3 class="hp-sub-h">AI sector summary — plain-language read</h3>
+    <div class="hp-sub-h">AI sector summary — plain-language read</div>
     <div class="hp-p">At the top of every sector's detail page (tap any card to open it) you'll see a "Generate AI Summary" button. Tap it to get a 4-5 sentence plain-English read on the sector's current situation, written by Claude. The summary covers four things: the current valuation band and what it means historically, the EPS trajectory (rising, falling, flat, near peak), any divergence between P/E and P/B for dual-metric sectors, and a one-line note on whether history backs the current signal (drawn from the same backtest engine described in section 6). On IT and Pharma — where USD revenue dominates — the summary may also briefly flag the currency-effect angle, comparing INR earnings growth to USD-denominated growth, but only when the two diverge meaningfully (≳3 percentage points). When INR and USD growth are roughly aligned, the currency note is omitted to keep the summary concise.</div>
 
     <div class="hp-card tip">
@@ -2191,7 +2161,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </ul>
     </div>
 
-    <h3 class="hp-sub-h">Index constituents — live prices for every stock</h3>
+    <div class="hp-sub-h">Index constituents — live prices for every stock</div>
     <div class="hp-p">In the sector detail overlay (tap any card to open it), an <strong>Index Constituents</strong> block shows every stock in that sector's NSE index with live price, intraday change, day-range position, traded volume, and traded value. The data refreshes every 60 seconds while the overlay is open and again the instant you switch back to the tab — so coming back from another window always shows fresh numbers.</div>
     <div class="hp-p">At the top of the block sits a <strong>breadth strip</strong>: a quick read of how many constituents are up vs down vs flat. Useful for distinguishing broad-based sector moves (9 up · 1 down) from narrow ones driven by one or two heavyweights (3 up · 7 down with the index still green). Every column is sortable — click "% Chg" descending for top gainers, click "Volume" to find the day's most-traded names, click "Day Range" to find stocks near intraday highs vs lows. See <strong>section 5</strong> for the full column breakdown with a screenshot.</div>
 
@@ -2200,7 +2170,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">The dashboard tells you whether a sector is cheap; the constituents table tells you what's actually moving inside it today. A sector that's "Cheap" on the band and has 8 of 10 stocks green is showing genuine participation. A sector that's "Cheap" but has 7 of 10 red while the index is up — because one mega-cap is rallying — is a much more fragile setup, and worth a second look at the per-stock breakdown before acting.</div>
     </div>
 
-    <h3 class="hp-sub-h">Email alerts — get notified at your level</h3>
+    <div class="hp-sub-h">Email alerts — get notified at your level</div>
     <div class="hp-p">Tap the <em>🔔 Set Alert</em> button at the bottom of any card to flip the card and configure an alert. The form has four sections, top to bottom:</div>
     <dl class="hp-kv">
       <dt>Metric checkboxes — P/E, P/B</dt><dd>Pick which valuation metric should trigger the alert. For single-metric sectors (IT, Bank, etc.), the appropriate one is pre-ticked. For dual-metric sectors (Realty, Energy, Infra, Metal) both are pre-ticked by default — you can untick either if you want only one to fire.</dd>
@@ -2214,7 +2184,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-p" style="margin-bottom:0">The system checks live NSE data every 15 minutes during market hours (9:15am–3:30pm IST, Mon–Fri) and emails the address you signed in with. You'll get up to 2 active alerts per sector. Manage or delete existing alerts from the same flipped-card view — saved alerts appear as a list at the top of the form.</div>
     </div>
 
-    <h3 class="hp-sub-h">Alpha vs Nifty 50 — in the backtest results table</h3>
+    <div class="hp-sub-h">Alpha vs Nifty 50 — in the backtest results table</div>
     <div class="hp-p">In the Backtest results table (covered in section 6), each forward-return column has a sub-column labelled <strong>vs Nifty 50</strong>. This shows the sector's return <em>minus</em> the Nifty 50's return over the same forward window — the genuine alpha generated, separate from whatever the broader market did.</div>
     <div class="hp-p">Why this matters: a sector earning +22% CAGR over 12 months sounds strong, but if Nifty 50 returned +20% over the same period, only +2% was sector-specific. The vs-Nifty column does this comparison automatically for every signal row. A robust backtest setup shows not just a high hit rate and positive CAGR, but consistently positive vs-Nifty values too — confirming the sector was beating the market, not just rising with it.</div>
 
@@ -2226,7 +2196,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 8. LIMITS &amp; HONEST CAVEATS ══ -->
   <div class="hp-sec" id="h-limits">
-    <h2 class="hp-sec-h">8 · Limits &amp; honest caveats</h2>
+    <div class="hp-sec-h">8 · Limits &amp; honest caveats</div>
     <div class="hp-p">SectorScope is a <em>decision-sharpening tool</em>, not a forecasting engine. Before you act on what it shows, here's what to keep in mind:</div>
 
     <ul class="hp-list">
@@ -2255,7 +2225,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
   <!-- ══ 9. CONTACT ══ -->
   <div class="hp-sec" id="h-contact">
-    <h2 class="hp-sec-h">9 · Get in touch</h2>
+    <div class="hp-sec-h">9 · Get in touch</div>
     <div class="hp-p">Found a bug, have feedback, or want a feature added? We'd love to hear from you. Drop a note — every email gets read.</div>
 
     <div class="hp-card info">
@@ -2367,12 +2337,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 /* ════════════════════════════════════════
    CONFIG
 ════════════════════════════════════════ */
-/* ── Cloudflare Worker base URL ──
-   All sector data + macro feeds (FX, G-Sec, repo) + live NSE feed go
-   through the Worker, which serves sector + macro history from D1, the
-   live feed from NSE direct, enforces an Origin/Referer check, rate-
-   limits per IP, and blocks declared AI crawlers. Daily 17:30 IST cron
-   appends to D1; KV-cached payloads make cold reads fast. */
+/* All sector + macro feeds proxy through this worker — see worker.js for the API surface. */
 var WORKER_BASE='https://sectorscope.prashant-06f.workers.dev';
 
 /* ──────────────────────────────────────────────────────────────────
@@ -2487,11 +2452,7 @@ var BH={
 /* ════════════════════════════════════════
    UTILS
 ════════════════════════════════════════ */
-/* Time-unit constants in milliseconds — used throughout the file for
-   any duration arithmetic (cutoffs, cooldowns, staleness windows, etc).
-   MS_YEAR uses the 365.25-day approximation that matches the worker's
-   reference-series math, so frontend and backend agree on what "1 year"
-   means to the nearest leap-day adjustment. */
+/* 365.25-day MS_YEAR matches the worker's reference-series math so frontend/backend agree on "1 year". */
 var MS_DAY  = 86400000;
 var MS_YEAR = 365.25 * MS_DAY;
 
@@ -2521,7 +2482,9 @@ function pctOfArr(a,p){
   return lo===hi?s[lo]:s[lo]+(i-lo)*(s[hi]-s[lo]);
 }
 function winsorise(arr){
-  /* clip at 1st and 99th percentile */
+  /* Clip at 1st/99th percentile. Note: median(winsorise(x)) === median(x)
+     because clipping the tails can't shift the value at index N/2 — so
+     only callers like pctRankOf() and Math.max() benefit from this. */
   if(!arr||arr.length<4) return arr.slice();
   var lo=pctOfArr(arr,1),hi=pctOfArr(arr,99);
   return arr.map(function(v){return Math.max(lo,Math.min(hi,v));});
@@ -2612,7 +2575,13 @@ function fmtCAGR(c,open){
    FETCH
 ════════════════════════════════════════ */
 async function fetchWithRetry(url){
-  for(var att=0;att<=3;att++){
+  /* 2 attempts × 20s timeout × 1s backoff = up to 41s worst case.
+     Previously 4 attempts with exponential backoff = up to 80s, long
+     enough that the user would assume the page was broken before
+     seeing a real error. NSE is either responsive or genuinely down;
+     a third or fourth attempt almost never converted a failure to a
+     success in practice. */
+  for(var att=0;att<=1;att++){
     var ctl=new AbortController(),tmr=setTimeout(function(){ctl.abort();},20000);
     try{
       var res=await fetch(url,{signal:ctl.signal,redirect:'follow'});
@@ -2621,8 +2590,8 @@ async function fetchWithRetry(url){
       try{return JSON.parse(txt);}catch(e){throw new Error('Bad JSON');}
     }catch(e){
       clearTimeout(tmr);
-      if(att===3) throw e;
-      await new Promise(function(r){setTimeout(r,1000*Math.pow(2,att));});
+      if(att===1) throw e;
+      await new Promise(function(r){setTimeout(r,1000);});
     }
   }
 }
@@ -2683,10 +2652,9 @@ function vv(a,field){
 
 /* ════════════════════════════════════════
    COMPUTE STATS
-   All medians computed on winsorised series.
-   Primary band: from % of weighted ref (magnitude vs rolling median).
+   Primary band: % of weighted ref (magnitude vs rolling median).
    Secondary band: percentile rank in 5yr distribution (info only).
-   Divergence flag fires when the two signals point to different verdicts.
+   Divergence flag fires when the two disagree.
    Weighted ref = 30% × 3y + 60% × 5y + 10% × 10y.
 ════════════════════════════════════════ */
 function computeStats(data,live){
@@ -2713,19 +2681,18 @@ function computeStats(data,live){
   var hasFullHistory=!isNaN(dataYears)&&dataYears>=5;
   var isShortHistory=!isNaN(dataYears)&&dataYears<10;
 
-  /* All-time medians, used as the long-horizon anchor in the alternate
-     blend for sectors with <5 years of history. Computed from the full
-     data array (not a sliced window) — same winsorisation as the other
-     medians for consistency. */
-  var peWAll=winsorise(vv(data,'pe')),pbWAll=winsorise(vv(data,'pb'));
-  var peAll=median(peWAll),pbAll=median(pbWAll);
+  /* All-time medians — long-horizon anchor for the <5yr-history blend. */
+  var peAllRaw=vv(data,'pe'), pbAllRaw=vv(data,'pb');
+  var peAll=median(peAllRaw), pbAll=median(pbAllRaw);
 
-  /* winsorised series (5yr is the percentile reference now) */
-  var peW5=winsorise(vv(s5,'pe')),peW3=winsorise(vv(s3,'pe')),peW10=winsorise(vv(s10,'pe'));
-  var pbW5=winsorise(vv(s5,'pb')),pbW3=winsorise(vv(s3,'pb')),pbW10=winsorise(vv(s10,'pb'));
+  var pe3Raw=vv(s3,'pe'), pe5Raw=vv(s5,'pe'), pe10Raw=vv(s10,'pe');
+  var pb3Raw=vv(s3,'pb'), pb5Raw=vv(s5,'pb'), pb10Raw=vv(s10,'pb');
 
-  var pe3=median(peW3),pe5=median(peW5),pe10=median(peW10);
-  var pb3=median(pbW3),pb5=median(pbW5),pb10=median(pbW10);
+  var pe3=median(pe3Raw), pe5=median(pe5Raw), pe10=median(pe10Raw);
+  var pb3=median(pb3Raw), pb5=median(pb5Raw), pb10=median(pb10Raw);
+
+  /* Winsorised 5y arrays — kept for pctRankOf only (where clipping matters). */
+  var peW5=winsorise(pe5Raw), pbW5=winsorise(pb5Raw);
 
   /* weighted reference — picks the right blend based on hasFullHistory */
   var peRef=weightedRef(pe3,pe5,pe10,peAll,hasFullHistory);
@@ -2948,8 +2915,7 @@ function computeUsdEpsContextForAI(sectorName){
   var lastDate=new Date(data[data.length-1].date);
   if(isNaN(lastDate)) return null;
 
-  /* ±7-day windowed average of (eps_row / fxRateAt(row.date)) — same
-     smoothing as the chart bars use, applied to the USD-frame series. */
+  /* ±7-day windowed average in USD frame — matches the chart bars. */
   function usdAvgAt(daysAgo){
     var target=new Date(lastDate);
     target.setDate(target.getDate()-daysAgo);
@@ -2975,19 +2941,20 @@ function computeUsdEpsContextForAI(sectorName){
   var yrAgoUsd=usdAvgAt(365);
   if(isNaN(curUsd)) return null;
 
-  /* USD-frame all-time-high — single pass over the full history.
-     Different date than INR all-time-high in general; rupee was
-     stronger in earlier years so peak USD EPS may predate peak INR EPS. */
+  /* USD-frame all-time-high using the SAME ±7-day windowed average that
+     curUsd and yrAgoUsd use above (and that the chart bars use on the
+     detail page). Scans week-by-week from data start to today so a
+     single noisy day with a bad EPS or FX reading can't anchor the
+     peak. Without this the AI summary's "% of all-time USD high" could
+     legitimately disagree with what the user sees on the chart — and
+     the peak could be permanently set by one bad data point. */
+  var firstDate=new Date(data[0].date);
+  var spanDays = isNaN(firstDate) ? 0
+    : Math.floor((lastDate.getTime() - firstDate.getTime()) / MS_DAY);
   var peakUsd=0;
-  for(var i=0;i<data.length;i++){
-    var v=data[i].eps;
-    if(v==null||isNaN(v)||!isFinite(v)||v<=0) continue;
-    var dt=new Date(data[i].date);
-    if(isNaN(dt)) continue;
-    var fx=fxRateAt(dt.getTime());
-    if(!fx) continue;
-    var u=v/fx;
-    if(u>peakUsd) peakUsd=u;
+  for(var w=0; w*7 <= spanDays; w++){
+    var u=usdAvgAt(w*7);
+    if(!isNaN(u) && u>peakUsd) peakUsd=u;
   }
 
   return {
@@ -3743,6 +3710,28 @@ function btUpdateMetrics(){
   document.getElementById('bt-sl-pb-wrap').classList.toggle('hidden',!pb);
 }
 
+/* ── Sell-trigger UI helpers ──
+   The buy side defines WHEN we enter (signal at threshold + cooldown);
+   these helpers control WHEN we exit. Two mutually exclusive modes:
+     - 'time': hold for fixed N months (3/6/9/12/18/24).
+     - 'val' : sell on first close where the same metric used at entry
+               crosses to ≥ X% of weighted ref (default 100% = recovery
+               to historical median). Both-mode buys (PE AND PB at entry)
+               exit on EITHER metric crossing — inverse of the AND on entry.
+   Open trades (val mode never crosses the target within the data window)
+   are reported with extrapolated CAGR over actual elapsed time, mirroring
+   the existing time-mode open-trade fallback in _fwdReturnRow. */
+function btUpdateSellTrigger(){
+  var mode=document.querySelector('input[name="bt-trig-mode"]:checked');
+  var v=mode?mode.value:'time';
+  document.getElementById('bt-sell-time-wrap').style.display=v==='time'?'':'none';
+  document.getElementById('bt-sell-val-wrap' ).style.display=v==='val' ?'':'none';
+}
+function btSellValSlideLbl(v){
+  document.getElementById('bt-sell-val-lbl').textContent=v+'%';
+  document.getElementById('bt-sell-val-note').textContent='Sell on first close at or above '+v+'% of weighted ref';
+}
+
 /* ── Backtest sector dropdown ──
    Generated from SECTORS so a new sector added to the SECTORS array
    auto-shows up here. The placeholder "— Select —" stays as inline HTML;
@@ -3845,8 +3834,8 @@ async function btOnSectorChange(){
     }
     var hasFull=!isNaN(span)&&span>=5;
     var s3v=sliceYrs(btData,3),s5v=sliceYrs(btData,5),s10v=sliceYrs(btData,10);
-    var mAll=median(winsorise(vv(btData,fld)));
-    var ref=weightedRef(median(winsorise(vv(s3v,fld))),median(winsorise(vv(s5v,fld))),median(winsorise(vv(s10v,fld))),mAll,hasFull);
+    var mAll=median(vv(btData,fld));
+    var ref=weightedRef(median(vv(s3v,fld)),median(vv(s5v,fld)),median(vv(s10v,fld)),mAll,hasFull);
     var p=(!isNaN(ref)&&ref>0)?Math.round((cur/ref)*100):90;
     return Math.max(50,Math.min(150,p));
   }
@@ -3924,12 +3913,12 @@ function btValidateDates(startVal,endVal,dataMinDate,dataMaxDate){
    btComputeHeadless) just reject results where open is true. */
 function _fwdReturnRow(data, buyIdx, months){
   var bd=new Date(data[buyIdx].date), bp=data[buyIdx].price;
-  if(!bp || bp<=0) return {cagr:null, open:true, sellPrice:null};
+  if(!bp || bp<=0) return {cagr:null, open:true, sellPrice:null, exitMonths:null};
   var tgt=new Date(bd); tgt.setMonth(tgt.getMonth()+months);
   for(var k=buyIdx+1; k<data.length; k++){
     var sp=data[k].price;
     if(new Date(data[k].date)>=tgt && sp>0){
-      return {cagr:Math.pow(sp/bp, 12/months)-1, open:false, sellPrice:sp};
+      return {cagr:Math.pow(sp/bp, 12/months)-1, open:false, sellPrice:sp, exitMonths:months};
     }
   }
   /* No closed trade — extrapolate from latest row if ≥ ~18 days elapsed
@@ -3938,10 +3927,73 @@ function _fwdReturnRow(data, buyIdx, months){
     var lp=data[m].price;
     if(lp>0){
       var el=(new Date(data[m].date)-bd)/MS_YEAR;
-      if(el>0.05) return {cagr:Math.pow(lp/bp, 1/el)-1, open:true, sellPrice:lp};
+      if(el>0.05) return {cagr:Math.pow(lp/bp, 1/el)-1, open:true, sellPrice:lp, exitMonths:el*12};
     }
   }
-  return {cagr:null, open:true, sellPrice:null};
+  return {cagr:null, open:true, sellPrice:null, exitMonths:null};
+}
+
+/* Valuation-based forward return: hold until the trigger metric's ratio
+   first closes at-or-above targetPct, then sell. Same return shape as
+   _fwdReturnRow plus a non-null exitMonths reflecting actual hold time.
+
+   `didCross(row)` is the per-row predicate. Two factories below build it:
+   the single-metric form (one of pe/pb crosses) and the both-mode form
+   (either pe OR pb crosses — defensive inverse of the AND used on entry).
+
+   Reads row.peRef / row.pbRef from each future row directly. These are
+   pre-computed point-in-time references shipped by the worker (D1
+   /sector endpoint). If a row is missing a ref (worker fallback path or
+   sector with sparse data), the predicate simply skips it — looking
+   further forward for a clean exit. Never recomputes rolling medians
+   per-row, which would be O(N²) and defeat the entire pre-compute. */
+function _fwdReturnVal(data, buyIdx, didCross){
+  var bd=new Date(data[buyIdx].date).getTime(), bp=data[buyIdx].price;
+  if(!bp || bp<=0) return {cagr:null, open:true, sellPrice:null, exitMonths:null};
+  for(var k=buyIdx+1; k<data.length; k++){
+    var row=data[k], sp=row.price;
+    if(!sp || isNaN(sp) || sp<=0) continue;
+    if(!didCross(row)) continue;
+    var el=(new Date(row.date).getTime()-bd)/MS_YEAR;
+    /* Same min-elapsed floor _fwdReturnRow uses for its open-trade
+       extrapolation (~18 days). A same-week val recovery on a noisy day
+       annualises to absurd numbers — skip and let the next clean cross
+       qualify instead. */
+    if(el<=0.05) continue;
+    return {cagr:Math.pow(sp/bp, 1/el)-1, open:false, sellPrice:sp, exitMonths:el*12};
+  }
+  /* Trigger never fired within available data → treat as still-open and
+     extrapolate from the latest valid price, same shape as _fwdReturnRow. */
+  for(var m=data.length-1; m>buyIdx; m--){
+    var lp=data[m].price;
+    if(lp>0){
+      var el2=(new Date(data[m].date).getTime()-bd)/MS_YEAR;
+      if(el2>0.05) return {cagr:Math.pow(lp/bp, 1/el2)-1, open:true, sellPrice:lp, exitMonths:el2*12};
+    }
+  }
+  return {cagr:null, open:true, sellPrice:null, exitMonths:null};
+}
+
+/* Per-row "did the sell trigger fire?" predicates. Returned closures
+   capture the threshold (1.00 = back to historical median, >1 = sector
+   has gotten richer than its own history). */
+function _valPredicateSingle(field, targetPct){
+  var refField=field==='pe'?'peRef':'pbRef';
+  return function(row){
+    var cur=row[field], ref=row[refField];
+    if(!cur || isNaN(cur) || cur<=0) return false;
+    if(!ref || isNaN(ref) || ref<=0) return false;
+    return (cur/ref) >= targetPct;
+  };
+}
+function _valPredicateBoth(targetPct){
+  return function(row){
+    var peOk=row.pe>0 && !isNaN(row.pe) && row.peRef>0 && !isNaN(row.peRef);
+    var pbOk=row.pb>0 && !isNaN(row.pb) && row.pbRef>0 && !isNaN(row.pbRef);
+    if(peOk && (row.pe/row.peRef)>=targetPct) return true;
+    if(pbOk && (row.pb/row.pbRef)>=targetPct) return true;
+    return false;
+  };
 }
 
 /* Cached timestamp array for dataCache['Nifty 50']. Re-derives only
@@ -4067,6 +4119,20 @@ function _btCompute(){
   var cdDays=cdEl?parseInt(cdEl.value,10):180;
   if(isNaN(cdDays)||cdDays<1) cdDays=180;
   var COOLDOWN=cdDays*MS_DAY;
+
+  /* ── Sell trigger config ──
+     Mode is 'time' (fixed hold) or 'val' (sell when ratio recovers to
+     target % of weighted ref). Defaults preserved across reruns by the
+     UI itself; we just read the current state here. The 12-month time
+     default mirrors the old hardcoded 1-yr behaviour so existing users
+     see no surprise change. */
+  var sellModeEl=document.querySelector('input[name="bt-trig-mode"]:checked');
+  var sellMode=sellModeEl?sellModeEl.value:'time';
+  var sellTimeMonths=parseInt(document.getElementById('bt-sell-time').value,10);
+  if(isNaN(sellTimeMonths)||sellTimeMonths<1) sellTimeMonths=12;
+  var sellValPct=parseInt(document.getElementById('bt-sell-val-sl').value,10)/100;
+  if(isNaN(sellValPct)||sellValPct<=0) sellValPct=1.0;
+
   var data=btData;
   var res=[];
   var lastBuy=null;
@@ -4083,6 +4149,15 @@ function _btCompute(){
    *
    * BOTH MODE requires BOTH PE and PB ratios to be within their respective
    * ±1% bands simultaneously.
+   *
+   * SELL TRIGGER (per `sellMode`):
+   *   time → hold for sellTimeMonths months, then sell at the first
+   *          row at-or-after the target date.
+   *   val  → sell on the first row where the entry metric's ratio
+   *          (cur/ref) is ≥ sellValPct. For both-mode entries, exit on
+   *          EITHER PE or PB ratio crossing — defensive inverse of the
+   *          AND used at entry. Trades whose target is never crossed
+   *          within the data window stay open (extrapolated CAGR).
    */
   /* caches for end-of-window summary */
   var endRefInfo={peRef:NaN,pbRef:NaN};
@@ -4097,8 +4172,31 @@ function _btCompute(){
      The helpers themselves are defined above (see "BACKTEST — SHARED
      FORWARD-RETURN HELPERS"); these locals just close over `data` so
      the call sites below stay short. */
-  function fwdReturn(buyIdx, months){ return _fwdReturnRow(data, buyIdx, months); }
+  function fwdReturnTime(buyIdx, months){ return _fwdReturnRow(data, buyIdx, months); }
+  function fwdReturnVal(buyIdx, predicate){ return _fwdReturnVal(data, buyIdx, predicate); }
   var niftyFwdReturn = _niftyFwdReturn;
+
+  /* Compute the sector + Nifty outcome for a single buy row index.
+     Centralised here so the bothMode and single-metric branches below
+     don't each duplicate the time-vs-val dispatch. Returns {r, n}:
+       r = {cagr, open, sellPrice, exitMonths}  (sector outcome)
+       n = Nifty CAGR over the same window or null
+     For val mode the exit window length is taken from r.exitMonths so
+     Nifty is compared apples-to-apples (same calendar window, not a
+     hardcoded horizon). */
+  function outcomeAt(i, dateStr, predForVal){
+    var r, n=null;
+    if(sellMode==='time'){
+      r=fwdReturnTime(i, sellTimeMonths);
+      /* Compare to Nifty over the same fixed horizon. */
+      n=niftyFwdReturn(dateStr, sellTimeMonths);
+    } else {
+      r=fwdReturnVal(i, predForVal);
+      /* Compare to Nifty over the ACTUAL elapsed window of this trade. */
+      if(r.exitMonths!=null) n=niftyFwdReturn(dateStr, r.exitMonths);
+    }
+    return {r:r, n:n};
+  }
 
   /* pre-compute date timestamps once — avoids thousands of Date parses in the loop */
   const ts=new Array(data.length);
@@ -4140,8 +4238,6 @@ function _btCompute(){
        AS OF THIS HISTORICAL DATE. A 2024 backtest of Defence (which started
        Jan 2022) had ~2yr of history at that point — alternate blend used.
        Same for any past dates where the sector hadn't yet accumulated 5yr.
-       Each window is winsorised at 1%/99% before the median so backtest
-       references match what the cards display (computeStats does the same).
 
        FAST PATH: if the worker pre-computed row.peRef / row.pbRef and shipped
        them in the response (new D1-backed endpoint), use them directly.
@@ -4156,8 +4252,8 @@ function _btCompute(){
         peRef = row.peRef;
       }else{
         const h3sl=data.slice(h3s,i+1), h5sl=data.slice(h5s,i+1), h10sl=data.slice(h10s,i+1);
-        const pe3=median(winsorise(vv(h3sl,'pe'))),pe5=median(winsorise(vv(h5sl,'pe'))),pe10=median(winsorise(vv(h10sl,'pe')));
-        const peAllH=hasFullHistoryAtT?NaN:median(winsorise(vv(data.slice(0,i+1),'pe')));
+        const pe3=median(vv(h3sl,'pe')),pe5=median(vv(h5sl,'pe')),pe10=median(vv(h10sl,'pe'));
+        const peAllH=hasFullHistoryAtT?NaN:median(vv(data.slice(0,i+1),'pe'));
         peRef=weightedRef(pe3,pe5,pe10,peAllH,hasFullHistoryAtT);
       }
     }
@@ -4166,8 +4262,8 @@ function _btCompute(){
         pbRef = row.pbRef;
       }else{
         const h3slb=data.slice(h3s,i+1), h5slb=data.slice(h5s,i+1), h10slb=data.slice(h10s,i+1);
-        const pb3=median(winsorise(vv(h3slb,'pb'))),pb5=median(winsorise(vv(h5slb,'pb'))),pb10=median(winsorise(vv(h10slb,'pb')));
-        const pbAllH=hasFullHistoryAtT?NaN:median(winsorise(vv(data.slice(0,i+1),'pb')));
+        const pb3=median(vv(h3slb,'pb')),pb5=median(vv(h5slb,'pb')),pb10=median(vv(h10slb,'pb'));
+        const pbAllH=hasFullHistoryAtT?NaN:median(vv(data.slice(0,i+1),'pb'));
         pbRef=weightedRef(pb3,pb5,pb10,pbAllH,hasFullHistoryAtT);
       }
     }
@@ -4196,6 +4292,10 @@ function _btCompute(){
       if(peAtThr&&pbAtThr){
         if(!lastBuy||(tMs-lastBuy)>=COOLDOWN){
           lastBuy=tMs;
+          /* Both-mode val exit: predicate fires on EITHER metric crossing.
+             Inverse of the AND used at entry — we entered when both signal
+             agreed cheap, we exit defensively as soon as either turns rich. */
+          const out=outcomeAt(i, row.date, _valPredicateBoth(sellValPct));
           res.push({
             date:row.date,field:'both',
             val:curPE,val2:curPB,
@@ -4204,8 +4304,7 @@ function _btCompute(){
             pct2:pbRatio*100,
             epsPctMax:epsPctMaxToDate,
             price:price,
-            r6m:fwdReturn(i,6),r1yr:fwdReturn(i,12),
-            n6m:niftyFwdReturn(row.date,6),n1yr:niftyFwdReturn(row.date,12)
+            r:out.r, n:out.n
           });
         }
       }
@@ -4222,13 +4321,17 @@ function _btCompute(){
       if(Math.abs(sRatio-sThr)<=TOL){
         if(!lastBuy||(tMs-lastBuy)>=COOLDOWN){
           lastBuy=tMs;
+          /* Single-metric val exit: predicate fires when the SAME metric used
+             at entry crosses the target. Opposite direction of the entry
+             check — we entered when the metric was low (cheap), we exit
+             when it rises back to/past the target % of ref. */
+          const out=outcomeAt(i, row.date, _valPredicateSingle(sField, sellValPct));
           res.push({
             date:row.date,field:sField,val:cur,med:sRef,
             pct:sRatio*100,
             epsPctMax:epsPctMaxToDate,
             price:price,
-            r6m:fwdReturn(i,6),r1yr:fwdReturn(i,12),
-            n6m:niftyFwdReturn(row.date,6),n1yr:niftyFwdReturn(row.date,12)
+            r:out.r, n:out.n
           });
         }
       }
@@ -4236,7 +4339,11 @@ function _btCompute(){
   }
 
   res.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
-  btResults={trades:res,usePE:usePE,usePB:usePB,both:bothMode,endRef:endRefInfo,thrPE:thrPE,thrPB:thrPB,cooldownDays:cdDays};
+  btResults={
+    trades:res, usePE:usePE, usePB:usePB, both:bothMode,
+    endRef:endRefInfo, thrPE:thrPE, thrPB:thrPB, cooldownDays:cdDays,
+    sellMode:sellMode, sellTimeMonths:sellTimeMonths, sellValPct:sellValPct
+  };
   document.getElementById('bt-results-card').style.display='';
   btShow();
 }
@@ -4296,7 +4403,8 @@ function btComputeHeadless(opts){
        FAST PATH: if the worker pre-computed row.peRef / row.pbRef (new
        D1-backed /sector endpoint), read directly. Falls back to inline
        compute for old cached responses during the 30-min cache cutover.
-       Each window winsorised at 1%/99% before median, matching computeStats and _btCompute.
+       Each window's median is computed directly. References match
+       computeStats and _btCompute as a result.
        Picks alternate blend (40% all-time + 60% × 3yr) when sector had <5yr at this date. */
     var ref;
     var preRef = field==='pe' ? row.peRef : row.pbRef;
@@ -4313,8 +4421,8 @@ function btComputeHeadless(opts){
       if(!hasFullAtT){
         for(var k=0; k<=i; k++){ var v=data[k][field]; if(v>0&&!isNaN(v)) wAll.push(v); }
       }
-      ref=weightedRef(median(winsorise(w3)),median(winsorise(w5)),median(winsorise(w10)),
-                      hasFullAtT?NaN:median(winsorise(wAll)),hasFullAtT);
+      ref=weightedRef(median(w3),median(w5),median(w10),
+                      hasFullAtT?NaN:median(wAll),hasFullAtT);
     }
     if(isNaN(ref)||ref<=0) continue;
 
@@ -4377,7 +4485,16 @@ function btRenderRefInfo(){
   }
   var cdLbl=fmtCd(btResults.cooldownDays||180);
   parts.push('<span class="bt-ref-item"><strong>Weighted ref</strong> · 30% 3yr + 60% 5yr + 10% 10yr</span>');
-  parts.push('<span class="bt-ref-item"><strong>Trigger</strong> · ratio within ±1% of threshold · '+cdLbl+' cooldown</span>');
+  parts.push('<span class="bt-ref-item"><strong>Buy</strong> · ratio within ±1% of threshold · '+cdLbl+' cooldown</span>');
+  /* Sell-trigger description matches the active mode. For val mode we
+     show the target as a percentage of ref; for time mode the fixed
+     holding period. Both share the "Sell" prefix so they read naturally
+     alongside the Buy line. */
+  if(btResults.sellMode==='val'){
+    parts.push('<span class="bt-ref-item"><strong>Sell</strong> · first close at ≥'+Math.round(btResults.sellValPct*100)+'% of weighted ref</span>');
+  } else {
+    parts.push('<span class="bt-ref-item"><strong>Sell</strong> · hold for '+btResults.sellTimeMonths+' months</span>');
+  }
   if(btResults.usePE&&!isNaN(er.peRef)){
     parts.push('<span class="bt-ref-item">P/E ref at end <strong>'+f(er.peRef,1)+'</strong> · threshold '+Math.round(thrPE*100)+'%</span>');
   }
@@ -4397,21 +4514,51 @@ function btActiveTrades(){
 
 function btRenderSummary(trades){
   var sel=arguments.length>1?arguments[1]:trades; /* allow override for live recalc */
-  var c6=sel.filter(function(t){return!t.r6m.open&&t.r6m.cagr!==null;});
-  var c1=sel.filter(function(t){return!t.r1yr.open&&t.r1yr.cagr!==null;});
-  var a6=c6.length?c6.reduce(function(s,t){return s+t.r6m.cagr;},0)/c6.length:null;
-  var a1=c1.length?c1.reduce(function(s,t){return s+t.r1yr.cagr;},0)/c1.length:null;
-  var h6=c6.length?c6.filter(function(t){return t.r6m.cagr>0;}).length/c6.length:null;
-  var h1=c1.length?c1.filter(function(t){return t.r1yr.cagr>0;}).length/c1.length:null;
+  /* Closed = trade reached its exit trigger within the data window. Open
+     trades (val mode: target never crossed; time mode: data ended before
+     the holding period elapsed) are excluded from the aggregates because
+     their CAGR is an extrapolation, not a realised outcome. */
+  var closed=sel.filter(function(t){return!t.r.open&&t.r.cagr!==null;});
+  var avgCagr=closed.length?closed.reduce(function(s,t){return s+t.r.cagr;},0)/closed.length:null;
+  /* Avg absolute return — simple sellP/buyP − 1 averaged across closed
+     trades. Computed from prices on the trade record (not stored as a
+     separate field, since it's a trivial derivation and storing it
+     would just duplicate state). Closed-trade filter mirrors avgCagr
+     so the two stats are always over the same sample. */
+  var avgAbs=closed.length?closed.reduce(function(s,t){
+    var p=t.price, sp=t.r.sellPrice;
+    return s + ((p>0 && sp>0) ? (sp/p-1) : 0);
+  },0)/closed.length:null;
+  var hitRate=closed.length?closed.filter(function(t){return t.r.cagr>0;}).length/closed.length:null;
+  /* Average hold time. Time-mode is constant (sellTimeMonths) so we only
+     surface it for val mode, where exits scatter across the window. */
+  var isVal=btResults.sellMode==='val';
+  var avgHold=null;
+  if(isVal && closed.length){
+    avgHold=closed.reduce(function(s,t){return s+(t.r.exitMonths||0);},0)/closed.length;
+  }
+  /* Open-trade tally for val mode — surfaces how many signals never
+     reached the target before data ran out. A high open count at low
+     sellValPct (e.g. 100%) means the sector usually doesn't fully
+     recover within the data window; useful diagnostic. */
+  var openCount=isVal?sel.filter(function(t){return t.r.open;}).length:0;
+
   function sv(c){if(c===null) return'<span class="bt-stat-val">—</span>';var cls=c>=.05?'pos':c>=-.05?'neu':'neg';return'<span class="bt-stat-val '+cls+'">'+(c>=0?'+':'')+(c*100).toFixed(1)+'%</span>';}
   function hv(h,n){if(h===null) return'<span class="bt-stat-val">—</span>';var cls=h>=.8?'pos':h>=.6?'neu':'neg';return'<span class="bt-stat-val '+cls+'">'+Math.round(h*100)+'%</span><div class="bt-stat-sub">'+n+' closed</div>';}
-  document.getElementById('bt-summary-div').innerHTML='<div class="bt-summary">'
+
+  var html='<div class="bt-summary">'
     +'<div class="bt-stat"><div class="bt-stat-lbl">Signals</div><span class="bt-stat-val">'+sel.length+' / '+trades.length+'</span></div>'
-    +'<div class="bt-stat"><div class="bt-stat-lbl">Avg 6m CAGR</div>'+sv(a6)+'</div>'
-    +'<div class="bt-stat"><div class="bt-stat-lbl">6m Hit Rate</div>'+hv(h6,c6.length)+'</div>'
-    +'<div class="bt-stat"><div class="bt-stat-lbl">Avg 1yr CAGR</div>'+sv(a1)+'</div>'
-    +'<div class="bt-stat"><div class="bt-stat-lbl">1yr Hit Rate</div>'+hv(h1,c1.length)+'</div>'
-    +'</div>';
+    +'<div class="bt-stat"><div class="bt-stat-lbl">Avg CAGR</div>'+sv(avgCagr)+'</div>'
+    +'<div class="bt-stat"><div class="bt-stat-lbl">Avg Absolute Return</div>'+sv(avgAbs)+'</div>'
+    +'<div class="bt-stat"><div class="bt-stat-lbl">Hit Rate</div>'+hv(hitRate,closed.length)+'</div>';
+  if(isVal){
+    html+='<div class="bt-stat"><div class="bt-stat-lbl">Avg Hold</div>'
+      +'<span class="bt-stat-val">'+(avgHold!=null?avgHold.toFixed(1)+'m':'—')+'</span>'
+      +(openCount?'<div class="bt-stat-sub">'+openCount+' open</div>':'')
+      +'</div>';
+  }
+  html+='</div>';
+  document.getElementById('bt-summary-div').innerHTML=html;
 }
 
 function btRecalcStats(){
@@ -4445,20 +4592,23 @@ function btRenderTable(trades){
     return;
   }
   var isBoth=btResults&&btResults.both;
-  function trigBadge(f){
-    if(f==='pe') return'<span class="trig-pe">PE</span>';
-    if(f==='pb') return'<span class="trig-pb">PB</span>';
-    return'<span class="trig-both">PE + PB</span>';
-  }
-  /* Row-level shading based on realised CAGR.
-     Priority: red (either CAGR < 0) > green (either CAGR > 15%) > yellow (any closed data).
-     Open trades (cagr===null) don't affect classification — treated as no signal. */
+  var isVal=btResults.sellMode==='val';
+  /* Header text reflects the active sell trigger so the user sees what
+     the CAGR column actually represents. For val mode we also surface a
+     Duration column with each trade's actual hold time — for time mode
+     that's just a constant, so we omit it. */
+  var outcomeHdr=isVal
+    ? 'Outcome · valuation exit at ≥'+Math.round(btResults.sellValPct*100)+'% of ref'
+    : 'Outcome · '+btResults.sellTimeMonths+'-month hold';
+
+  /* Row-level shading based on realised CAGR (the single outcome now).
+     Open trades (extrapolated CAGR) don't classify — they're treated as
+     "no realised outcome" for shading purposes since the price didn't
+     actually clear the exit trigger. */
   function rowShade(tr){
-    var c6=(tr.r6m.open||tr.r6m.cagr===null)?null:tr.r6m.cagr;
-    var c1=(tr.r1yr.open||tr.r1yr.cagr===null)?null:tr.r1yr.cagr;
-    if(c6===null&&c1===null) return '';
-    if((c6!==null&&c6<0)||(c1!==null&&c1<0)) return 'bt-row-red';
-    if((c6!==null&&c6>0.15)||(c1!==null&&c1>0.15)) return 'bt-row-green';
+    if(tr.r.open||tr.r.cagr===null) return '';
+    if(tr.r.cagr<0)     return 'bt-row-red';
+    if(tr.r.cagr>0.15)  return 'bt-row-green';
     return 'bt-row-yellow';
   }
   var rows=trades.map(function(tr){
@@ -4472,9 +4622,28 @@ function btRenderTable(trades){
     }
     var epsCell=isNaN(tr.epsPctMax)?'—':Math.round(tr.epsPctMax)+'%';
     var buyPriceCell=tr.price&&!isNaN(tr.price)?Math.round(tr.price).toLocaleString('en-IN'):'—';
-    var sp6=tr.r6m.sellPrice, sp1=tr.r1yr.sellPrice;
-    var sell6Cell=(sp6!=null&&!isNaN(sp6))?Math.round(sp6).toLocaleString('en-IN'):'—';
-    var sell1Cell=(sp1!=null&&!isNaN(sp1))?Math.round(sp1).toLocaleString('en-IN'):'—';
+    var sp=tr.r.sellPrice;
+    var sellCell=(sp!=null&&!isNaN(sp))?Math.round(sp).toLocaleString('en-IN'):'—';
+    /* Absolute (non-annualised) return: simple sellPrice/buyPrice − 1.
+       Reuses fmtCAGR for rendering — the function formats any signed
+       percentage with a "partial" badge for open trades, which is exactly
+       what we want here too (the name predates this reuse). For a 24-month
+       trade with 50% absolute, CAGR is ~22.5%; for a 3-month trade with 5%
+       absolute, CAGR is ~21.6%. Same annualised number, very different
+       bets — making the absolute column especially useful in val mode
+       where hold times scatter widely. */
+    var absRet=(tr.price>0 && sp!=null && !isNaN(sp) && sp>0) ? (sp/tr.price-1) : null;
+    /* Duration cell — only emitted in val mode. Closed trades show actual
+       months held; open trades carry an "(open)" suffix so users know the
+       CAGR is extrapolated from the last available price, not realised. */
+    var durCell='';
+    if(isVal){
+      if(tr.r.exitMonths!=null){
+        durCell=tr.r.exitMonths.toFixed(1)+'m'+(tr.r.open?' <span style="color:var(--ghost);font-size:.6rem">(open)</span>':'');
+      } else {
+        durCell='—';
+      }
+    }
     function alphaCell(sectorCagr,niftyCagr,isOpen){
       if(!userIsSubscribed()) return'<td style="text-align:center"><span class="bt-plus-gate" onclick="showUpgradeFlow()" title="SectorScope Plus feature">🔒</span></td>';
       if(isOpen||sectorCagr===null||niftyCagr===null) return'<td>—</td>';
@@ -4491,12 +4660,11 @@ function btRenderTable(trades){
       +'<td class="vc">'+valCell+'</td>'
       +'<td>'+medCell+'</td>'
       +'<td>'+epsCell+'</td>'
-      +'<td class="td-sep">'+sell6Cell+'</td>'
-      +'<td>'+fmtCAGR(tr.r6m.cagr,tr.r6m.open)+'</td>'
-      +alphaCell(tr.r6m.cagr,tr.n6m,tr.r6m.open)
-      +'<td class="td-sep">'+sell1Cell+'</td>'
-      +'<td>'+fmtCAGR(tr.r1yr.cagr,tr.r1yr.open)+'</td>'
-      +alphaCell(tr.r1yr.cagr,tr.n1yr,tr.r1yr.open)
+      +(isVal?'<td>'+durCell+'</td>':'')
+      +'<td class="td-sep">'+sellCell+'</td>'
+      +'<td>'+fmtCAGR(absRet,tr.r.open)+'</td>'
+      +'<td>'+fmtCAGR(tr.r.cagr,tr.r.open)+'</td>'
+      +alphaCell(tr.r.cagr,tr.n,tr.r.open)
     +'</tr>';
   }).join('');
   var valHdr=isBoth?'PE · PB at Buy':'Value at Buy';
@@ -4510,14 +4678,12 @@ function btRenderTable(trades){
       +'<th rowspan="2">'+valHdr+'</th>'
       +'<th rowspan="2">'+medHdr+'</th>'
       +'<th rowspan="2" title="EPS as % of max EPS up to that date">EPS %</th>'
-      +'<th colspan="3" class="th-group">Outcome · 6M</th>'
-      +'<th colspan="3" class="th-group">Outcome · 1Yr</th>'
+      +(isVal?'<th rowspan="2" title="Months from buy to sell (or to end of data for open trades)">Duration</th>':'')
+      +'<th colspan="4" class="th-group">'+escapeHtml(outcomeHdr)+'</th>'
     +'</tr>'
     +'<tr>'
       +'<th class="th-sub th-sub-sep">Price at Sell</th>'
-      +'<th class="th-sub">CAGR</th>'
-      +'<th class="th-sub">vs Nifty 50</th>'
-      +'<th class="th-sub th-sub-sep">Price at Sell</th>'
+      +'<th class="th-sub" title="Total price change from buy to sell (not annualised)">Absolute Return</th>'
       +'<th class="th-sub">CAGR</th>'
       +'<th class="th-sub">vs Nifty 50</th>'
     +'</tr>'
@@ -4600,42 +4766,27 @@ function buildQuarterlyTable(data){
 /* Build the full detail page HTML */
 /* ════════════════════════════════════════
    EPS GROWTH CHARTS — sector detail overlay
-   Annual YoY: last 10 years  |  QoQ: last 4 quarters
+   Annual YoY: last 10 years  |  QoQ: last 4 quarters.
 
-   For sectors in EPS_USD_SECTORS (IT, Pharma) we render two additional
-   charts beneath the INR ones — USD YoY and USD QoQ — instead of
-   grouping bars within a single chart. Separate charts read cleaner
-   when value labels are dense (the grouped version had overlapping
-   labels at similar magnitudes).
-
-   The USD series converts each underlying EPS data point at the rate
-   that was in effect on its own date, not at today's rate, so the
-   resulting growth bars decompose into "rupee earnings change" vs
-   "dollar earnings change net of currency effect."
-
-   USD bars are only computed when FX_SERIES is loaded AND both endpoints
-   of a given period have FX coverage within the staleness window. If
-   the FX series hasn't loaded yet, we render the INR-only pair first and
-   openSectorDetail re-runs this builder once it resolves. Slots without
-   FX coverage on both endpoints render as empty bars (x-axis label
-   only) so alignment with the INR chart is preserved.
+   IT and Pharma also render USD YoY/QoQ below the INR pair. Each USD
+   point converts at the FX rate from its own date, not today's — so
+   the bars decompose INR earnings movement from currency effect.
+   USD bars render only when FX_SERIES is loaded AND both endpoints
+   have FX coverage within the staleness window. openSectorDetail
+   re-runs this once FX resolves; slots without coverage render empty
+   to preserve alignment with the INR chart.
 ════════════════════════════════════════ */
 function buildEpsGrowthCharts(data, secColor, sectorName){
   if(!data||!data.length) return '';
   var isLight=document.documentElement.classList.contains('light');
   var grouped=!!(sectorName && EPS_USD_SECTORS[sectorName] && FX_SERIES);
 
-  /* Windowed EPS average for annual YoY bars — mirrors the global
-     epsWindowAvg() so chart bars and the tile YoY use consistent
-     smoothing. ±7-day window suppresses single-day noise and tolerates
-     short data gaps at the target date. */
-  function epsBack(daysAgo){
-    var last=new Date(data[data.length-1].date);
-    if(isNaN(last)) return NaN;
-    var target=new Date(last);
-    target.setDate(target.getDate()-daysAgo);
-    var loMs=target.getTime()-7*MS_DAY;
-    var hiMs=target.getTime()+7*MS_DAY;
+  /* Windowed EPS average centered at an explicit target date (±7-day window).
+     Replaces the older rolling-365-day approach so annual bars can anchor
+     to fiscal-year endpoints rather than to wherever today happens to land. */
+  function epsAtDate(targetMs){
+    if(!targetMs||isNaN(targetMs)) return NaN;
+    var loMs=targetMs-7*MS_DAY, hiMs=targetMs+7*MS_DAY;
     var sum=0,n=0;
     for(var k=0;k<data.length;k++){
       var dt=new Date(data[k].date);
@@ -4649,17 +4800,13 @@ function buildEpsGrowthCharts(data, secColor, sectorName){
     return n?sum/n:NaN;
   }
 
-  /* Same window as epsBack but converts each EPS to USD at *its own date's*
-     rate before averaging. Returns NaN if FX coverage for the window is
-     insufficient — caller treats that as "no USD bar for this period." */
-  function epsUsdBack(daysAgo){
-    if(!FX_SERIES) return NaN;
-    var last=new Date(data[data.length-1].date);
-    if(isNaN(last)) return NaN;
-    var target=new Date(last);
-    target.setDate(target.getDate()-daysAgo);
-    var loMs=target.getTime()-7*MS_DAY;
-    var hiMs=target.getTime()+7*MS_DAY;
+  /* Same ±7-day window as epsAtDate but converts each EPS to USD at
+     *its own date's* rate before averaging. Returns NaN if FX coverage
+     for the window is insufficient — caller treats that as "no USD bar
+     for this period." */
+  function epsUsdAtDate(targetMs){
+    if(!FX_SERIES||!targetMs||isNaN(targetMs)) return NaN;
+    var loMs=targetMs-7*MS_DAY, hiMs=targetMs+7*MS_DAY;
     var sum=0,n=0;
     for(var k=0;k<data.length;k++){
       var dt=new Date(data[k].date);
@@ -4678,18 +4825,53 @@ function buildEpsGrowthCharts(data, secColor, sectorName){
 
   var lastDate=new Date(data[data.length-1].date);
 
-  /* ── Annual YoY: up to 10 years ── */
+  /* ── Annual YoY: 10 completed Indian fiscal years + 1 partial current FY ──
+     Indian FY runs Apr 1 – Mar 31, so FYyy = Apr (yy-1) – Mar yy. A bar
+     labeled FYyy compares TTM EPS at Mar 31 of year yy vs Mar 31 of year
+     yy-1 — and since NSE-reported EPS is itself trailing-12-month, the value
+     at fiscal-year end is the full-FY earnings, so the % change *is* that
+     FY's growth. The trailing partial bar (FYyy+1p) compares TTM at the
+     latest data point vs TTM at the last completed FY-end — a directional
+     read of how the current FY is tracking that sharpens as new quarterly
+     results roll into TTM. */
+  function fyEndMs(year){
+    /* Mar 31 of `year` = end of FYyy where yy is the last two digits */
+    return new Date(year,2,31).getTime();
+  }
+  function fyLabel(year){ return 'FY'+('0'+(year%100)).slice(-2); }
+  var lastMonth=lastDate.getMonth(); /* 0-indexed: Mar = 2, Apr = 3 */
+  var lastYear=lastDate.getFullYear();
+  /* Apr onward → already into next FY; Jan-Mar → still in this FY */
+  var currentFY = lastMonth>=3 ? lastYear+1 : lastYear;
+
   var yoyBars=[], yoyBarsUsd=[];
-  for(var yr=1;yr<=10;yr++){
-    var epsEnd=epsBack((yr-1)*365);
-    var epsStart=epsBack(yr*365);
+  /* 10 completed FYs (oldest first) */
+  for(var fy=currentFY-10; fy<=currentFY-1; fy++){
+    var endMs=fyEndMs(fy), startMs=fyEndMs(fy-1);
+    var epsEnd=epsAtDate(endMs), epsStart=epsAtDate(startMs);
     if(!isNaN(epsEnd)&&!isNaN(epsStart)&&epsStart>0){
-      var labelYear=lastDate.getFullYear()-(yr-1);
-      yoyBars.unshift({label:String(labelYear), val:epsEnd/epsStart-1});
+      var lbl=fyLabel(fy);
+      yoyBars.push({label:lbl, val:epsEnd/epsStart-1, partial:false});
       if(grouped){
-        var uEnd=epsUsdBack((yr-1)*365), uStart=epsUsdBack(yr*365);
+        var uEnd=epsUsdAtDate(endMs), uStart=epsUsdAtDate(startMs);
         var uVal=(!isNaN(uEnd)&&!isNaN(uStart)&&uStart>0) ? (uEnd/uStart-1) : NaN;
-        yoyBarsUsd.unshift({label:String(labelYear), val:uVal});
+        yoyBarsUsd.push({label:lbl, val:uVal, partial:false});
+      }
+    }
+  }
+  /* Partial current FY bar — gated to ≥7 days into new FY to avoid a
+     degenerate "0%" bar right at FY rollover (windows would overlap). */
+  var partialEndMs=lastDate.getTime();
+  var partialStartMs=fyEndMs(currentFY-1);
+  if(partialEndMs - partialStartMs > 7*MS_DAY){
+    var pEnd=epsAtDate(partialEndMs), pStart=epsAtDate(partialStartMs);
+    if(!isNaN(pEnd)&&!isNaN(pStart)&&pStart>0){
+      var pLbl=fyLabel(currentFY);
+      yoyBars.push({label:pLbl, val:pEnd/pStart-1, partial:true});
+      if(grouped){
+        var pUend=epsUsdAtDate(partialEndMs), pUstart=epsUsdAtDate(partialStartMs);
+        var pUval=(!isNaN(pUend)&&!isNaN(pUstart)&&pUstart>0) ? (pUend/pUstart-1) : NaN;
+        yoyBarsUsd.push({label:pLbl, val:pUval, partial:true});
       }
     }
   }
@@ -4778,15 +4960,28 @@ function buildEpsGrowthCharts(data, secColor, sectorName){
     for(var bi2=0;bi2<bars.length;bi2++){
       var b=bars[bi2];
       var cx=PL+gap*bi2+gap/2;
-      /* x-axis label always rendered (preserves alignment across paired charts) */
-      svg+='<text x="'+Math.round(cx)+'" y="'+(H-PB+13)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.5" fill="'+lblC+'">'+b.label+'</text>';
+      /* x-axis label always rendered (preserves alignment across paired charts).
+         Partial bars get a two-line label: "FY26" on top, "(partial)" italic below. */
+      if(b.partial){
+        svg+='<text x="'+Math.round(cx)+'" y="'+(H-PB+12)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.5" fill="'+lblC+'">'+b.label+'</text>';
+        svg+='<text x="'+Math.round(cx)+'" y="'+(H-PB+22)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="6.5" font-style="italic" fill="'+lblC+'">(partial)</text>';
+      } else {
+        svg+='<text x="'+Math.round(cx)+'" y="'+(H-PB+13)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.5" fill="'+lblC+'">'+b.label+'</text>';
+      }
       /* Skip rect + value label for NaN slots (no FX coverage etc.) */
       if(isNaN(b.val)) continue;
       var px=Math.max(Math.round(Math.abs(b.val)*ppu),2);
       var pos=b.val>=0;
       var rx=Math.round(cx-bw/2);
       var ry=pos?Math.round(zY-px):Math.round(zY);
-      svg+='<rect x="'+rx+'" y="'+ry+'" width="'+bw+'" height="'+px+'" rx="2" fill="'+(pos?posC:negC)+'"/>';
+      var barColor=pos?posC:negC;
+      if(b.partial){
+        /* Partial current-FY bar: translucent fill + dashed outline so it
+           reads as "in progress" and isn't confused with a finalized FY. */
+        svg+='<rect x="'+rx+'" y="'+ry+'" width="'+bw+'" height="'+px+'" rx="2" fill="'+barColor+'" fill-opacity="0.42" stroke="'+barColor+'" stroke-width="1" stroke-dasharray="2.5,2" vector-effect="non-scaling-stroke"/>';
+      } else {
+        svg+='<rect x="'+rx+'" y="'+ry+'" width="'+bw+'" height="'+px+'" rx="2" fill="'+barColor+'"/>';
+      }
       var vy=pos?(ry-4):(ry+px+10);
       var vsign=b.val>=0?'+':'';
       svg+='<text x="'+Math.round(cx)+'" y="'+vy+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="600" fill="'+valC+'">'+vsign+(b.val*100).toFixed(1)+'%</text>';
@@ -4799,8 +4994,8 @@ function buildEpsGrowthCharts(data, secColor, sectorName){
   }
 
   var out='<div id="sd-eps-charts-section">';
-  out+=buildChart(yoyBars,'EPS YoY Growth','Annual · last 10 years');
-  if(grouped) out+=buildChart(yoyBarsUsd,'USD EPS YoY Growth','Annual · last 10 years · USD-converted');
+  out+=buildChart(yoyBars,'EPS YoY Growth','Annual · last 10 FYs + current (partial)');
+  if(grouped) out+=buildChart(yoyBarsUsd,'USD EPS YoY Growth','Annual · last 10 FYs + current (partial) · USD-converted');
   out+=buildChart(qoqBars,'EPS QoQ Growth','Last 4 quarters');
   if(grouped) out+=buildChart(qoqBarsUsd,'USD EPS QoQ Growth','Last 4 quarters · USD-converted');
   out+='</div>';
@@ -5756,12 +5951,9 @@ function cmRollingRef(sectorName, field){
     for(var k=h5s;  k<=i; k++) w5.push(pts[k].v);
     for(var k=h10s; k<=i; k++) w10.push(pts[k].v);
 
-    /* Winsorise each window at 1%/99% before taking the median, matching
-       computeStats and the backtest paths so all "weighted reference"
-       computations across the app produce identical numbers. */
-    var m3 =w3.length ?median(winsorise(w3)) :NaN;
-    var m5 =w5.length ?median(winsorise(w5)) :NaN;
-    var m10=w10.length?median(winsorise(w10)):NaN;
+    var m3 =w3.length ?median(w3) :NaN;
+    var m5 =w5.length ?median(w5) :NaN;
+    var m10=w10.length?median(w10):NaN;
     /* Pick the right blend at this point in time. Same threshold as
        computeStats — <5yr of data → alternate blend (40% all-time + 60% × 3yr). */
     var elapsedAtPt=(T - pts[0].t)/MS_YEAR;
@@ -5770,7 +5962,7 @@ function cmRollingRef(sectorName, field){
     if(!hasFullAtPt){
       var wAll=[];
       for(var k=0;k<=i;k++) wAll.push(pts[k].v);
-      mAll=median(winsorise(wAll));
+      mAll=median(wAll);
     }
     var ref=weightedRef(m3,m5,m10,mAll,hasFullAtPt);
     /* Skip points where the weighted ref couldn't be computed at all
@@ -6968,7 +7160,11 @@ document.addEventListener('click',function(e){
       subscriptionMeta =sub.meta ||{};
       renderSubscriptionUI();
     }
-  }catch(e){}
+  }catch(e){
+    /* Corrupted localStorage — wipe both entries so we don't strand the user. */
+    console.warn('[auth] restoreSession parse failed, clearing ss_user/ss_sub:', e.message);
+    try{ localStorage.removeItem('ss_user'); localStorage.removeItem('ss_sub'); }catch(_){}
+  }
 })();
 
 /* Init Google as soon as the DOM is ready. The GSI script is `async defer` so
@@ -8737,6 +8933,199 @@ async function submitContactForm(){
     ctShowError('Network error. Check your connection and try again.');
     sendBtn.disabled=false;
     sendBtn.textContent='Send';
+  }
+}
+</script>
+
+<!-- Delete account: typed confirmation, calls DELETE /account, wipes localStorage on success. -->
+<div id="delete-account-pane" role="dialog" aria-label="Delete account">
+  <div class="da-header">
+    <div class="da-badge">&#9888; Danger</div>
+    <button class="da-close" onclick="closeDeleteAccountPane()" aria-label="Close">&#10005;</button>
+  </div>
+  <div class="da-body" id="da-body-main">
+    <div class="da-title">Delete your account</div>
+    <div class="da-warning">
+      This permanently removes everything tied to your SectorScope account:
+      <ul class="da-list">
+        <li>SectorScope Plus subscription (cancelled immediately, no refund)</li>
+        <li>All your saved sector alerts</li>
+        <li>Your donation history</li>
+        <li>AI summary usage record</li>
+      </ul>
+      Aggregate market data is unaffected. Razorpay retains payment records as required by Indian financial law. This cannot be undone.
+    </div>
+    <label class="da-confirm-label" for="da-confirm-input">Type <code>DELETE</code> to confirm:</label>
+    <input id="da-confirm-input" class="da-input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" oninput="daUpdateConfirmState()"/>
+    <div class="da-error" id="da-error"></div>
+    <div class="da-actions">
+      <button class="da-delete-btn" id="da-delete-btn" onclick="submitDeleteAccount()" disabled>Delete my account</button>
+      <button class="da-cancel-btn" onclick="closeDeleteAccountPane()">Cancel</button>
+    </div>
+  </div>
+  <div class="da-body-done" id="da-body-done">
+    <div class="da-done-icon">&#10003;</div>
+    <div class="da-done-title">Account deleted</div>
+    <div class="da-done-sub">Signing you out&hellip;</div>
+  </div>
+</div>
+
+<style>
+#delete-account-pane{
+  position:fixed;bottom:24px;right:24px;z-index:9000;
+  width:380px;max-width:calc(100vw - 32px);
+  background:var(--bg2);
+  border:1px solid rgba(248,113,113,.3);
+  border-radius:16px;
+  box-shadow:0 8px 40px rgba(0,0,0,.45), 0 0 0 1px rgba(248,113,113,.05);
+  padding:20px 20px 16px;
+  font-family:var(--body);
+  transform:translateY(calc(100% + 100px));
+  opacity:0;
+  transition:transform .4s cubic-bezier(.22,.68,0,1.2),opacity .3s ease;
+  pointer-events:none;
+}
+#delete-account-pane.da-visible{transform:translateY(0);opacity:1;pointer-events:auto}
+.da-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.da-badge{
+  font-family:var(--mono);font-size:.55rem;font-weight:700;
+  letter-spacing:.8px;text-transform:uppercase;color:#f87171;
+  background:rgba(248,113,113,.12);padding:3px 8px;border-radius:20px;
+  border:1px solid rgba(248,113,113,.25);
+}
+.da-close{
+  background:none;border:none;color:var(--ghost);font-size:.9rem;
+  cursor:pointer;padding:2px 4px;line-height:1;border-radius:4px;
+  transition:color .15s,background .15s;
+}
+.da-close:hover{color:var(--txt);background:var(--bg3)}
+.da-title{font-size:.92rem;font-weight:700;color:var(--txt);margin-bottom:10px;line-height:1.4}
+.da-warning{font-size:.78rem;color:var(--sub);line-height:1.5;margin-bottom:12px}
+.da-list{margin:6px 0 8px 18px;padding:0}
+.da-list li{margin:3px 0;font-size:.74rem;color:var(--sub);line-height:1.45}
+.da-confirm-label{display:block;font-size:.75rem;color:var(--sub);margin-bottom:6px}
+.da-confirm-label code{
+  font-family:var(--mono);background:var(--bg3);padding:1px 5px;
+  border-radius:4px;color:#f87171;font-size:.72rem;font-weight:700;
+}
+.da-input{
+  width:100%;padding:9px 10px;margin-bottom:8px;
+  background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;
+  color:var(--txt);font-family:var(--mono);font-size:.82rem;
+  outline:none;box-sizing:border-box;letter-spacing:1px;
+  transition:border-color .15s;
+}
+.da-input:focus{border-color:#f87171}
+.da-error{font-size:.7rem;color:#f87171;margin:0 0 8px;text-align:center;display:none}
+.da-error.show{display:block}
+.da-actions{display:flex;flex-direction:column;gap:7px}
+.da-delete-btn{
+  width:100%;padding:9px;border-radius:9px;border:none;
+  background:linear-gradient(135deg,#dc2626,#ef4444);
+  color:#fff;font-family:var(--body);font-size:.82rem;font-weight:700;
+  cursor:pointer;transition:opacity .15s,background .15s;
+}
+.da-delete-btn:hover:not(:disabled){opacity:.88}
+.da-delete-btn:disabled{
+  opacity:.5;cursor:not-allowed;
+  background:var(--bg3);color:var(--ghost);
+}
+.da-cancel-btn{
+  width:100%;padding:7px;border-radius:9px;border:1px solid var(--bdr);
+  background:transparent;color:var(--ghost);
+  font-family:var(--body);font-size:.76rem;cursor:pointer;
+  transition:color .15s,background .15s;
+}
+.da-cancel-btn:hover{color:var(--txt);background:var(--bg3)}
+.da-body-done{display:none;text-align:center;padding:10px 0 4px}
+.da-body-done.show{display:block}
+#da-body-main.hidden{display:none}
+.da-done-icon{font-size:1.8rem;color:var(--chp-c);margin-bottom:6px}
+.da-done-title{font-size:.92rem;font-weight:700;color:var(--txt);margin-bottom:4px}
+.da-done-sub{font-size:.74rem;color:var(--sub)}
+@media(max-width:480px){#delete-account-pane{left:12px;right:12px;width:auto;bottom:16px}}
+</style>
+
+<script>
+/* Delete-account pane: open/close/submit. Submit calls DELETE /account
+   with the session JWT; on success wipes localStorage and reloads. */
+function openDeleteAccountPane(){
+  if(!window.currentUser){ if(typeof authSignIn==='function') authSignIn(); return; }
+  var pane=document.getElementById('delete-account-pane');
+  if(!pane) return;
+  document.getElementById('da-confirm-input').value='';
+  document.getElementById('da-error').classList.remove('show');
+  document.getElementById('da-body-main').classList.remove('hidden');
+  document.getElementById('da-body-done').classList.remove('show');
+  var btn=document.getElementById('da-delete-btn');
+  btn.disabled=true;
+  btn.textContent='Delete my account';
+  pane.classList.add('da-visible');
+  /* Delay focus so it doesn't race the open animation. */
+  setTimeout(function(){ try{ document.getElementById('da-confirm-input').focus(); }catch(e){} }, 280);
+}
+
+function closeDeleteAccountPane(){
+  var pane=document.getElementById('delete-account-pane');
+  if(pane) pane.classList.remove('da-visible');
+}
+
+function daUpdateConfirmState(){
+  var input=document.getElementById('da-confirm-input');
+  var btn=document.getElementById('da-delete-btn');
+  if(!input||!btn) return;
+  btn.disabled=(input.value!=='DELETE');
+}
+
+function daShowError(msg){
+  var err=document.getElementById('da-error');
+  if(!err) return;
+  err.textContent=msg;
+  err.classList.add('show');
+}
+
+async function submitDeleteAccount(){
+  if(!window.currentUser||!window.currentUser.token){
+    daShowError('Sign in expired. Please sign in again.');
+    return;
+  }
+  var input=document.getElementById('da-confirm-input');
+  if(!input || input.value!=='DELETE'){
+    daShowError('Type DELETE (in capitals) to confirm.');
+    return;
+  }
+
+  var btn=document.getElementById('da-delete-btn');
+  var errEl=document.getElementById('da-error');
+  errEl.classList.remove('show');
+  btn.disabled=true;
+  btn.textContent='Deleting\u2026';
+
+  try {
+    var res=await fetch(WORKER_BASE+'/account',{
+      method:'DELETE',
+      headers:{ 'Authorization':'Bearer '+window.currentUser.token },
+    });
+    if(res.ok){
+      try{ localStorage.clear(); }catch(e){}
+      window.currentUser=null;
+      document.getElementById('da-body-main').classList.add('hidden');
+      document.getElementById('da-body-done').classList.add('show');
+      setTimeout(function(){ window.location.href='/'; }, 2200);
+    } else {
+      var errBody={};
+      try{ errBody=await res.json(); }catch(e){}
+      var msg = (errBody && errBody.error) ? errBody.error
+              : (res.status===401 ? 'Sign in expired. Please sign in again and retry.'
+              : 'Delete failed. Try again, or email help@sectorscope.in if it keeps failing.');
+      daShowError(msg);
+      btn.disabled=false;
+      btn.textContent='Delete my account';
+    }
+  } catch (e) {
+    daShowError('Network error. Check your connection and try again.');
+    btn.disabled=false;
+    btn.textContent='Delete my account';
   }
 }
 </script>
