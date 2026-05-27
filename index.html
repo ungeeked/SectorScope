@@ -1558,7 +1558,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     </div>
     <div class="hp-card info">
       <div class="hp-card-ttl">🔔 Set Alert</div>
-      <div class="hp-p" style="margin-bottom:0">Tap the <em>Set Alert</em> button at the bottom of any card to flip the card and configure an email alert for that sector — for example, "ping me when Nifty Bank P/B drops below 2.0." <em>Alerts are a Plus feature.</em> Full walkthrough in <strong>section 7</strong>.</div>
+      <div class="hp-p" style="margin-bottom:0">Tap the <em>Set Alert</em> button at the bottom of any card to flip the card and configure an email alert for that sector — for example, "ping me when Nifty Bank P/B drops to 85% of its historical median," or "tell me if Defence P/E climbs above 130% of median." <em>Alerts are a Plus feature.</em> Full walkthrough in <strong>section 7</strong>.</div>
     </div>
     <div class="hp-card info">
       <div class="hp-card-ttl">⤢ Tap the sparkline</div>
@@ -2172,17 +2172,16 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     </div>
 
     <div class="hp-sub-h">Email alerts — get notified at your level</div>
-    <div class="hp-p">Tap the <em>🔔 Set Alert</em> button at the bottom of any card to flip the card and configure an alert. The form has four sections, top to bottom:</div>
+    <div class="hp-p">Tap the <em>🔔 Set Alert</em> button at the bottom of any card to flip the card and configure an alert. The form has three sections, top to bottom:</div>
     <dl class="hp-kv">
-      <dt>Metric checkboxes — P/E, P/B</dt><dd>Pick which valuation metric should trigger the alert. For single-metric sectors (IT, Bank, etc.), the appropriate one is pre-ticked. For dual-metric sectors (Realty, Energy, Infra, Metal) both are pre-ticked by default — you can untick either if you want only one to fire.</dd>
-      <dt>Threshold sliders</dt><dd>One slider per ticked metric, ranging 50%–150% of the weighted reference. Drag to your threshold — for example, set the P/B slider to <strong>85%</strong> to mean "alert me when Nifty Bank P/B drops to 85% of its weighted historical median." The slider's default starts at the sector's <em>current</em> % of ref, so you can quickly anchor your alert to where things are right now.</dd>
-      <dt>AND / OR (dual-metric sectors only)</dt><dd>If you've ticked both P/E and P/B for a dual-metric sector, an AND/OR toggle appears: <strong>OR</strong> fires the alert if either metric crosses its threshold (looser, more alerts), <strong>AND</strong> fires only when both are crossed simultaneously (tighter, rarer alerts). OR is the default — it's the right pick for "tell me when this sector starts looking cheap." Switch to AND if you only want high-conviction signals where both lenses agree.</dd>
-      <dt>Trigger — Once or Recurring</dt><dd><strong>Once</strong> means the alert fires the first time the threshold is crossed and then disables itself. Use this for setting a buy target you'll act on immediately. <strong>Recurring</strong> means the alert re-fires every time the threshold is crossed, with a 24-hour cooldown so the same dip doesn't email you twenty times. Use this for monitoring — staying informed without committing to act on the first signal.</dd>
+      <dt>Metric — P/E or P/B <em>(dual-metric sectors only)</em></dt><dd>For single-metric sectors (IT, Bank, etc.), the right metric is selected silently — no toggle is shown. For dual-metric sectors (Realty, Energy, Infra, Metals) a P/E / P/B toggle appears. Each alert watches exactly one metric. If you want to track both metrics on the same sector, set two separate alerts (still capped at 2 per sector).</dd>
+      <dt>Trigger when — At or Below / At or Above</dt><dd>Choose the direction of the cross. <strong>At or Below</strong> fires when the metric drops to your threshold or lower — the classic "buy when cheap" setup. <strong>At or Above</strong> fires when the metric rises to your threshold or higher — useful for trimming exposure when a sector gets stretched, or for catching a confirmed rerating breakout.</dd>
+      <dt>Threshold slider</dt><dd>Drag to your target, expressed as 50%–150% of the weighted reference. With direction <em>At or Below</em> and slider at <strong>85%</strong>: "alert me when this metric drops to 85% of its weighted historical median." Switch direction and the same 85% means "alert me when it climbs to 85%" — though for an above-trigger you'd usually set a value above 100%. The slider starts at the sector's <em>current</em> % of ref, so you're anchored at where things are right now.</dd>
     </dl>
 
     <div class="hp-card info">
       <div class="hp-card-ttl">Delivery</div>
-      <div class="hp-p" style="margin-bottom:0">The system checks live NSE data every 15 minutes during market hours (9:15am–3:30pm IST, Mon–Fri) and emails the address you signed in with. You'll get up to 2 active alerts per sector. Manage or delete existing alerts from the same flipped-card view — saved alerts appear as a list at the top of the form.</div>
+      <div class="hp-p" style="margin-bottom:0">The system checks live NSE data every 15 minutes during market hours (9:15am–3:30pm IST, Mon–Fri) and emails the address you signed in with. <strong>Alerts are one-time</strong> — once an alert fires, it's removed automatically and you'll need to set a new one if you want continued notifications. You can have up to 2 active alerts per sector. Manage or delete existing alerts from the same flipped-card view — saved alerts appear at the top of the form.</div>
     </div>
 
     <div class="hp-sub-h">Alpha vs Nifty 50 — in the backtest results table</div>
@@ -7386,11 +7385,10 @@ function renderSubscriptionUI(){
   }
 }
 
-var alertTrigState={};
+var alertDirState={};     /* 'above' | 'below' per sector */
+var alertMetricState={};  /* 'pe' | 'pb' per sector — only meaningful for dual sectors */
 
 /* ── Render alert pane ── */
-var alertOperatorState={};  /* 'and' | 'or' per sector */
-
 function renderAlertPane(sectorName){
   var pane=document.querySelector('[data-alert-sector="'+sectorName+'"]');
   if(!pane) return;
@@ -7419,81 +7417,61 @@ function renderAlertPane(sectorName){
   var st=statCache[sectorName];
   if(!st){ pane.innerHTML='<div class="ab-gate"><div class="ab-gate-sub">Data not loaded yet.</div></div>'; return; }
 
-  /* Defaults based on card type:
-     dual  → both checked, OR operator
-     pe    → PE checked only
-     pb    → PB checked only  */
+  /* Card type determines which metric(s) the alert can track:
+       'pe'   → only P/E, toggle hidden
+       'pb'   → only P/B, toggle hidden
+       'dual' → user picks (defaults to P/E per spec) */
   var isDual=(ct==='dual');
-  var isPBOnly=(ct==='pb');
-  var defPeChecked=!isPBOnly;
-  var defPbChecked=(isDual||isPBOnly);
+  var fixedMetric=(ct==='pb')?'pb':(ct==='pe'?'pe':null);
 
+  /* Single-metric sectors force the metric regardless of any stale state */
+  if(fixedMetric){
+    alertMetricState[sectorName]=fixedMetric;
+  } else if(!alertMetricState[sectorName]){
+    alertMetricState[sectorName]='pe';   /* dual sectors default to P/E */
+  }
+  if(!alertDirState[sectorName]) alertDirState[sectorName]='below';
+
+  var metric=alertMetricState[sectorName];
+  var dir   =alertDirState[sectorName];
+
+  /* Slider default anchors at the sector's current % of ref for the
+     selected metric — same "alert me from here" UX as before. Clamped
+     to the 50–150 range the slider supports. */
   var defPE=(!isNaN(st.pePctRef)?Math.max(50,Math.min(150,Math.round(st.pePctRef))):80);
   var defPB=(!isNaN(st.pbPctRef)?Math.max(50,Math.min(150,Math.round(st.pbPctRef))):80);
-
-  if(!alertTrigState[sectorName])    alertTrigState[sectorName]='once';
-  if(!alertOperatorState[sectorName]) alertOperatorState[sectorName]=isDual?'or':'and';
-
-  var trig=alertTrigState[sectorName];
-  var op  =alertOperatorState[sectorName];
-  var bothChecked=defPeChecked&&defPbChecked;
+  var defThr=(metric==='pe')?defPE:defPB;
+  var metricLbl=(metric==='pe')?'P/E':'P/B';
 
   var html='';
 
-  /* ── Metric checkboxes ── */
-  html+='<div class="ab-field">'
-    +'<div class="ab-field-lbl">Alert on</div>'
-    +'<div class="ab-metric-row">'
-      +'<label class="ab-metric-cb">'
-        +'<input type="checkbox" id="al-cb-pe-'+sectorName+'" '+(defPeChecked?'checked ':'')+' '
-          +'onchange="alertToggleMetric(\'pe\',\''+sectorName+'\',this.checked)"> P / E'
-      +'</label>'
-      +'<label class="ab-metric-cb">'
-        +'<input type="checkbox" id="al-cb-pb-'+sectorName+'" '+(defPbChecked?'checked ':'')+' '
-          +'onchange="alertToggleMetric(\'pb\',\''+sectorName+'\',this.checked)"> P / B'
-      +'</label>'
-    +'</div>'
-  +'</div>';
-
-  /* ── PE slider ── */
-  html+='<div class="ab-field-wrap'+(defPeChecked?'':' hidden')+'" id="al-pe-wrap-'+sectorName+'">'
-    +'<div class="ab-field">'
-      +'<div class="ab-field-lbl">P/E threshold &nbsp;<strong id="al-pe-lbl-'+sectorName+'">'+defPE+'%</strong> of median</div>'
-      +'<div class="ab-slider-row">'
-        +'<input type="range" class="ab-slider" id="al-sl-pe-'+sectorName+'" min="50" max="150" value="'+defPE+'" '
-          +'oninput="alertSlideLbl(\'pe\',\''+sectorName+'\',this.value)"/>'
-        +'<span class="ab-slider-val" id="al-sv-pe-'+sectorName+'">'+defPE+'%</span>'
+  /* ── Metric toggle — shown only for dual-metric sectors ── */
+  if(isDual){
+    html+='<div class="ab-field">'
+      +'<div class="ab-field-lbl">Metric</div>'
+      +'<div class="ab-trig-row">'
+        +'<button class="ab-trig'+(metric==='pe'?' active':'')+'" onclick="alertSetMetric(\''+sectorName+'\',\'pe\',this)">P/E</button>'
+        +'<button class="ab-trig'+(metric==='pb'?' active':'')+'" onclick="alertSetMetric(\''+sectorName+'\',\'pb\',this)">P/B</button>'
       +'</div>'
-    +'</div>'
-  +'</div>';
+    +'</div>';
+  }
 
-  /* ── AND / OR switch — shown only when both metrics are checked ── */
-  html+='<div class="ab-op-row'+(bothChecked?'':' hidden')+'" id="al-op-row-'+sectorName+'">'
-    +'<div class="ab-field-lbl" style="margin-bottom:2px">Condition</div>'
-    +'<div class="ab-trig-row">'
-      +'<button class="ab-trig'+(op==='and'?' active':'')+'" onclick="alertSetOp(\''+sectorName+'\',\'and\',this)">AND &nbsp;<span style="font-weight:400;opacity:.7">both must trigger</span></button>'
-      +'<button class="ab-trig'+(op==='or'?' active':'')+'" onclick="alertSetOp(\''+sectorName+'\',\'or\',this)">OR &nbsp;<span style="font-weight:400;opacity:.7">either triggers</span></button>'
-    +'</div>'
-  +'</div>';
-
-  /* ── PB slider ── */
-  html+='<div class="ab-field-wrap'+(defPbChecked?'':' hidden')+'" id="al-pb-wrap-'+sectorName+'">'
-    +'<div class="ab-field">'
-      +'<div class="ab-field-lbl">P/B threshold &nbsp;<strong id="al-pb-lbl-'+sectorName+'">'+defPB+'%</strong> of median</div>'
-      +'<div class="ab-slider-row">'
-        +'<input type="range" class="ab-slider" id="al-sl-pb-'+sectorName+'" min="50" max="150" value="'+defPB+'" '
-          +'oninput="alertSlideLbl(\'pb\',\''+sectorName+'\',this.value)"/>'
-        +'<span class="ab-slider-val" id="al-sv-pb-'+sectorName+'">'+defPB+'%</span>'
-      +'</div>'
-    +'</div>'
-  +'</div>';
-
-  /* ── Trigger type ── */
+  /* ── Direction toggle ── */
   html+='<div class="ab-field">'
-    +'<div class="ab-field-lbl">Trigger</div>'
+    +'<div class="ab-field-lbl">Trigger when</div>'
     +'<div class="ab-trig-row">'
-      +'<button class="ab-trig'+(trig==='once'?' active':'')+'" onclick="alertSetTrig(\''+sectorName+'\',\'once\',this)">One-time</button>'
-      +'<button class="ab-trig'+(trig==='recurring'?' active':'')+'" onclick="alertSetTrig(\''+sectorName+'\',\'recurring\',this)">Recurring · 1d cooldown</button>'
+      +'<button class="ab-trig'+(dir==='below'?' active':'')+'" onclick="alertSetDir(\''+sectorName+'\',\'below\',this)">At or Below</button>'
+      +'<button class="ab-trig'+(dir==='above'?' active':'')+'" onclick="alertSetDir(\''+sectorName+'\',\'above\',this)">At or Above</button>'
+    +'</div>'
+  +'</div>';
+
+  /* ── Single threshold slider, label tracks the active metric ── */
+  html+='<div class="ab-field">'
+    +'<div class="ab-field-lbl"><span id="al-mlbl-'+sectorName+'">'+metricLbl+'</span> threshold &nbsp;<strong id="al-lbl-'+sectorName+'">'+defThr+'%</strong> of median</div>'
+    +'<div class="ab-slider-row">'
+      +'<input type="range" class="ab-slider" id="al-sl-'+sectorName+'" min="50" max="150" value="'+defThr+'" '
+        +'oninput="alertSlideLbl(\''+sectorName+'\',this.value)"/>'
+      +'<span class="ab-slider-val" id="al-sv-'+sectorName+'">'+defThr+'%</span>'
     +'</div>'
   +'</div>';
 
@@ -7505,46 +7483,43 @@ function renderAlertPane(sectorName){
   loadExistingAlerts(sectorName);
 }
 
-function alertSetOp(sector,op,btn){
-  alertOperatorState[sector]=op;
+function alertSetMetric(sector,metric,btn){
+  alertMetricState[sector]=metric;
+  var row=btn.closest('.ab-trig-row');
+  if(row) row.querySelectorAll('.ab-trig').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+
+  /* Re-anchor the slider to the new metric's current % of ref. The two
+     metrics live on different scales so persisting the old slider value
+     across a metric switch would feel arbitrary; snapping to "now" for
+     the new metric mirrors the initial-render default. */
+  var st=statCache[sector];
+  if(!st) return;
+  var defVal=(metric==='pe')
+    ? (!isNaN(st.pePctRef)?Math.max(50,Math.min(150,Math.round(st.pePctRef))):80)
+    : (!isNaN(st.pbPctRef)?Math.max(50,Math.min(150,Math.round(st.pbPctRef))):80);
+  var sl=document.getElementById('al-sl-'+sector);
+  if(sl) sl.value=defVal;
+  var mlbl=document.getElementById('al-mlbl-'+sector);
+  if(mlbl) mlbl.textContent=(metric==='pe'?'P/E':'P/B');
+  var lbl=document.getElementById('al-lbl-'+sector);
+  if(lbl) lbl.textContent=defVal+'%';
+  var sv=document.getElementById('al-sv-'+sector);
+  if(sv) sv.textContent=defVal+'%';
+}
+
+function alertSetDir(sector,dir,btn){
+  alertDirState[sector]=dir;
   var row=btn.closest('.ab-trig-row');
   if(row) row.querySelectorAll('.ab-trig').forEach(function(b){ b.classList.remove('active'); });
   btn.classList.add('active');
 }
 
-function alertToggleMetric(metric,sector,checked){
-  var wrap=document.getElementById('al-'+metric+'-wrap-'+sector);
-  if(wrap) wrap.classList.toggle('hidden',!checked);
-
-  /* Ensure at least one metric stays checked */
-  var otherMetric=(metric==='pe'?'pb':'pe');
-  var otherCb=document.getElementById('al-cb-'+otherMetric+'-'+sector);
-  if(!checked&&otherCb&&!otherCb.checked){
-    var thisCb=document.getElementById('al-cb-'+metric+'-'+sector);
-    if(thisCb){ thisCb.checked=true; if(wrap) wrap.classList.remove('hidden'); }
-    return;
-  }
-
-  /* Show/hide AND-OR switch based on whether both are now checked */
-  var cbPE=document.getElementById('al-cb-pe-'+sector);
-  var cbPB=document.getElementById('al-cb-pb-'+sector);
-  var opRow=document.getElementById('al-op-row-'+sector);
-  if(opRow) opRow.classList.toggle('hidden',!(cbPE&&cbPE.checked&&cbPB&&cbPB.checked));
-}
-
-
-function alertSlideLbl(metric,sector,val){
-  var lbl=document.getElementById('al-'+metric+'-lbl-'+sector);
-  var sv =document.getElementById('al-sv-'+metric+'-'+sector);
+function alertSlideLbl(sector,val){
+  var lbl=document.getElementById('al-lbl-'+sector);
+  var sv =document.getElementById('al-sv-'+sector);
   if(lbl) lbl.textContent=val+'%';
   if(sv)  sv.textContent=val+'%';
-}
-
-function alertSetTrig(sector,trig,btn){
-  alertTrigState[sector]=trig;
-  var row=btn.closest('.ab-trig-row');
-  if(row) row.querySelectorAll('.ab-trig').forEach(function(b){ b.classList.remove('active'); });
-  btn.classList.add('active');
 }
 
 function alertFeedback(sector,msg,type){
@@ -7561,25 +7536,20 @@ async function alertSubmit(sector){
   var btn=document.getElementById('al-btn-'+sector);
   if(btn) btn.disabled=true;
 
-  var thresholds={};
-  var cbPE=document.getElementById('al-cb-pe-'+sector);
-  var cbPB=document.getElementById('al-cb-pb-'+sector);
-  if(cbPE&&cbPE.checked){
-    var slPE=document.getElementById('al-sl-pe-'+sector);
-    if(slPE) thresholds.pe=parseInt(slPE.value);
+  var sl=document.getElementById('al-sl-'+sector);
+  var threshold=sl?parseInt(sl.value,10):NaN;
+  if(!threshold||isNaN(threshold)){
+    alertFeedback(sector,'Pick a threshold','err');
+    if(btn) btn.disabled=false;
+    return;
   }
-  if(cbPB&&cbPB.checked){
-    var slPB=document.getElementById('al-sl-pb-'+sector);
-    if(slPB) thresholds.pb=parseInt(slPB.value);
-  }
-  if(!Object.keys(thresholds).length){ alertFeedback(sector,'Select at least one metric','err'); if(btn) btn.disabled=false; return; }
 
   var payload={
     sector    : sector,
     email     : currentUser.email,
-    thresholds: thresholds,
-    trigger   : alertTrigState[sector]||'once',
-    operator  : alertOperatorState[sector]||'or',
+    metric    : alertMetricState[sector]||'pe',
+    direction : alertDirState[sector]||'below',
+    threshold : threshold,
   };
 
   try{
@@ -7591,7 +7561,6 @@ async function alertSubmit(sector){
 
     /* 409 = per-sector limit reached */
     if(res.status===409){
-      var errData=await res.json();
       alertFeedback(sector,'Max 2 alerts per sector. Remove one first.','err');
       if(btn) btn.disabled=false;
       return;
@@ -7621,13 +7590,12 @@ async function loadExistingAlerts(sector){
     if(!alerts.length){ container.innerHTML=''; return; }
 
     var html='';
-    alerts.forEach(function(a){
-      var thrStr=Object.entries(a.thresholds||{}).map(function(kv){
-        return kv[0].toUpperCase()+' at '+kv[1]+'%';
-      }).join(' '+(a.operator==='and'?'AND':'OR')+' ');
+    alerts.forEach(function(a,idx){
+      var ml=(a.metric==='pe'?'P/E':'P/B');
+      var cmp=(a.direction==='above'?'≥':'≤');
       html+='<div class="ab-existing" id="ab-alert-'+a.id+'">'
-        +'<div class="ab-existing-lbl">Active alert'+(alerts.length>1?' &nbsp;<span style="opacity:.5">'+alerts.indexOf(a)+1+' of 2</span>':'')+'</div>'
-        +'<div class="ab-existing-val">'+thrStr+' · '+(a.trigger==='recurring'?'Recurring':'One-time')+'</div>'
+        +'<div class="ab-existing-lbl">Active alert'+(alerts.length>1?' &nbsp;<span style="opacity:.5">'+(idx+1)+' of 2</span>':'')+'</div>'
+        +'<div class="ab-existing-val">'+ml+' '+cmp+' '+a.threshold+'% of median</div>'
         +'<div class="ab-existing-del" onclick="alertDelete(\''+sector+'\',\''+a.id+'\')">Remove</div>'
       +'</div>';
     });
@@ -7690,16 +7658,15 @@ async function openMyAlerts(){
     alerts.forEach(function(a){
       var sec=SECTORS.find(function(s){ return s.name===a.sector; });
       var color=sec?sec.color:'#6366f1';
-      var thrStr=Object.entries(a.thresholds||{}).map(function(kv){
-        return kv[0].toUpperCase()+' ≤ '+kv[1]+'% of median';
-      }).join(' '+(a.operator==='and'?'AND':'OR')+' ');
+      var ml=(a.metric==='pe'?'P/E':'P/B');
+      var cmp=(a.direction==='above'?'≥':'≤');
+      var thrStr=ml+' '+cmp+' '+a.threshold+'% of median';
       html+='<div class="ma-item" id="ma-alert-'+a.id+'">'
         +'<div class="ma-item-color" style="background:'+color+'"></div>'
         +'<div class="ma-item-info">'
           +'<div class="ma-item-sector">Nifty '+a.sector+'</div>'
           +'<div class="ma-item-detail">'+thrStr+'</div>'
         +'</div>'
-        +'<span class="ma-item-trig">'+(a.trigger==='recurring'?'↻ Recurring':'1× One-time')+'</span>'
         +'<button class="ma-item-del" onclick="myAlertDelete(\''+a.sector+'\',\''+a.id+'\',this)">Cancel</button>'
       +'</div>';
     });
@@ -8583,7 +8550,7 @@ function buildPlusFreeHTML(){
   h += "<div class='pp-feat-desc'>Set a threshold on any sector. Get an email the moment the live P/E or P/B crosses it &#8212; no refreshing required.</div>";
   h += "<ul class='pp-bullets'>";
   h += "<li>Tied directly to the <strong>% of reference</strong> framework</li>";
-  h += "<li><strong>Once or recurring</strong> &#8212; daily cooldown after firing</li>";
+  h += "<li><strong>At or below / At or above</strong> &#8212; trigger when valuation crosses your level</li>";
   h += "<li>Checked every <strong>15 min</strong> during market hours</li>";
   h += "<li>Up to <strong>2 alerts per sector</strong></li>";
   h += "</ul></div>";
@@ -8591,14 +8558,14 @@ function buildPlusFreeHTML(){
   h += "<div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div>";
   h += "<div class='pp-mock-body'>";
   h += "<div class='ppm-sector-row'><div class='ppm-sector'>Nifty Bank</div><div class='ppm-band'>CHEAP</div></div>";
-  h += "<div style='font-family:var(--mono);font-size:.48rem;color:var(--ghost);margin-bottom:6px;display:flex;justify-content:space-between'><span>P/E THRESHOLD</span><span style='color:#a5b4fc;font-weight:700'>78%</span></div>";
+  h += "<div style='font-family:var(--mono);font-size:.48rem;color:var(--ghost);margin-bottom:6px;display:flex;justify-content:space-between'><span>P/B THRESHOLD</span><span style='color:#a5b4fc;font-weight:700'>78%</span></div>";
   h += "<div class='ppm-track'><div class='ppm-fill'></div><div class='ppm-thumb'></div></div>";
   h += "<div class='ppm-ticks'><span>50%</span><span>75%</span><span>100%</span><span>125%</span></div>";
   h += "<div style='display:flex;gap:5px;margin:10px 0 4px'>";
-  h += "<div style='flex:1;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:7px;padding:6px 9px;font-family:var(--mono);font-size:.5rem'><div style='color:var(--ghost);margin-bottom:2px'>TRIGGER</div><div style='color:#a5b4fc;font-weight:600'>Once</div></div>";
-  h += "<div style='flex:1;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:7px;padding:6px 9px;font-family:var(--mono);font-size:.5rem'><div style='color:var(--ghost);margin-bottom:2px'>OPERATOR</div><div style='color:#a5b4fc;font-weight:600'>OR</div></div>";
+  h += "<div style='flex:1;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:7px;padding:6px 9px;font-family:var(--mono);font-size:.5rem'><div style='color:var(--ghost);margin-bottom:2px'>METRIC</div><div style='color:#a5b4fc;font-weight:600'>P/B</div></div>";
+  h += "<div style='flex:1;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:7px;padding:6px 9px;font-family:var(--mono);font-size:.5rem'><div style='color:var(--ghost);margin-bottom:2px'>DIRECTION</div><div style='color:#a5b4fc;font-weight:600'>&#8804; Below</div></div>";
   h += "</div>";
-  h += "<div class='ppm-notif'><span style='font-size:1rem'>&#128276;</span><div><div class='ppm-notif-ttl'>Nifty Bank alert fired</div><div class='ppm-notif-body'>P/E at <span style='color:var(--vchp-c);font-weight:700'>77.8%</span> of reference</div></div></div>";
+  h += "<div class='ppm-notif'><span style='font-size:1rem'>&#128276;</span><div><div class='ppm-notif-ttl'>Nifty Bank alert fired</div><div class='ppm-notif-body'>P/B at <span style='color:var(--vchp-c);font-weight:700'>77.8%</span> of reference</div></div></div>";
   h += "</div></div></div>";
   /* FEATURE 2 — AI */
   h += "<div class='pp-feature rev' id='pp-feat-2'>";
