@@ -1003,6 +1003,12 @@ html.light .cm-header{background:rgba(238,241,248,.96)}
 .cm-checkbox-bands{display:inline-block;width:14px;height:11px;flex-shrink:0;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 11' width='14' height='11'><line x1='0' y1='2'  x2='14' y2='2'  stroke='%23999' stroke-width='1.4' stroke-dasharray='1,2'/><line x1='0' y1='5.5' x2='14' y2='5.5' stroke='%23999' stroke-width='1.4' stroke-dasharray='3,2'/><line x1='0' y1='9'  x2='14' y2='9'  stroke='%23999' stroke-width='1.4' stroke-dasharray='5,3'/></svg>");background-repeat:no-repeat;background-position:center;transition:filter .12s,opacity .12s;opacity:.65}
 .cm-checkbox.checked .cm-checkbox-bands{opacity:1;filter:brightness(1.5)}
 
+/* Five-band indicator for the Median Zones toggle. Mirrors the colours
+   the bandOfRefPct() function assigns: vchp / chp / neu / exp / vexp.
+   The chart fills use the same hue family at low opacity. */
+.cm-checkbox-zones{display:inline-block;width:14px;height:11px;flex-shrink:0;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 11' width='14' height='11'><rect x='0' y='0'   width='14' height='2.2' fill='%2300c853'/><rect x='0' y='2.2' width='14' height='2.2' fill='%2369f0ae'/><rect x='0' y='4.4' width='14' height='2.2' fill='%23ffd740'/><rect x='0' y='6.6' width='14' height='2.2' fill='%23ff7043'/><rect x='0' y='8.8' width='14' height='2.2' fill='%23ff1744'/></svg>");background-repeat:no-repeat;background-position:center;transition:filter .12s,opacity .12s;opacity:.55}
+.cm-checkbox.checked .cm-checkbox-zones{opacity:1}
+
 /* On-chart legend for the Median Bands toggle. Visible only while showBands
    is on, pinned to the top-right of the canvas wrap. The dash patterns
    inside the SVG mirror the canvas setLineDash arrays exactly (1,4 / 5,4 /
@@ -1809,12 +1815,12 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-ov-section">
         <div class="hp-ov-head">③ EPS Growth</div>
         <div class="hp-ov-body">
-          <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">Two bar charts showing how the sector's earnings have evolved — one at annual resolution (anchored to Indian fiscal years), one at quarterly resolution. Green bars = positive growth, red bars = contraction. Use these to sanity-check the valuation signal: a cheap sector with accelerating EPS is far more interesting than a cheap sector with collapsing EPS.</div>
+          <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">Two bar charts showing how the sector's earnings have evolved — one at annual resolution, one at quarterly resolution. Green bars = positive growth, red bars = contraction. Use these to sanity-check the valuation signal: a cheap sector with accelerating EPS is far more interesting than a cheap sector with collapsing EPS.</div>
 
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:8px 0 4px">
             <!-- Annual YoY mock -->
             <div style="background:var(--bg3);border:1px solid var(--bdr2);border-radius:8px;padding:8px 10px 6px">
-              <div style="font-family:var(--mono);font-size:.5rem;color:var(--ghost);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">EPS YoY Growth <span style="text-transform:none;letter-spacing:0;color:var(--sub)">· annual · 10 FYs + current (partial)</span></div>
+              <div style="font-family:var(--mono);font-size:.5rem;color:var(--ghost);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px">EPS YoY Growth <span style="text-transform:none;letter-spacing:0;color:var(--sub)">· fiscal year · * partial</span></div>
               <svg viewBox="0 0 280 110" style="width:100%;height:auto;display:block">
                 <!-- y axis + zero line -->
                 <line x1="30" y1="10" x2="30" y2="85" stroke="rgba(255,255,255,.11)" stroke-width="0.8" vector-effect="non-scaling-stroke"/>
@@ -1823,26 +1829,23 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
                 <text x="26" y="14" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.4)">+30%</text>
                 <text x="26" y="50.5" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.4)">0</text>
                 <text x="26" y="88" text-anchor="end" font-family="JetBrains Mono,monospace" font-size="7.5" fill="rgba(255,255,255,.4)">-30%</text>
-                <!-- bars: 10 completed FYs (solid) + 1 partial FY (dashed, translucent) -->
+                <!-- bars: fy → pct (last bar is current FY in progress — fill-opacity .45) -->
                 <g>
-                  <rect x="34"  y="33"   width="14" height="14.5" rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="56"  y="19"   width="14" height="28.5" rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="79"  y="47.5" width="14" height="14"   rx="2" fill="rgba(255,82,82,.72)"/>
-                  <rect x="101" y="38"   width="14" height="9.5"  rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="123" y="26"   width="14" height="21.5" rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="145" y="47.5" width="14" height="7"    rx="2" fill="rgba(255,82,82,.72)"/>
-                  <rect x="168" y="31"   width="14" height="16.5" rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="190" y="22"   width="14" height="25.5" rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="212" y="15"   width="14" height="32.5" rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="234" y="28"   width="14" height="19.5" rx="2" fill="rgba(0,200,83,.72)"/>
-                  <rect x="257" y="40.5" width="14" height="7"    rx="2" fill="rgba(0,200,83,.72)" fill-opacity="0.42" stroke="rgba(0,200,83,.72)" stroke-width="1" stroke-dasharray="2.5,2" vector-effect="non-scaling-stroke"/>
+                  <rect x="35"  y="33"   width="17" height="14.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="59"  y="19"   width="17" height="28.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="83"  y="47.5" width="17" height="14"   rx="2" fill="rgba(255,82,82,.72)"/>
+                  <rect x="107" y="38"   width="17" height="9.5"  rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="131" y="26"   width="17" height="21.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="155" y="47.5" width="17" height="7"    rx="2" fill="rgba(255,82,82,.72)"/>
+                  <rect x="179" y="31"   width="17" height="16.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="203" y="22"   width="17" height="25.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="227" y="15"   width="17" height="32.5" rx="2" fill="rgba(0,200,83,.72)"/>
+                  <rect x="251" y="40"   width="17" height="7.5"  rx="2" fill="rgba(0,200,83,.72)" fill-opacity="0.45"/>
                 </g>
-                <!-- x labels: FY-anchored, last bar = partial current FY (two-line) -->
-                <g font-family="JetBrains Mono,monospace" font-size="6" fill="rgba(255,255,255,.36)" text-anchor="middle">
-                  <text x="41"  y="98">FY16</text><text x="63"  y="98">FY17</text><text x="86"  y="98">FY18</text><text x="108" y="98">FY19</text><text x="130" y="98">FY20</text>
-                  <text x="152" y="98">FY21</text><text x="175" y="98">FY22</text><text x="197" y="98">FY23</text><text x="219" y="98">FY24</text><text x="241" y="98">FY25</text>
-                  <text x="264" y="97" fill="rgba(255,255,255,.55)" font-weight="600">FY26</text>
-                  <text x="264" y="105" font-size="4.8" font-style="italic" fill="rgba(255,255,255,.45)">(partial)</text>
+                <!-- x labels: FY18-FY27, with FY27* indicating partial in-progress year -->
+                <g font-family="JetBrains Mono,monospace" font-size="7" fill="rgba(255,255,255,.36)" text-anchor="middle">
+                  <text x="43.5"  y="98">FY18</text><text x="67.5" y="98">FY19</text><text x="91.5" y="98">FY20</text><text x="115.5" y="98">FY21</text><text x="139.5" y="98">FY22</text>
+                  <text x="163.5" y="98">FY23</text><text x="187.5" y="98">FY24</text><text x="211.5" y="98">FY25</text><text x="235.5" y="98">FY26</text><text x="259.5" y="98">FY27*</text>
                 </g>
               </svg>
             </div>
@@ -1871,15 +1874,13 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
           <div class="hp-p" style="margin-top:10px;margin-bottom:6px;font-size:.8rem"><strong>Two chart types · two different questions</strong></div>
           <dl class="hp-kv" style="margin-top:4px">
-            <dt>Annual YoY</dt><dd>Each solid bar = one completed Indian fiscal year, comparing TTM EPS at Mar 31 of that FY vs Mar 31 of the prior FY. Because NSE-reported EPS is itself trailing-12-month, the value at FY-end is the full year's earnings — so the % is that FY's growth. The dashed translucent bar on the right (labeled <strong>FY26 (partial)</strong>, for example) is the <em>current FY in progress</em> — same comparison but with TTM at the latest data point instead of Mar 31. It starts near zero right after FY rollover and sharpens as new quarterly results roll into TTM (Q1 results land ~Aug, Q2 ~Nov, etc.). Answers "is this sector's earnings trajectory fundamentally up or down across cycles, and how is the current year tracking?"</dd>
+            <dt>Annual YoY</dt><dd>Each complete bar = TTM EPS at end of that fiscal year (March 31) vs end of the prior FY, stepping back up to 10 fiscal years. The right-most bar (marked with an asterisk and shown at reduced opacity) is the in-progress current FY — it compares today's TTM EPS to the close of the last complete FY, so it represents "growth so far this year." Answers "is this sector's earnings trajectory fundamentally up or down across cycles, and how is the current FY tracking against that?"</dd>
             <dt>Quarterly QoQ</dt><dd>Each bar = that quarter's average EPS vs the prior quarter. Answers "is earnings momentum <em>right now</em> accelerating, flat, or turning negative?" A run of green QoQ bars after a red YoY is a classic "earnings turning" setup.</dd>
           </dl>
 
           <div class="hp-p" style="margin-top:8px;margin-bottom:0;font-size:.8rem;color:var(--sub)">Y-axis auto-scales to the biggest absolute value in the chart — so a quiet sector with ±8% moves shows the same visual weight as a volatile one swinging ±40%. Compare <em>shape and sign</em>, not bar heights across two sectors. Each bar also has its exact percentage printed above (or below, for negatives).</div>
 
-          <div class="hp-p" style="margin-top:10px;margin-bottom:0;font-size:.78rem;color:var(--sub)"><strong>One subtle point:</strong> the <em>EPS YoY pill</em> on the front card and on the metric strip uses a rolling 365-day comparison (TTM today vs TTM one year ago today), while the annual chart's latest <em>completed</em> bar is anchored Mar-to-Mar. These usually agree closely but can diverge by a few percentage points — especially mid-FY, when "one year ago today" and "last FY-end" point to different snapshots. Both are correct; they're answering slightly different questions. The pill is "right-now YoY," the chart is "completed FY-by-FY."</div>
-
-          <div class="hp-p" style="margin-top:14px;margin-bottom:0;font-size:.82rem"><strong>USD growth charts — IT and Pharma only.</strong> On the IT and Pharma sector detail pages, two additional charts appear beneath the INR ones — <em>USD EPS YoY Growth</em> and <em>USD EPS QoQ Growth</em>. Same shape, same green/red palette, same FY anchoring with a dashed partial bar for the current FY, but the underlying EPS series is converted to USD: each EPS data point uses the USD/INR rate that was in effect on <em>its own historical date</em>, not today's rate, and the % growth is calculated on that derived USD series. Reading the two YoY charts side-by-side tells you the cumulative currency effect: when INR growth substantially exceeds USD growth in a given FY, the rupee depreciated; when they roughly match, the rupee was steady. For sectors like IT (~90% USD-billed revenue) and Pharma (~30–50% from US generics), the USD chart is arguably the cleaner read of underlying business performance — it strips out the rupee-tailwind that's flattered INR earnings growth across the last decade. FYs where FX coverage isn't sufficient on both endpoints render as empty slots in the USD chart so x-axis labels stay aligned with the INR chart above.</div>
+          <div class="hp-p" style="margin-top:14px;margin-bottom:0;font-size:.82rem"><strong>USD growth charts — IT and Pharma only.</strong> On the IT and Pharma sector detail pages, two additional charts appear beneath the INR ones — <em>USD EPS YoY Growth</em> and <em>USD EPS QoQ Growth</em>. Same shape and same green/red palette as the INR charts, but the underlying EPS series is converted to USD: each EPS data point uses the USD/INR rate that was in effect on <em>its own historical date</em>, not today's rate, and the % growth is calculated on that derived USD series. Reading the two YoY charts side-by-side tells you the cumulative currency effect: when INR growth substantially exceeds USD growth in a given year, the rupee depreciated; when they roughly match, the rupee was steady. For sectors like IT (~90% USD-billed revenue) and Pharma (~30–50% from US generics), the USD chart is arguably the cleaner read of underlying business performance — it strips out the rupee-tailwind that's flattered INR earnings growth across the last decade. Years where FX coverage isn't sufficient on both endpoints render as empty slots in the USD chart so x-axis years stay aligned with the INR chart above.</div>
         </div>
       </div>
 
@@ -2140,7 +2141,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <dt>EPS (USD) — IT and Pharma only</dt><dd>An additional metric toggle that appears only on IT and Pharma. When enabled, it draws the EPS line in USD terms — every historical EPS data point is converted at the USD/INR rate that was in effect on <em>its own date</em>, not at today's rate. So a 2010 EPS uses 2010's ~₹46/USD; a 2025 EPS uses 2025's ~₹83/USD. The shape of the resulting line is the underlying USD-denominated earnings trajectory net of currency effects — substantially flatter than the INR series for these sectors, because rupee depreciation has accounted for a meaningful chunk of the headline INR growth. Off by default. For sectors with mostly domestic INR revenue (Bank, FMCG, Realty, etc.) this toggle isn't shown — converting their INR earnings to USD would just impose FX-shaped noise on a series whose underlying drivers have nothing to do with the rupee.</dd>
       <dt>Date-range pills</dt><dd>Quick presets sit above the chart: <strong>1W · 1M · 3M · 6M · 1Y · 3Y · 5Y · 10Y · All</strong>. Tap any pill to snap the chart to that window. Behind the scenes, the data goes back to whatever the underlying NSE history starts at for each sector — typically 2010 or earlier.</dd>
       <dt>Drag-to-measure</dt><dd>Click and drag horizontally across any portion of the chart to measure how much each displayed metric changed between the two endpoints. A panel appears with the % change for each visible line — useful for quantifying event windows like "how much did Pharma's P/E re-rate from the COVID lows to mid-2021" or "how much did IT's EPS grow over the FY24-25 cycle". Direction-agnostic — drag left-to-right or right-to-left, the result is the same. Click anywhere outside the panel (or tap the ✕) to dismiss. Double-click to reset to the default 3Y window. Use the range pills or date pickers above the chart to actually zoom.</dd>
-      <dt>Median &amp; bands toggles</dt><dd>Two toggles below the chart control historical-median overlays. <strong>Median</strong> draws the rolling weighted-reference curve at every historical date — the same blended 3yr/5yr/10yr median the dashboard uses, but plotted continuously through time so you can see how it evolved. <strong>Bands</strong> draws all three component medians (3yr, 5yr, 10yr) as separate dashed curves with a small legend, useful when you want to see how the windows differ.</dd>
+      <dt>Median, Bands &amp; Zones toggles</dt><dd>Three toggles below the chart control historical-median overlays. <strong>Median</strong> draws the rolling weighted-reference curve at every historical date — the same blended 3yr/5yr/10yr median the dashboard uses, but plotted continuously through time so you can see how it evolved. <strong>Bands</strong> draws all three component medians (3yr, 5yr, 10yr) as separate dashed curves with a small legend, useful when you want to see how the windows differ. <strong>Zones</strong> shades the chart background into five colored regions — Very Cheap / Cheap / Neutral / Expensive / Very Expensive — using the exact same thresholds the dashboard applies to today's reading (≤80% / 80–90% / 90–105% / 105–120% / >120% of weighted ref). Median and Bands are alternatives (pick one or neither), while Zones is independent and can combine with either — most useful as Median + Zones, where you see the rolling reference line traveling through its own colored zones.</dd>
     </dl>
 
     <div class="hp-card info">
@@ -4781,12 +4782,14 @@ function buildEpsGrowthCharts(data, secColor, sectorName){
   var isLight=document.documentElement.classList.contains('light');
   var grouped=!!(sectorName && EPS_USD_SECTORS[sectorName] && FX_SERIES);
 
-  /* Windowed EPS average centered at an explicit target date (±7-day window).
-     Replaces the older rolling-365-day approach so annual bars can anchor
-     to fiscal-year endpoints rather than to wherever today happens to land. */
-  function epsAtDate(targetMs){
-    if(!targetMs||isNaN(targetMs)) return NaN;
-    var loMs=targetMs-7*MS_DAY, hiMs=targetMs+7*MS_DAY;
+  /* Windowed EPS average around a target absolute date — same ±7-day
+     smoothing the old epsBack() applied, just anchored to an arbitrary
+     timestamp instead of "N days ago from latest." Lets us anchor on
+     fiscal-year boundaries (March 31) cleanly. Suppresses single-day
+     noise and tolerates weekend / holiday gaps. */
+  function epsAtTarget(targetMs){
+    var loMs=targetMs-7*MS_DAY;
+    var hiMs=targetMs+7*MS_DAY;
     var sum=0,n=0;
     for(var k=0;k<data.length;k++){
       var dt=new Date(data[k].date);
@@ -4800,13 +4803,14 @@ function buildEpsGrowthCharts(data, secColor, sectorName){
     return n?sum/n:NaN;
   }
 
-  /* Same ±7-day window as epsAtDate but converts each EPS to USD at
-     *its own date's* rate before averaging. Returns NaN if FX coverage
-     for the window is insufficient — caller treats that as "no USD bar
-     for this period." */
-  function epsUsdAtDate(targetMs){
-    if(!FX_SERIES||!targetMs||isNaN(targetMs)) return NaN;
-    var loMs=targetMs-7*MS_DAY, hiMs=targetMs+7*MS_DAY;
+  /* USD equivalent — converts each EPS to USD at its own date's rate
+     before averaging. Returns NaN if FX coverage for the window is
+     insufficient; caller renders the slot empty but keeps the x-axis
+     label so the USD chart stays aligned with the INR chart above. */
+  function epsUsdAtTarget(targetMs){
+    if(!FX_SERIES) return NaN;
+    var loMs=targetMs-7*MS_DAY;
+    var hiMs=targetMs+7*MS_DAY;
     var sum=0,n=0;
     for(var k=0;k<data.length;k++){
       var dt=new Date(data[k].date);
@@ -4825,56 +4829,55 @@ function buildEpsGrowthCharts(data, secColor, sectorName){
 
   var lastDate=new Date(data[data.length-1].date);
 
-  /* ── Annual YoY: 10 completed Indian fiscal years + 1 partial current FY ──
-     Indian FY runs Apr 1 – Mar 31, so FYyy = Apr (yy-1) – Mar yy. A bar
-     labeled FYyy compares TTM EPS at Mar 31 of year yy vs Mar 31 of year
-     yy-1 — and since NSE-reported EPS is itself trailing-12-month, the value
-     at fiscal-year end is the full-FY earnings, so the % change *is* that
-     FY's growth. The trailing partial bar (FYyy+1p) compares TTM at the
-     latest data point vs TTM at the last completed FY-end — a directional
-     read of how the current FY is tracking that sharpens as new quarterly
-     results roll into TTM. */
-  function fyEndMs(year){
-    /* Mar 31 of `year` = end of FYyy where yy is the last two digits */
-    return new Date(year,2,31).getTime();
-  }
-  function fyLabel(year){ return 'FY'+('0'+(year%100)).slice(-2); }
-  var lastMonth=lastDate.getMonth(); /* 0-indexed: Mar = 2, Apr = 3 */
-  var lastYear=lastDate.getFullYear();
-  /* Apr onward → already into next FY; Jan-Mar → still in this FY */
-  var currentFY = lastMonth>=3 ? lastYear+1 : lastYear;
+  /* ── Annual YoY: fiscal-year based ──
+     Each complete bar = TTM EPS at end of FY (March 31) divided by TTM
+     EPS at end of prior FY. The latest bar represents the in-progress
+     current FY: end = latest available data point, start = end of last
+     complete FY — i.e. "growth so far this FY." Marked with a trailing
+     asterisk on the label and rendered at reduced opacity in buildChart
+     so it reads as in-progress at a glance.
+
+     FY convention (matches fiscalQLabel above):
+       Apr-Mar fiscal year, named by the year in which it ENDS.
+       FY25 = Apr 2024 → Mar 2025.
+
+     Why FY-anchored rather than the old 365-day-rolling-from-today: FY
+     boundaries are how analysts and investors actually report and
+     compare Indian earnings. Rolling 365 from May 25 vs May 25 has no
+     reporting analogue and made the chart's bars subtly different from
+     anything the user would see in a results filing or broker note. */
+  function fyEnd(year){ return new Date(year,2,31).getTime(); }  /* March 31 of `year` */
+  var lastMs=lastDate.getTime();
+  var lastMonth=lastDate.getMonth();          /* 0=Jan, 2=Mar, 3=Apr, ... */
+  var lastCalYear=lastDate.getFullYear();
+  /* Current FY = year in which the active FY ENDS. Jan-Mar → ends this
+     calendar year; Apr-Dec → ends next calendar year. */
+  var currentFY=lastMonth>=3 ? lastCalYear+1 : lastCalYear;
+  var fyEndCurrent=fyEnd(currentFY);
+  /* True only when the latest data hasn't yet reached the FY-end anchor.
+     Catches the edge where data lands ON March 31 of the FY-end — that
+     bar is complete, not partial. */
+  var currentIsPartial=lastMs<fyEndCurrent;
 
   var yoyBars=[], yoyBarsUsd=[];
-  /* 10 completed FYs (oldest first) */
-  for(var fy=currentFY-10; fy<=currentFY-1; fy++){
-    var endMs=fyEndMs(fy), startMs=fyEndMs(fy-1);
-    var epsEnd=epsAtDate(endMs), epsStart=epsAtDate(startMs);
+  var MAX_BARS=10;
+  for(var fy=currentFY; fy>=currentFY-MAX_BARS+1 && fy>=1; fy--){
+    var endMs=(fy===currentFY) ? lastMs : fyEnd(fy);
+    var startMs=fyEnd(fy-1);
+    var epsEnd=epsAtTarget(endMs);
+    var epsStart=epsAtTarget(startMs);
     if(!isNaN(epsEnd)&&!isNaN(epsStart)&&epsStart>0){
-      var lbl=fyLabel(fy);
-      yoyBars.push({label:lbl, val:epsEnd/epsStart-1, partial:false});
+      var partial=(fy===currentFY && currentIsPartial);
+      var label='FY'+String(fy).slice(-2)+(partial?'*':'');
+      yoyBars.unshift({label:label, val:epsEnd/epsStart-1, partial:partial});
       if(grouped){
-        var uEnd=epsUsdAtDate(endMs), uStart=epsUsdAtDate(startMs);
+        var uEnd=epsUsdAtTarget(endMs), uStart=epsUsdAtTarget(startMs);
         var uVal=(!isNaN(uEnd)&&!isNaN(uStart)&&uStart>0) ? (uEnd/uStart-1) : NaN;
-        yoyBarsUsd.push({label:lbl, val:uVal, partial:false});
+        yoyBarsUsd.unshift({label:label, val:uVal, partial:partial});
       }
     }
   }
-  /* Partial current FY bar — gated to ≥7 days into new FY to avoid a
-     degenerate "0%" bar right at FY rollover (windows would overlap). */
-  var partialEndMs=lastDate.getTime();
-  var partialStartMs=fyEndMs(currentFY-1);
-  if(partialEndMs - partialStartMs > 7*MS_DAY){
-    var pEnd=epsAtDate(partialEndMs), pStart=epsAtDate(partialStartMs);
-    if(!isNaN(pEnd)&&!isNaN(pStart)&&pStart>0){
-      var pLbl=fyLabel(currentFY);
-      yoyBars.push({label:pLbl, val:pEnd/pStart-1, partial:true});
-      if(grouped){
-        var pUend=epsUsdAtDate(partialEndMs), pUstart=epsUsdAtDate(partialStartMs);
-        var pUval=(!isNaN(pUend)&&!isNaN(pUstart)&&pUstart>0) ? (pUend/pUstart-1) : NaN;
-        yoyBarsUsd.push({label:pLbl, val:pUval, partial:true});
-      }
-    }
-  }
+  var anyPartial=yoyBars.some(function(b){return b.partial;});
 
   /* ── Quarterly QoQ: last ~2 years, 4 QoQ values ──
      Per-quarter buckets carry both INR sums and USD sums (USD pre-converted
@@ -4960,28 +4963,19 @@ function buildEpsGrowthCharts(data, secColor, sectorName){
     for(var bi2=0;bi2<bars.length;bi2++){
       var b=bars[bi2];
       var cx=PL+gap*bi2+gap/2;
-      /* x-axis label always rendered (preserves alignment across paired charts).
-         Partial bars get a two-line label: "FY26" on top, "(partial)" italic below. */
-      if(b.partial){
-        svg+='<text x="'+Math.round(cx)+'" y="'+(H-PB+12)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.5" fill="'+lblC+'">'+b.label+'</text>';
-        svg+='<text x="'+Math.round(cx)+'" y="'+(H-PB+22)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="6.5" font-style="italic" fill="'+lblC+'">(partial)</text>';
-      } else {
-        svg+='<text x="'+Math.round(cx)+'" y="'+(H-PB+13)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.5" fill="'+lblC+'">'+b.label+'</text>';
-      }
+      /* x-axis label always rendered (preserves alignment across paired charts) */
+      svg+='<text x="'+Math.round(cx)+'" y="'+(H-PB+13)+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8.5" fill="'+lblC+'">'+b.label+'</text>';
       /* Skip rect + value label for NaN slots (no FX coverage etc.) */
       if(isNaN(b.val)) continue;
       var px=Math.max(Math.round(Math.abs(b.val)*ppu),2);
       var pos=b.val>=0;
       var rx=Math.round(cx-bw/2);
       var ry=pos?Math.round(zY-px):Math.round(zY);
-      var barColor=pos?posC:negC;
-      if(b.partial){
-        /* Partial current-FY bar: translucent fill + dashed outline so it
-           reads as "in progress" and isn't confused with a finalized FY. */
-        svg+='<rect x="'+rx+'" y="'+ry+'" width="'+bw+'" height="'+px+'" rx="2" fill="'+barColor+'" fill-opacity="0.42" stroke="'+barColor+'" stroke-width="1" stroke-dasharray="2.5,2" vector-effect="non-scaling-stroke"/>';
-      } else {
-        svg+='<rect x="'+rx+'" y="'+ry+'" width="'+bw+'" height="'+px+'" rx="2" fill="'+barColor+'"/>';
-      }
+      /* Partial-FY bar (current fiscal year, still in progress) renders at
+         reduced opacity so it reads as "not a complete annual comparison"
+         at a glance. The asterisk on the x-axis label reinforces this. */
+      var fillOp=b.partial?' fill-opacity="0.45"':'';
+      svg+='<rect x="'+rx+'" y="'+ry+'" width="'+bw+'" height="'+px+'" rx="2" fill="'+(pos?posC:negC)+'"'+fillOp+'/>';
       var vy=pos?(ry-4):(ry+px+10);
       var vsign=b.val>=0?'+':'';
       svg+='<text x="'+Math.round(cx)+'" y="'+vy+'" text-anchor="middle" font-family="JetBrains Mono,monospace" font-size="8" font-weight="600" fill="'+valC+'">'+vsign+(b.val*100).toFixed(1)+'%</text>';
@@ -4994,8 +4988,12 @@ function buildEpsGrowthCharts(data, secColor, sectorName){
   }
 
   var out='<div id="sd-eps-charts-section">';
-  out+=buildChart(yoyBars,'EPS YoY Growth','Annual · last 10 FYs + current (partial)');
-  if(grouped) out+=buildChart(yoyBarsUsd,'USD EPS YoY Growth','Annual · last 10 FYs + current (partial) · USD-converted');
+  /* Subtitle: append "· * partial" only when at least one in-progress
+     FY bar is being rendered, so a sector whose data happens to land
+     exactly on March 31 doesn't get a misleading footnote. */
+  var partialNote=anyPartial?' · * partial':'';
+  out+=buildChart(yoyBars,'EPS YoY Growth','Fiscal year'+partialNote);
+  if(grouped) out+=buildChart(yoyBarsUsd,'USD EPS YoY Growth','Fiscal year · USD-converted'+partialNote);
   out+=buildChart(qoqBars,'EPS QoQ Growth','Last 4 quarters');
   if(grouped) out+=buildChart(qoqBarsUsd,'USD EPS QoQ Growth','Last 4 quarters · USD-converted');
   out+='</div>';
@@ -5544,7 +5542,7 @@ function repoRateAt(timestamp){ return _lookupStepFunction(REPO_SERIES, timestam
    - Dual Y-axis on canvas
 ════════════════════════════════════════ */
 
-var CM_STATE={sector:null,metrics:[],range:'3Y',from:null,to:null,showMedian:true,showBands:false};
+var CM_STATE={sector:null,metrics:[],range:'3Y',from:null,to:null,showMedian:true,showBands:false,showZones:false};
 var CM_DRAW=null;  /* set by cmDrawCanvas, consumed by hover handler */
 var CM_DRAG=null;  /* { active, startX, currentX } during a zoom drag */
 
@@ -5780,19 +5778,27 @@ function cmRenderControls(){
     });
   });
 
-  /* Median + Median Bands toggles — mutually exclusive (clicking one off-toggles the other).
-     Both meaningful only when PE or PB is among the visible metrics; visually disabled otherwise.
-     Both can be off — produces a clean chart with no median context. */
+  /* Median + Median Bands + Median Zones toggles.
+     Median ↔ Bands are mutex (both are line-based representations of the
+     median — redundant together). Zones is INDEPENDENT and can combine
+     with either Median or Bands (zones are a filled-background overlay
+     while Median/Bands are line overlays — visually compatible).
+     All three meaningful only when PE or PB is among the visible metrics;
+     visually disabled otherwise. All can be off — clean chart. */
   var oRow=document.getElementById('cm-overlay');
   var medApplies=(CM_STATE.metrics.indexOf('pe')>=0)||(CM_STATE.metrics.indexOf('pb')>=0);
   var medChecked   = CM_STATE.showMedian && medApplies;
   var bandsChecked = CM_STATE.showBands  && medApplies;
+  var zonesChecked = CM_STATE.showZones  && medApplies;
   oRow.innerHTML=
     '<label class="cm-checkbox'+(medChecked?' checked':'')+(medApplies?'':' disabled')+'" data-overlay="median" title="Rolling weighted reference: 30% × 3yr + 60% × 5yr + 10% × 10yr median">'
       +'<span class="cm-checkbox-dash"></span>Median'
     +'</label>'
     +'<label class="cm-checkbox'+(bandsChecked?' checked':'')+(medApplies?'':' disabled')+'" data-overlay="bands" title="Rolling 3yr · 5yr · 10yr medians shown separately — let the trajectory tell the story">'
       +'<span class="cm-checkbox-bands"></span>Median bands'
+    +'</label>'
+    +'<label class="cm-checkbox'+(zonesChecked?' checked':'')+(medApplies?'':' disabled')+'" data-overlay="zones" title="Filled valuation zones: Very Cheap · Cheap · Neutral · Expensive · Very Expensive (vs the weighted reference). Combinable with Median or Bands.">'
+      +'<span class="cm-checkbox-zones"></span>Median zones'
     +'</label>';
   oRow.querySelectorAll('[data-overlay]').forEach(function(el){
     el.addEventListener('click',function(){
@@ -5800,10 +5806,12 @@ function cmRenderControls(){
       var which=this.dataset.overlay;
       if(which==='median'){
         CM_STATE.showMedian=!CM_STATE.showMedian;
-        if(CM_STATE.showMedian) CM_STATE.showBands=false;  /* mutex */
-      } else {
+        if(CM_STATE.showMedian) CM_STATE.showBands=false;  /* mutex with bands only */
+      } else if(which==='bands') {
         CM_STATE.showBands=!CM_STATE.showBands;
-        if(CM_STATE.showBands) CM_STATE.showMedian=false;  /* mutex */
+        if(CM_STATE.showBands) CM_STATE.showMedian=false;  /* mutex with median only */
+      } else {
+        CM_STATE.showZones=!CM_STATE.showZones;             /* independent toggle */
       }
       cmRenderControls();
       cmRenderChart();
@@ -6456,6 +6464,128 @@ function cmDrawCanvas(canvas, rows){
     var d=new Date(t);
     var lbl=d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]+(((xMax-xMin)>365*MS_DAY)?(' '+String(d.getFullYear()).slice(2)):'');
     ctx.fillText(lbl, xPx(t), mt+ph+7);
+  }
+
+  /* ── Median Zones — Plus-gated, mutually exclusive with Median/Bands ──
+     Filled background zones showing the five valuation bands (Very Cheap →
+     Very Expensive) relative to the rolling weighted reference, plotted as
+     a function of date. Zone thresholds match bandOfRefPct() exactly:
+       Very Cheap     : value ≤ 0.80 × ref
+       Cheap          : 0.80 × ref < value ≤ 0.90 × ref
+       Neutral        : 0.90 × ref < value ≤ 1.05 × ref
+       Expensive      : 1.05 × ref < value ≤ 1.20 × ref
+       Very Expensive : value > 1.20 × ref
+     Drawn BEFORE the data lines so the price/PE/PB curves sit on top.
+
+     Tied to a single axis to avoid two overlapping sets of colored stripes —
+     prefer the left axis when it's PE/PB, fall back to the right axis when
+     only the right is PE/PB. When neither axis is PE/PB the toggle is
+     disabled at the UI level so we never reach here. */
+  if(CM_STATE.showZones && userIsSubscribed()){
+    var zoneKey=null, zoneMapY=null, zoneAxisRng=null;
+    if(leftKey==='pe' || leftKey==='pb'){
+      zoneKey=leftKey;  zoneMapY=yLeftPx;  zoneAxisRng=leftRng;
+    } else if(rightKey==='pe' || rightKey==='pb'){
+      zoneKey=rightKey; zoneMapY=yRightPx; zoneAxisRng=rightRng;
+    }
+    if(zoneKey){
+      var zSeries=cmRollingRef(CM_STATE.sector, zoneKey);
+      if(zSeries.length){
+        /* Color tokens mirror the dashboard --*-tl variants but bumped a
+           notch for legibility over a wider chart area. Light/dark mode
+           parity uses the same base hues at the same opacity. The four
+           boundary strokes (one per zone transition) use the zone-above's
+           saturated color at higher alpha — this is what makes the
+           yellow → orange → red transitions readable, since warm hues
+           at low fill-alpha smear together. */
+        var isL=document.documentElement.classList.contains('light');
+        var fillAlpha=0.20;
+        var edgeAlpha=0.50;
+        var rgb=isL
+          ? { vchp:'0,150,60',   chp:'5,150,105',   neu:'180,130,20', exp:'194,65,12',  vexp:'185,28,28' }
+          : { vchp:'0,200,83',   chp:'105,240,174', neu:'255,215,64', exp:'255,112,67', vexp:'255,23,68' };
+        var bands=[
+          {key:'vchp', lo:0,    hi:0.80},
+          {key:'chp',  lo:0.80, hi:0.90},
+          {key:'neu',  lo:0.90, hi:1.05},
+          {key:'exp',  lo:1.05, hi:1.20},
+          {key:'vexp', lo:1.20, hi:999 },  /* unbounded — clipped to axis top */
+        ];
+        /* Boundaries between zones. Each is drawn in the COLOR of the zone
+           ABOVE it (i.e. the boundary at 0.80 sits between vchp and chp,
+           coloured in chp). Reading top-down: the line you cross marks
+           the zone you're entering. */
+        var edges=[
+          {mult:0.80, color:'chp' },
+          {mult:0.90, color:'neu' },
+          {mult:1.05, color:'exp' },
+          {mult:1.20, color:'vexp'},
+        ];
+
+        /* Build the (x, ref) array once, filtered to the visible window
+           and to valid weighted refs. Reused across all five polygons. */
+        var zPts=[];
+        for(var zi=0;zi<zSeries.length;zi++){
+          var zp=zSeries[zi];
+          var zr=zp.weighted;
+          if(zr==null || isNaN(zr) || zr<=0) continue;
+          if(zp.d < xMin || zp.d > xMax) continue;
+          zPts.push({ x:xPx(zp.d), ref:zr });
+        }
+
+        if(zPts.length >= 2){
+          ctx.save();
+          /* Clip drawing to the plot area so polygons that extend past
+             the canvas edges (e.g. when the value goes off-chart) don't
+             paint over axis labels. */
+          ctx.beginPath();
+          ctx.rect(ml, mt, pw, ph);
+          ctx.clip();
+
+          var aLo=zoneAxisRng[0], aHi=zoneAxisRng[1];
+          for(var bi=0;bi<bands.length;bi++){
+            var band=bands[bi];
+            ctx.fillStyle='rgba('+rgb[band.key]+','+fillAlpha+')';
+            ctx.beginPath();
+            /* Top boundary — walk forward, clipping per-point to axis range. */
+            for(var pi=0;pi<zPts.length;pi++){
+              var topV=Math.max(aLo, Math.min(aHi, zPts[pi].ref*band.hi));
+              var y=zoneMapY(topV);
+              if(pi===0) ctx.moveTo(zPts[pi].x, y);
+              else       ctx.lineTo(zPts[pi].x, y);
+            }
+            /* Bottom boundary — walk backward, completing the polygon. */
+            for(var pj=zPts.length-1; pj>=0; pj--){
+              var botV=Math.max(aLo, Math.min(aHi, zPts[pj].ref*band.lo));
+              ctx.lineTo(zPts[pj].x, zoneMapY(botV));
+            }
+            ctx.closePath();
+            ctx.fill();
+          }
+          /* Saturated boundary strokes — drawn AFTER fills so they sit on
+             top. Each marks a zone transition. Without these, warm-hue
+             zones (neu yellow → exp orange → vexp red) visually smear
+             together at low fill alpha. */
+          ctx.lineWidth=1.2;
+          ctx.lineJoin='round';
+          ctx.lineCap='round';
+          ctx.setLineDash([]);
+          for(var ei=0;ei<edges.length;ei++){
+            var edge=edges[ei];
+            ctx.strokeStyle='rgba('+rgb[edge.color]+','+edgeAlpha+')';
+            ctx.beginPath();
+            for(var qi=0;qi<zPts.length;qi++){
+              var eV=Math.max(aLo, Math.min(aHi, zPts[qi].ref*edge.mult));
+              var ey=zoneMapY(eV);
+              if(qi===0) ctx.moveTo(zPts[qi].x, ey);
+              else       ctx.lineTo(zPts[qi].x, ey);
+            }
+            ctx.stroke();
+          }
+          ctx.restore();
+        }
+      }
+    }
   }
 
   /* Draw left series */
