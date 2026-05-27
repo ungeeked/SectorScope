@@ -1414,7 +1414,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
     <dl class="hp-kv">
       <dt>Median</dt><dd>The middle value of a sorted list. If you take all of Nifty Bank's daily P/B values over the past 5 years, sort them, and pick the one in the exact middle, that's the 5-year median P/B. It's the "typical" valuation over that window. We compare today's value to this number — if today is well below the median, the sector is unusually cheap.</dd>
-      <dt>Percentile</dt><dd>A ranking from 0 to 100. If today's P/E is at the 12th percentile of the last 5 years, it means today's P/E is lower than 88% of the daily values from the last 5 years — only 12% of the time was P/E this cheap. The lower the number, the rarer the cheapness.</dd>
+      <dt>Percentile</dt><dd>A ranking from 0 to 100. If today's P/E is at the 12th percentile of the last 3 years, it means today's P/E is lower than 88% of the daily values from the last 3 years — only 12% of the time was P/E this cheap. The lower the number, the rarer the cheapness.</dd>
       <dt>Why we use both</dt><dd>Median tells you <em>how far</em> below the typical value you are. Percentile tells you <em>how often</em> the sector has been this cheap before. They usually agree — a sector that's well below median is also low on percentile rank. When they disagree, we surface a small warning capsule so you don't take the cheap label at face value.</dd>
     </dl>
 
@@ -1471,7 +1471,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
           <!-- caution capsule -->
           <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);margin-bottom:3px">4 caution capsule (when shown)</div>
-          <div class="hp-mock-cap">⚠ often this cheap</div>
+          <div class="hp-mock-cap">⚠ Often Low — Possible Derating</div>
 
           <!-- price + intraday change -->
           <div style="font-family:var(--mono);font-size:.44rem;color:var(--ghost);margin-bottom:3px">5 index price · change vs previous close</div>
@@ -1529,11 +1529,11 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
         </div>
         <div class="hp-step">
           <div class="hp-step-num">3</div>
-          <div class="hp-step-body"><strong>Two signals: P18 · 82% of ref.</strong> <code class="hp-c">P18</code> = 18th percentile of its own last 5 years (cheap end). <code class="hp-c">82% of ref</code> = current P/E is 18% below its historical anchor. The second number drives the band. See section 3 for why.</div>
+          <div class="hp-step-body"><strong>Two signals: P18 · 82% of ref.</strong> <code class="hp-c">P18</code> = 18th percentile of its own last 3 years (cheap end). <code class="hp-c">82% of ref</code> = current P/E is 18% below its historical anchor. The second number drives the band. See section 3 for why.</div>
         </div>
         <div class="hp-step">
           <div class="hp-step-num">4</div>
-          <div class="hp-step-body"><strong>Caution capsule (only when signals disagree).</strong> "often this cheap" means: yes, the sector is 18% below its anchor — but it has also spent a lot of the last 5 years at this level. Less contrarian than it looks. If there's no capsule, both signals agree.</div>
+          <div class="hp-step-body"><strong>Caution capsule (only when signals disagree).</strong> "Often Low — Possible Derating" means: yes, the sector is 18% below its anchor — but it has also spent a lot of the last 3 years at this level. Less contrarian than it looks, and may reflect a structural derating. If there's no capsule, both signals agree.</div>
         </div>
         <div class="hp-step">
           <div class="hp-step-num">5</div>
@@ -1652,29 +1652,29 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </div>
       <div class="hp-2sig-panel">
         <div class="hp-2sig-ttl">Percentile rank (secondary)</div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">What it asks</span><span class="hp-2sig-v" style="color:var(--txt)">How rare is this level, last 5 years?</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">What it asks</span><span class="hp-2sig-v" style="color:var(--txt)">How rare is this level, last 3 years?</span></div>
         <div class="hp-2sig-kv"><span class="hp-2sig-k">Example</span><span class="hp-2sig-v">P18</span></div>
-        <div class="hp-2sig-kv"><span class="hp-2sig-k">Meaning</span><span class="hp-2sig-v">Only 18% of last-5yr readings were lower</span></div>
+        <div class="hp-2sig-kv"><span class="hp-2sig-k">Meaning</span><span class="hp-2sig-v">Only 18% of last-3yr readings were lower</span></div>
         <div class="hp-2sig-kv"><span class="hp-2sig-k">Drives band?</span><span class="hp-2sig-v" style="color:var(--sub)">No — info only</span></div>
         <div class="hp-2sig-out agree">Measures <strong>frequency</strong> — how often does it get this cheap?</div>
       </div>
     </div>
 
     <div class="hp-sub-h">When the two signals disagree — the caution capsule</div>
-    <div class="hp-p">Sometimes a sector looks cheap vs its anchor (% of ref says Cheap) but is <em>not unusual at all</em> in its recent 5-year distribution (percentile says P45 — it's been here half the time). That's a much weaker signal than a sector that is both below its anchor <em>and</em> historically unusual.</div>
+    <div class="hp-p">Sometimes a sector looks cheap vs its anchor (% of ref says Cheap) but is <em>not unusual at all</em> in its recent 3-year distribution (percentile says P45 — it's been here half the time). That's a much weaker signal than a sector that is both below its anchor <em>and</em> historically unusual.</div>
 
     <div class="hp-2sig">
       <div class="hp-2sig-panel">
         <div class="hp-2sig-ttl">Clean signal — no capsule</div>
         <div class="hp-2sig-kv"><span class="hp-2sig-k">% of ref</span><span class="hp-2sig-v" style="color:var(--chp-c)">82% → Cheap</span></div>
         <div class="hp-2sig-kv"><span class="hp-2sig-k">Percentile</span><span class="hp-2sig-v" style="color:var(--chp-c)">P14 → also Cheap</span></div>
-        <div class="hp-2sig-out agree">✓ Both signals agree. Sector is genuinely depressed — it's both below its anchor AND near a 5-year low.</div>
+        <div class="hp-2sig-out agree">✓ Both signals agree. Sector is genuinely depressed — it's both below its anchor AND near a 3-year low.</div>
       </div>
       <div class="hp-2sig-panel">
         <div class="hp-2sig-ttl">Conflicted — capsule appears</div>
         <div class="hp-2sig-kv"><span class="hp-2sig-k">% of ref</span><span class="hp-2sig-v" style="color:var(--chp-c)">83% → Cheap</span></div>
         <div class="hp-2sig-kv"><span class="hp-2sig-k">Percentile</span><span class="hp-2sig-v" style="color:var(--neu-c)">P44 → Neutral</span></div>
-        <div class="hp-2sig-out caution">⚠ "often this cheap" — it IS below the anchor, but the sector has spent nearly half the last 5 years at this level. Less contrarian than the Cheap label suggests.</div>
+        <div class="hp-2sig-out caution">⚠ "Often Low — Possible Derating" — it IS below the anchor, but the sector has spent nearly half the last 3 years at this level. Less contrarian than the Cheap label suggests, and may signal a structural derating.</div>
       </div>
     </div>
 
@@ -2517,15 +2517,15 @@ function bandOfRefPct(pctRef){
 }
 /* Divergence between the two signals. Returns an object:
      {kind: 'none'|'cheap'|'expensive', msg: string}
-   - 'cheap':     ref-% says cheap/very cheap, but percentile doesn't → "often this cheap"
-                  (i.e. the sector has often traded at these levels in the last 5y)
-   - 'expensive': ref-% says expensive/very exp, but percentile doesn't → "often this expensive"
+   - 'cheap':     ref-% says cheap/very cheap, but percentile doesn't → "Often Low — Possible Derating"
+                  (i.e. the sector has often traded at these levels in the last 3y)
+   - 'expensive': ref-% says expensive/very exp, but percentile doesn't → "Often High — Possible Rerating"
    - 'none':      signals agree or differ only within same direction */
 function divergence(refBand,pctBand){
   var cheap={vchp:1,chp:1}, expensive={exp:1,vexp:1};
   if(refBand==='na'||pctBand==='na') return {kind:'none',msg:''};
-  if(cheap[refBand] && !cheap[pctBand]) return {kind:'cheap',msg:'often this cheap'};
-  if(expensive[refBand] && !expensive[pctBand]) return {kind:'expensive',msg:'often this expensive'};
+  if(cheap[refBand] && !cheap[pctBand]) return {kind:'cheap',msg:'Often Low — Possible Derating'};
+  if(expensive[refBand] && !expensive[pctBand]) return {kind:'expensive',msg:'Often High — Possible Rerating'};
   return {kind:'none',msg:''};
 }
 function weightedRef(m3,m5,m10,mAll,hasFullHistory){
@@ -2692,22 +2692,22 @@ function computeStats(data,live){
   var pe3=median(pe3Raw), pe5=median(pe5Raw), pe10=median(pe10Raw);
   var pb3=median(pb3Raw), pb5=median(pb5Raw), pb10=median(pb10Raw);
 
-  /* Winsorised 5y arrays — kept for pctRankOf only (where clipping matters). */
-  var peW5=winsorise(pe5Raw), pbW5=winsorise(pb5Raw);
+  /* Winsorised 3y arrays — kept for pctRankOf only (where clipping matters). */
+  var peW3=winsorise(pe3Raw), pbW3=winsorise(pb3Raw);
 
   /* weighted reference — picks the right blend based on hasFullHistory */
   var peRef=weightedRef(pe3,pe5,pe10,peAll,hasFullHistory);
   var pbRef=weightedRef(pb3,pb5,pb10,pbAll,hasFullHistory);
 
-  /* percentile rank in 5-year winsorised history */
+  /* percentile rank in 3-year winsorised history */
   /* Use live intraday Price/PE/PB/EPS when available; fall back to last historical row.
      EPS is derived from Price/PE in the live feed — see fetchLiveData(). */
   var curPE   =(live&&live.pe   &&!isNaN(live.pe)   &&live.pe   >0)?live.pe   :last.pe;
   var curPB   =(live&&live.pb   &&!isNaN(live.pb)   &&live.pb   >0)?live.pb   :last.pb;
   var curPrice=(live&&live.price&&!isNaN(live.price)&&live.price>0)?live.price:last.price;
   var curEPS  =(live&&live.eps  &&!isNaN(live.eps)  &&live.eps  >0)?live.eps  :last.eps;
-  var pePct=pctRankOf(peW5,curPE);
-  var pbPct=pctRankOf(pbW5,curPB);
+  var pePct=pctRankOf(peW3,curPE);
+  var pbPct=pctRankOf(pbW3,curPB);
 
   /* current value as % of weighted reference (primary signal) */
   var pePctRef=(!isNaN(curPE)&&!isNaN(peRef)&&peRef>0)?(curPE/peRef*100):NaN;
@@ -3044,7 +3044,7 @@ function pctCaption(pct,pctRef){
 /* Divergence capsule — shown when primary (ref-%) and secondary (percentile) bands disagree. */
 function divCapsule(div){
   if(!div||div.kind==='none') return '';
-  return'<span class="div-cap" title="The band says '+(div.kind==='cheap'?'cheap':'expensive')+' vs the weighted median, but the sector has been at this level often in the last 5 years">⚠ '+div.msg+'</span>';
+  return'<span class="div-cap" title="The band says '+(div.kind==='cheap'?'cheap':'expensive')+' vs the weighted median, but the sector has been at this level often in the last 3 years">⚠ '+div.msg+'</span>';
 }
 /* Limited-history badge for newer sectors. Shown when total history is <10 years.
    Returns empty string when sector has full 10+ year history. */
