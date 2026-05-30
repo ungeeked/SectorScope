@@ -1315,6 +1315,15 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
               <span class="bt-slider-val" id="bt-sell-val-lbl">100%</span>
             </div>
             <div class="bt-slider-note" id="bt-sell-val-note">Sell on first close at or above 100% of weighted ref</div>
+            <!-- Caps open-ended val trades. When the target % of ref is
+                 never reached, a buy on (say) 1-Jan-2020 force-closes at the
+                 first close on/after 1-Jan-2022 instead of running to the
+                 edge of the data. Checked by default; unchecking lets trades
+                 run open-ended. Read in btRun as valMaxYears (2 vs 0). -->
+            <label class="bt-cb-row" style="margin-top:9px">
+              <input type="checkbox" id="bt-sell-val-cap" checked>
+              <span class="bt-cb-lbl" style="font-weight:500;font-size:.74rem">Auto-exit at 2 years if valuation trigger not reached</span>
+            </label>
           </div>
         </div>
         <div class="bt-field" style="justify-content:flex-end;grid-column:1/-1">
@@ -3947,20 +3956,42 @@ function _fwdReturnRow(data, buyIdx, months){
    sector with sparse data), the predicate simply skips it — looking
    further forward for a clean exit. Never recomputes rolling medians
    per-row, which would be O(N²) and defeat the entire pre-compute. */
-function _fwdReturnVal(data, buyIdx, didCross){
+function _fwdReturnVal(data, buyIdx, didCross, maxYears){
   var bd=new Date(data[buyIdx].date).getTime(), bp=data[buyIdx].price;
   if(!bp || bp<=0) return {cagr:null, open:true, sellPrice:null, exitMonths:null};
+  /* Optional hard time cap (val mode only). If the valuation trigger
+     hasn't fired within `maxYears` of the buy date, force-close the trade
+     at the first valid close on-or-after that calendar date — e.g. a buy
+     on 1-Jan-2020 with maxYears=2 exits at the first close ≥ 1-Jan-2022.
+     Calendar arithmetic (setFullYear) mirrors the time-based mode's
+     setMonth(), so the cap lands on the true anniversary, not 365.25-day
+     drift. A capped trade is a CLOSED trade (a deliberate exit rule, not
+     data truncation) and is flagged so the table can label it. When
+     maxYears is falsy the cap is disabled and behaviour is unchanged. */
+  var capTs=null;
+  if(maxYears && maxYears>0){
+    var cd=new Date(data[buyIdx].date);
+    cd.setFullYear(cd.getFullYear()+maxYears);
+    capTs=cd.getTime();
+  }
   for(var k=buyIdx+1; k<data.length; k++){
     var row=data[k], sp=row.price;
     if(!sp || isNaN(sp) || sp<=0) continue;
-    if(!didCross(row)) continue;
-    var el=(new Date(row.date).getTime()-bd)/MS_YEAR;
-    /* Same min-elapsed floor _fwdReturnRow uses for its open-trade
-       extrapolation (~18 days). A same-week val recovery on a noisy day
-       annualises to absurd numbers — skip and let the next clean cross
-       qualify instead. */
-    if(el<=0.05) continue;
-    return {cagr:Math.pow(sp/bp, 1/el)-1, open:false, sellPrice:sp, exitMonths:el*12};
+    var rowTs=new Date(row.date).getTime();
+    var el=(rowTs-bd)/MS_YEAR;
+    if(didCross(row)){
+      /* Same min-elapsed floor _fwdReturnRow uses for its open-trade
+         extrapolation (~18 days). A same-week val recovery on a noisy day
+         annualises to absurd numbers — skip and let the next clean cross
+         qualify instead. */
+      if(el<=0.05) continue;
+      return {cagr:Math.pow(sp/bp, 1/el)-1, open:false, sellPrice:sp, exitMonths:el*12};
+    }
+    /* Trigger hasn't fired yet (any earlier cross would have returned
+       above) and we've reached the cap → force-close here. */
+    if(capTs!==null && rowTs>=capTs && el>0.05){
+      return {cagr:Math.pow(sp/bp, 1/el)-1, open:false, sellPrice:sp, exitMonths:el*12, capped:true};
+    }
   }
   /* Trigger never fired within available data → treat as still-open and
      extrapolate from the latest valid price, same shape as _fwdReturnRow. */
@@ -4132,6 +4163,12 @@ function _btCompute(){
   if(isNaN(sellTimeMonths)||sellTimeMonths<1) sellTimeMonths=12;
   var sellValPct=parseInt(document.getElementById('bt-sell-val-sl').value,10)/100;
   if(isNaN(sellValPct)||sellValPct<=0) sellValPct=1.0;
+  /* Val-mode safety cap: auto-exit at 2 years when the valuation target is
+     never reached, instead of letting the trade run open-ended to the edge
+     of the data. Checkbox defaults ON; unchecking restores the original
+     open-ended behaviour. Ignored entirely in time mode. 0 = disabled. */
+  var valAutoExitEl=document.getElementById('bt-sell-val-cap');
+  var valMaxYears=(sellMode==='val' && valAutoExitEl && valAutoExitEl.checked) ? 2 : 0;
 
   var data=btData;
   var res=[];
@@ -4173,7 +4210,7 @@ function _btCompute(){
      FORWARD-RETURN HELPERS"); these locals just close over `data` so
      the call sites below stay short. */
   function fwdReturnTime(buyIdx, months){ return _fwdReturnRow(data, buyIdx, months); }
-  function fwdReturnVal(buyIdx, predicate){ return _fwdReturnVal(data, buyIdx, predicate); }
+  function fwdReturnVal(buyIdx, predicate){ return _fwdReturnVal(data, buyIdx, predicate, valMaxYears); }
   var niftyFwdReturn = _niftyFwdReturn;
 
   /* Compute the sector + Nifty outcome for a single buy row index.
@@ -4342,7 +4379,7 @@ function _btCompute(){
   btResults={
     trades:res, usePE:usePE, usePB:usePB, both:bothMode,
     endRef:endRefInfo, thrPE:thrPE, thrPB:thrPB, cooldownDays:cdDays,
-    sellMode:sellMode, sellTimeMonths:sellTimeMonths, sellValPct:sellValPct
+    sellMode:sellMode, sellTimeMonths:sellTimeMonths, sellValPct:sellValPct, valMaxYears:valMaxYears
   };
   document.getElementById('bt-results-card').style.display='';
   btShow();
@@ -4491,7 +4528,8 @@ function btRenderRefInfo(){
      holding period. Both share the "Sell" prefix so they read naturally
      alongside the Buy line. */
   if(btResults.sellMode==='val'){
-    parts.push('<span class="bt-ref-item"><strong>Sell</strong> · first close at ≥'+Math.round(btResults.sellValPct*100)+'% of weighted ref</span>');
+    var capNote=(btResults.valMaxYears>0)?' · auto-exit '+btResults.valMaxYears+'y':'';
+    parts.push('<span class="bt-ref-item"><strong>Sell</strong> · first close at ≥'+Math.round(btResults.sellValPct*100)+'% of weighted ref'+capNote+'</span>');
   } else {
     parts.push('<span class="bt-ref-item"><strong>Sell</strong> · hold for '+btResults.sellTimeMonths+' months</span>');
   }
@@ -4639,7 +4677,10 @@ function btRenderTable(trades){
     var durCell='';
     if(isVal){
       if(tr.r.exitMonths!=null){
-        durCell=tr.r.exitMonths.toFixed(1)+'m'+(tr.r.open?' <span style="color:var(--ghost);font-size:.6rem">(open)</span>':'');
+        var durSuffix='';
+        if(tr.r.open) durSuffix=' <span style="color:var(--ghost);font-size:.6rem">(open)</span>';
+        else if(tr.r.capped) durSuffix=' <span style="color:var(--ghost);font-size:.6rem">(2y cap)</span>';
+        durCell=tr.r.exitMonths.toFixed(1)+'m'+durSuffix;
       } else {
         durCell='—';
       }
