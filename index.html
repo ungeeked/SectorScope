@@ -5388,7 +5388,7 @@ function renderConstituentsTable(d){
       +'</div>';
     }
     body+='<tr>'
-      +'<td>'+s.symbol+'</td>'
+      +'<td>'+escapeHtml(s.symbol)+'</td>'
       +'<td>'+fmtNum(s.lastPrice)+'</td>'
       +'<td class="sd-cons-col-chg-abs sd-cons-num '+dir+'">'+sign+fmtNum(s.change)+'</td>'
       +'<td><span class="sd-cons-chip '+dir+'">'+fmtPct(s.pChange)+'</span></td>'
@@ -5600,6 +5600,15 @@ var CM_METRICS={
      distinct from pb's orange (its arithmetic sibling), cls's pink (also
      an absolute-INR series), and the cool blues used by pe/epsUsd. */
   bv    : {field:'price', label:'Book Value', cLight:'#9333ea', cDark:'#c084fc'},
+  /* roe is a virtual derived metric — implied aggregate ROE = P/B ÷ P/E
+     (= ΣEarnings/ΣBookValue at the index level), expressed as a percent.
+     Computed inside seriesFor from the row's own pe/pb; `field` is unused
+     but populated for shape consistency. Teal — distinct from pb's orange
+     and bv's purple (its arithmetic parents) and from the gsec/repo % lines
+     it shares an axis-unit with. NOTE: implied & trailing (TTM), and it
+     degrades when aggregate earnings approach zero (P/E spikes → ROE→0),
+     which is most likely to surface on PSU Bank in distressed-earnings years. */
+  roe   : {field:'pe',    label:'ROE %',     cLight:'#0d9488', cDark:'#2dd4bf'},
   /* gsec is a virtual *macro* metric — independent of any sector field.
      seriesFor calls gsecYieldAt(rowDate) directly; `field` here is unused
      but populated for shape consistency. Amber/gold reads as "yield" in
@@ -5611,7 +5620,7 @@ var CM_METRICS={
   repo  : {field:'date',  label:'Repo Rate', cLight:'#dc2626', cDark:'#f87171'},
   cls   : {field:'price', label:'Price',     cLight:'#ec4899', cDark:'#f472b6'}
 };
-var CM_METRIC_ORDER=['pe','eps','epsUsd','pb','bv','gsec','repo','cls']; /* render order in checkbox row */
+var CM_METRIC_ORDER=['pe','eps','epsUsd','pb','bv','roe','gsec','repo','cls']; /* render order in checkbox row */
 
 /* Sectors where EPS (USD) is genuinely informative: IT bills ~90%+ in USD,
    Pharma earns 30-50% from US/exports. For domestic INR-driven sectors
@@ -5634,6 +5643,14 @@ var GSEC_SECTORS={'Bank':1, 'PSU Bank':1, 'Fin Services':1, 'Realty':1};
    which the 10Y G-Sec already captures with less lag and noise than
    the policy rate itself. */
 var REPO_SECTORS={'Bank':1, 'PSU Bank':1, 'Fin Services':1};
+
+/* Sectors where implied ROE (P/B ÷ P/E) is shown as a chart metric.
+   Scoped to financials because ROE is the metric that *justifies* a bank's
+   P/B (justified P/B ≈ (ROE−g)/(r−g)), so plotting them together explains
+   whether the current multiple is earned. ROE is computable for every
+   sector at zero data cost — to enable it everywhere, replace the gate in
+   cmRenderControls with `false`, or add the sector names here. */
+var ROE_SECTORS={'Bank':1, 'PSU Bank':1, 'Fin Services':1};
 
 var CM_RANGES=['1W','1M','3M','1Y','3Y','5Y','All'];
 function cmRangeDays(r){
@@ -5769,6 +5786,8 @@ function cmRenderControls(){
     if(k==='gsec'   && !GSEC_SECTORS[CM_STATE.sector])    return;
     /* Hide Repo Rate for sectors outside banking/financials. */
     if(k==='repo'   && !REPO_SECTORS[CM_STATE.sector])    return;
+    /* Hide ROE outside financials (see ROE_SECTORS rationale). */
+    if(k==='roe'    && !ROE_SECTORS[CM_STATE.sector])     return;
     var m=CM_METRICS[k];
     var checked=CM_STATE.metrics.indexOf(k)>=0;
     var col=isLight?m.cLight:m.cDark;
@@ -6394,6 +6413,15 @@ function cmDrawCanvas(canvas, rows){
         var pBV=rows[i].price, pbBV=rows[i].pb;
         if(pBV==null || isNaN(pBV) || pbBV==null || isNaN(pbBV) || pbBV<=0) continue;
         v = pBV / pbBV;
+      } else if(key==='roe'){
+        /* Implied ROE = P/B ÷ P/E (×100 for percent). Both must be present
+           and strictly positive: pe<=0 means non-positive aggregate earnings
+           (ROE undefined/negative — skip rather than plot a garbage point),
+           pb<=0 is never a real reading. Skipped rows simply leave a gap,
+           same as every other metric's missing-data handling. */
+        var pePR=rows[i].pe, pbPR=rows[i].pb;
+        if(pePR==null || isNaN(pePR) || pePR<=0 || pbPR==null || isNaN(pbPR) || pbPR<=0) continue;
+        v = (pbPR / pePR) * 100;
       } else {
         v=rows[i][f];
         if(v==null || isNaN(v)) continue;
@@ -6757,6 +6785,7 @@ function cmAttachHover(){
     if(key==='epsUsd') return '$'+v.toFixed(2);
     if(key==='gsec')   return v.toFixed(2)+'%';
     if(key==='repo')   return v.toFixed(2)+'%';
+    if(key==='roe')    return v.toFixed(1)+'%';
     return v.toFixed(2);
   }
   function fmtDate(d){
