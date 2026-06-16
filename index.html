@@ -1103,6 +1103,57 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 .cm-paywall-btn{padding:9px 18px;border-radius:9px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:var(--body);font-size:.82rem;font-weight:700;cursor:pointer;transition:opacity .15s}
 .cm-paywall-btn:hover{opacity:.88}
 
+/* ========== TIMELINE TAB ========== */
+/* ════════════════════════════════════════════════════════════════════
+   TIMELINE TAB  (append to app.css)
+   Reuses existing .cm-pill and .cm-checkbox chrome; only adds the
+   page-level layout, canvas wrap, hover readout, and the Plus gate.
+════════════════════════════════════════════════════════════════════ */
+#page-tl{position:relative;z-index:1;padding:18px 20px 40px;max-width:1180px;margin:0 auto}
+@media(max-width:680px){#page-tl{padding:12px 12px 32px}}
+
+.tl-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:2px}
+.tl-title{font-family:var(--ttl);font-size:2rem;letter-spacing:2px;line-height:1;margin:0}
+.tl-sub{font-family:var(--body);font-size:.82rem;color:var(--sub);margin:2px 0 14px}
+
+.tl-tools{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:10px}
+.tl-seg{display:flex;gap:2px;background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;padding:3px}
+.tl-seg button{padding:5px 11px;border-radius:6px;font-family:var(--body);font-size:.72rem;font-weight:600;color:var(--sub);background:transparent;border:none;cursor:pointer;transition:all .15s;white-space:nowrap}
+.tl-seg button.active{background:var(--bg2);color:var(--txt);box-shadow:0 1px 2px rgba(0,0,0,.18)}
+
+.tl-pills{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.tl-dates{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.6rem;color:var(--ghost)}
+.tl-dates input{font-family:var(--mono);font-size:.62rem;color:var(--txt);background:var(--bg3);border:1px solid var(--bdr);border-radius:6px;padding:4px 6px}
+.tl-spacer{flex:1 1 auto}
+
+.tl-legend{display:flex;flex-wrap:wrap;gap:5px;align-items:center;margin:4px 0 10px}
+.tl-legend .swatch{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.cm-checkbox.tl-baseline{cursor:default;opacity:1;color:var(--sub);font-style:italic;border-style:dashed;border-color:var(--bdr)}
+.tl-legend-ctl{font-family:var(--mono);font-size:.56rem;font-weight:600;letter-spacing:.4px;color:var(--sub);background:transparent;border:1px solid var(--bdr);border-radius:6px;padding:4px 8px;cursor:pointer}
+.tl-legend-ctl:hover{color:var(--txt);border-color:var(--sub)}
+
+.tl-canvas-wrap{position:relative;height:clamp(360px,56vh,560px);background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;overflow:hidden}
+.tl-canvas{display:block;width:100%;height:100%;cursor:crosshair}
+.tl-empty{position:absolute;inset:0;display:none;align-items:center;justify-content:center;text-align:center;padding:24px;font-family:var(--body);font-size:.82rem;color:var(--sub)}
+.tl-loading{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-family:var(--mono);font-size:.62rem;color:var(--ghost);letter-spacing:.6px}
+
+.tl-readout{position:absolute;pointer-events:none;background:var(--bg);border:1px solid var(--bdr);border-radius:8px;padding:8px 9px;font-family:var(--mono);font-size:.6rem;box-shadow:0 8px 24px rgba(0,0,0,.35);min-width:128px;z-index:5;display:none}
+.tl-readout .ro-date{color:var(--sub);font-size:.56rem;letter-spacing:.4px;margin-bottom:6px;border-bottom:1px solid var(--bdr);padding-bottom:5px}
+.tl-readout .ro-row{display:flex;align-items:center;gap:6px;padding:1.5px 0}
+.tl-readout .ro-row .swatch{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+.tl-readout .ro-name{color:var(--sub);flex:1 1 auto;white-space:nowrap}
+.tl-readout .ro-val{color:var(--txt);font-weight:600;font-variant-numeric:tabular-nums}
+.tl-readout .ro-val.pos{color:var(--vchp-c)} .tl-readout .ro-val.neg{color:var(--vexp-c)}
+
+.tl-hint{font-family:var(--mono);font-size:.56rem;color:var(--ghost);letter-spacing:.4px;margin-top:8px;line-height:1.5}
+.tl-hint b{color:var(--sub);font-weight:600}
+
+/* Plus gate — same spirit as .cm-paywall */
+.tl-gate{display:none;align-items:center;justify-content:center;min-height:clamp(360px,56vh,560px);padding:24px}
+.tl-gate-card{max-width:420px;text-align:center;background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;padding:26px 24px}
+.tl-gate-title{font-family:var(--cond);font-size:1.3rem;font-weight:700;color:var(--txt);display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px}
+.tl-gate-desc{font-family:var(--body);font-size:.84rem;color:var(--sub);line-height:1.5;margin-bottom:16px}
+.tl-gate-btn{font-family:var(--body);font-size:.8rem;font-weight:600;color:#fff;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:9px;padding:9px 18px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -1120,6 +1171,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   </div>
   <nav class="page-tabs" role="tablist" aria-label="Page navigation">
     <button id="tab-dash" class="ptab active" role="tab" aria-selected="true" onclick="showPage('dashboard')">Dashboard</button>
+    <button id="tab-tl" class="ptab" role="tab" aria-selected="false" onclick="showPage('timeline')">Timeline</button>
     <button id="tab-bt" class="ptab" role="tab" aria-selected="false" onclick="showPage('backtest')">Backtest</button>
     <button id="tab-help" class="ptab" role="tab" aria-selected="false" onclick="showPage('help')">Help</button>
   </nav>
@@ -1343,6 +1395,59 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 </div>
 
 <!-- ══════════════ HELP PAGE ══════════════ -->
+<!-- ===== TIMELINE PAGE ===== -->
+<div id="page-tl" style="display:none">
+  <div class="tl-head">
+    <h1 class="tl-title">Timeline</h1>
+    <span class="plus-badge">PLUS</span>
+  </div>
+  <p class="tl-sub">One metric across every sector, measured as growth relative to Nifty&nbsp;50. The benchmark is the flat 0 line; sectors sit above (outperforming) or below (lagging) it.</p>
+
+  <!-- App (subscribed) -->
+  <div id="tl-app">
+    <div class="tl-tools">
+      <div class="tl-seg" id="tl-metric">
+        <button data-m="pe" class="active">P/E</button>
+        <button data-m="pb">P/B</button>
+        <button data-m="eps">EPS</button>
+        <button data-m="price">Price</button>
+      </div>
+      <span style="font-family:var(--mono);font-size:.52rem;letter-spacing:.9px;text-transform:uppercase;color:var(--ghost);align-self:center">Baseline</span>
+      <div class="tl-seg" id="tl-baseline">
+        <button data-b="none">None</button>
+        <button data-b="nifty" class="active">Nifty 50</button>
+      </div>
+      <div class="tl-pills" id="tl-pills"></div>
+      <div class="tl-dates">
+        <input type="date" id="tl-from"><span>→</span><input type="date" id="tl-to">
+      </div>
+      <div class="tl-spacer"></div>
+    </div>
+
+    <div class="tl-legend" id="tl-legend"></div>
+
+    <div class="tl-canvas-wrap">
+      <canvas class="tl-canvas" id="tl-canvas"></canvas>
+      <div class="tl-readout" id="tl-readout"></div>
+      <div class="tl-empty" id="tl-empty"></div>
+      <div class="tl-loading" id="tl-loading">Loading sector history…</div>
+    </div>
+
+    <p class="tl-hint">
+      Each line is a sector's growth since the window start <i>minus</i> Nifty&nbsp;50's growth over the same window, so <b>Nifty&nbsp;50 is the flat 0 line</b>. Newer sectors rebase from their own first in-window date. Hover for a per-sector readout; click a legend chip to toggle a line. Chips grey out when the metric doesn't exist for that sector (e.g. P/B for IT).
+    </p>
+  </div>
+
+  <!-- Gate (not subscribed) -->
+  <div class="tl-gate" id="tl-gate">
+    <div class="tl-gate-card">
+      <div class="tl-gate-title">Timeline <span class="plus-badge">PLUS</span></div>
+      <div class="tl-gate-desc">Compare every sector's P/E, P/B, EPS or Price as growth relative to Nifty&nbsp;50, across any date range. Spot which sectors are leading or lagging the index over your chosen window.</div>
+      <button class="tl-gate-btn" id="tl-gate-btn">Upgrade to Plus</button>
+    </div>
+  </div>
+</div>
+
 <div id="page-help" style="display:none">
 
   <div class="hp-hero">
@@ -2136,11 +2241,11 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   <!-- ══ 7. SECTORSCOPE PLUS ══ -->
   <div class="hp-sec" id="h-plus">
     <div class="hp-sec-h">7 · SectorScope Plus</div>
-    <div class="hp-p">Plus unlocks five features layered on top of the free dashboard: <strong>expanded charts</strong>, <strong>AI sector summaries</strong>, <strong>live index constituents</strong>, <strong>email alerts</strong>, and <strong>vs-Nifty-50 alpha in backtests</strong>. This section walks through each one in the order you're likely to encounter it, with the concrete UI elements you'll see.</div>
+    <div class="hp-p">Plus unlocks six features layered on top of the free dashboard: the <strong>Timeline tab</strong>, <strong>expanded charts</strong>, <strong>AI sector summaries</strong>, <strong>live index constituents</strong>, <strong>email alerts</strong>, and <strong>vs-Nifty-50 alpha in backtests</strong>. This section walks through each one in the order you're likely to encounter it, with the concrete UI elements you'll see.</div>
 
     <div class="hp-card tip">
       <div class="hp-card-ttl">Currently free for signed-in users</div>
-      <div class="hp-p" style="margin-bottom:0">SectorScope Plus is in soft launch. Until <strong>31 October 2026</strong>, all five features are free for any signed-in user — no payment, no subscription required. Just sign in with Google from the top-right corner of any page. After 31 October, Plus moves to a paid tier; existing users will get advance notice and a grandfathered offer.</div>
+      <div class="hp-p" style="margin-bottom:0">SectorScope Plus is in soft launch. Until <strong>31 October 2026</strong>, all six features are free for any signed-in user — no payment, no subscription required. Just sign in with Google from the top-right corner of any page. After 31 October, Plus moves to a paid tier; existing users will get advance notice and a grandfathered offer.</div>
     </div>
 
     <div class="hp-sub-h">Expanded chart — full historical view</div>
@@ -2156,6 +2261,22 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <div class="hp-card info">
       <div class="hp-card-ttl">Why the median is a curve, not a flat line</div>
       <div class="hp-p" style="margin-bottom:0">A static "5-year median" line would be misleading on a 10-year chart — the median changes as the window slides forward. The expanded chart computes the median <em>at every historical date using only data available up to that point</em> and plots the result as a moving curve. Looking at the curve in 2018 shows you what the reference value would have looked like to a 2018 viewer — no look-ahead. This is the same logic the backtest uses to evaluate signals at each historical date.</div>
+    </div>
+
+    <div class="hp-sub-h">Timeline — every sector vs Nifty 50</div>
+    <div class="hp-p">The <strong>Timeline</strong> tab (top nav, between Dashboard and Backtest) is the cross-sector counterpart to the expanded chart. Where the expanded chart shows many metrics for one sector, Timeline shows <em>one</em> metric for every sector at once — plotted as <strong>growth relative to Nifty 50</strong>. It answers a different question from the dashboard: not "is this sector cheap versus its own history," but "which sectors have been leading or lagging the broad market over this window."</div>
+    <div class="hp-p">Every line is read against the same baseline: each sector's percentage change since the start of the window, <em>minus</em> Nifty 50's percentage change over that same window. Nifty 50 is therefore the flat <strong>0</strong> line. A line above 0 means the sector's chosen metric grew faster than Nifty 50's since the window opened; below 0 means it lagged. The vertical axis is always in percentage points. That's the default; a <strong>Baseline</strong> control above the chart switches it to <strong>None</strong>, which drops the Nifty 50 subtraction so each line shows only its own growth since the window start (and Nifty 50 joins as an ordinary, toggleable line). In that mode the 0 line marks the window's start rather than the benchmark.</div>
+    <dl class="hp-kv">
+      <dt>Metric selector</dt><dd>Pick one of <strong>P/E, P/B, EPS, Price</strong>; the whole chart re-plots that single metric across every sector. Each sector chip stays selectable for <em>every</em> metric — Timeline isn't limited to a sector's "primary" metric the way the dashboard cards are, so you can view P/B for a sector normally shown on P/E and vice-versa. Where the underlying NSE history doesn't carry the chosen metric for a sector, that sector simply draws no line until you switch to a metric it does have; its chip never greys out.</dd>
+      <dt>Baseline</dt><dd>Choose what the flat <strong>0</strong> line represents. <strong>Nifty 50</strong> (default) subtracts the benchmark's growth from every sector, so the chart reads as pure out- or under-performance versus the index. <strong>None</strong> removes the subtraction — each line is its own rebased growth since the window start, and Nifty 50 appears as a normal toggleable line — useful when you want the raw trajectories rather than the spread against the market.</dd>
+      <dt>Date range</dt><dd>The same quick presets as the expanded chart — <strong>1W · 1M · 3M · 1Y · 3Y · 5Y · All</strong> — plus From/To pickers for a custom window. Editing a date deactivates the presets. Because every line is rebased to the start of whatever window you pick, the range <em>is</em> the reference point: a sector can lead over five years yet lag over the last three months, and Timeline shows both honestly depending on the window.</dd>
+      <dt>Legend &amp; toggles</dt><dd>All sectors are drawn by default, each in its dashboard colour, with Nifty 50 marked as the baseline. Click any chip to hide or show that line — handy for isolating two or three sectors against the benchmark. <strong>ALL</strong> and <strong>NONE</strong> reset the selection in one tap.</dd>
+      <dt>Hover readout</dt><dd>Move the cursor (or drag a finger) across the chart to drop a vertical guide. A panel lists every visible sector's value at that date, sorted from most outperforming to most lagging — green above the line, red below — a quick leaderboard for any point in time.</dd>
+    </dl>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">Why growth, not absolute levels</div>
+      <div class="hp-p" style="margin-bottom:0">Plotting raw values across sectors would mislead. Absolute Price levels differ purely by index construction — Nifty Bank sits near 52,000 while Nifty 50 is near 24,000, which says nothing about performance — and absolute EPS is the same story. Even P/E and P/B aren't directly comparable sector to sector, since each trades in its own range. Rebasing everything to growth against Nifty 50 strips out those structural differences and leaves a clean read of relative performance. Newer indices (Defence, Healthcare) rebase from their own first date inside the window rather than faking a value back to the window's edge, so their lines start partway across — expected, not a gap in the data.</div>
     </div>
 
     <div class="hp-sub-h">AI sector summary — plain-language read</div>
@@ -7102,16 +7223,366 @@ window.addEventListener('resize',function(){
 });
 
 
+/* ===== TIMELINE MODULE (injected) ===== */
+/* ════════════════════════════════════════════════════════════════════
+   TIMELINE (Plus) — growth of each sector's metric vs Nifty 50
+   Append to app.js. Self-contained: globals are prefixed tl / TL (no
+   collision with the cm* chart-modal namespace). Reads from the existing
+   dataCache (filled by loadAllStaggered) + _ensureNifty50Loaded.
+
+   Depends on these existing app globals:
+     dataCache, SECTORS, WORKER_BASE, normalise, fetchWithRetry,
+     _ensureNifty50Loaded, cardType, userIsSubscribed, currentUser,
+     openPlusPane, openSignInPrompt (optional)
+════════════════════════════════════════════════════════════════════ */
+
+var TL = { metric:'pe', baseline:'nifty', range:'3Y', from:null, to:null, hidden:{}, _entered:false, _bound:false, _plot:null };
+var TL_RANGES   = ['1W','1M','3M','1Y','3Y','5Y','All'];   // mirrors CM_RANGES
+var TL_RANGE_DAYS = {'1W':7,'1M':30,'3M':91,'1Y':365,'3Y':1095,'5Y':1825};
+var TL_HOVER_MS = null;
+var _tlTsCache  = {};   // name -> {data, ts[]}
+
+function tlMetricLabel(m){ return m==='pe'?'P/E':m==='pb'?'P/B':m==='eps'?'EPS':'Price'; }
+
+/* ── data access ─────────────────────────────────────────────────── */
+function tlRows(name){ return dataCache[name] || []; }
+function tlTs(name){
+  var d=tlRows(name), c=_tlTsCache[name];
+  if(!c || c.data!==d){ c={data:d, ts:d.map(function(r){return new Date(r.date).getTime();})}; _tlTsCache[name]=c; }
+  return c.ts;
+}
+/* last index with ts<=target (carry-forward); -1 if none */
+function tlIdxAtOrBefore(ts,target){
+  var lo=0,hi=ts.length-1,res=-1;
+  while(lo<=hi){ var mid=(lo+hi)>>1; if(ts[mid]<=target){res=mid;lo=mid+1;} else hi=mid-1; }
+  return res;
+}
+function tlNiftyValAt(target,m){
+  var rows=tlRows('Nifty 50'); if(!rows.length) return NaN;
+  var ts=tlTs('Nifty 50'); var i=tlIdxAtOrBefore(ts,target);
+  if(i<0) i=0;
+  var v=rows[i][m];
+  return (isFinite(v)&&v>0) ? v : NaN;
+}
+function tlColor(name){
+  if(name==='Nifty 50') return getComputedStyle(document.documentElement).getPropertyValue('--txt').trim();
+  var s=SECTORS.find(function(x){return x.name===name;}); return s?s.color:'#888';
+}
+
+/* ── window ──────────────────────────────────────────────────────── */
+function tlWindow(){
+  var nrows=tlRows('Nifty 50');
+  var maxMs = nrows.length ? tlTs('Nifty 50')[nrows.length-1] : Date.now();
+  if(TL.from && TL.to) return {from:TL.from, to:TL.to, max:maxMs};
+  if(TL.range==='All'){
+    var min=maxMs;
+    ['Nifty 50'].concat(SECTORS.map(function(s){return s.name;})).forEach(function(n){
+      var t=tlTs(n); if(t.length) min=Math.min(min,t[0]);
+    });
+    return {from:min, to:maxMs, max:maxMs};
+  }
+  return {from:maxMs - TL_RANGE_DAYS[TL.range]*864e5, to:maxMs, max:maxMs};
+}
+
+/* ── build plotted series ────────────────────────────────────────── */
+function tlBuildPlot(plotW){
+  var m=TL.metric, w=tlWindow(), out=[];
+  var vsNifty = (TL.baseline==='nifty');
+  if(vsNifty && !tlRows('Nifty 50').length) return {series:out, from:w.from, to:w.to, noNifty:true};
+
+  var items = SECTORS.map(function(s){ return {name:s.name, color:s.color}; });
+  if(!vsNifty) items.push({name:'Nifty 50', color:tlColor('Nifty 50')});  // benchmark becomes a normal line
+
+  items.forEach(function(it){
+    var name=it.name;
+    if(TL.hidden[name]) return;
+    var rows=tlRows(name); if(!rows.length) return;
+    var ts=tlTs(name);
+    var lo=0;            while(lo<ts.length && ts[lo]<w.from) lo++;
+    var hi=ts.length-1;  while(hi>=0      && ts[hi]>w.to)   hi--;
+    if(lo>hi) return;
+
+    // base = first finite in-window value for THIS series
+    var baseS=NaN, baseMs=NaN, bi=-1;
+    for(var i=lo;i<=hi;i++){ var v=rows[i][m]; if(isFinite(v)&&v>0){baseS=v;baseMs=ts[i];bi=i;break;} }
+    if(bi<0) return;
+    var baseN=NaN;
+    if(vsNifty){ baseN=tlNiftyValAt(baseMs,m); if(!isFinite(baseN)) return; }
+
+    var stride=Math.max(1, Math.ceil((hi-bi)/(plotW*2)));   // ~2 pts/px  // PORT: LTTB for cleaner long ranges
+    var pts=[];
+    for(var i=bi;i<=hi;i+=stride){
+      var v=rows[i][m]; if(!(isFinite(v)&&v>0)) continue;
+      var y=(v/baseS-1)*100;
+      if(vsNifty){ var nN=tlNiftyValAt(ts[i],m); if(!isFinite(nN)) continue; y -= (nN/baseN-1)*100; }
+      pts.push({ms:ts[i], v:y});
+    }
+    if(pts.length && pts[pts.length-1].ms < ts[hi]){       // pin last point
+      var v=rows[hi][m];
+      if(isFinite(v)&&v>0){
+        var y=(v/baseS-1)*100;
+        if(vsNifty){ var nN=tlNiftyValAt(ts[hi],m); if(isFinite(nN)){ pts.push({ms:ts[hi], v:y-(nN/baseN-1)*100}); } }
+        else pts.push({ms:ts[hi], v:y});
+      }
+    }
+    if(pts.length) out.push({name:name, color:it.color, pts:pts});
+  });
+  return {series:out, from:w.from, to:w.to};
+}
+
+/* ── render ──────────────────────────────────────────────────────── */
+function tlNiceTicks(min,max,count){
+  var span=(max-min)||1, step0=span/count;
+  var mag=Math.pow(10,Math.floor(Math.log10(step0))), norm=step0/mag;
+  var step=(norm<1.5?1:norm<3?2:norm<7?5:10)*mag;
+  var start=Math.ceil(min/step)*step, ticks=[];
+  for(var t=start;t<=max+1e-9;t+=step) ticks.push(t);
+  return ticks;
+}
+function tlFmtPct(v){ return (v>=0?'+':'')+v.toFixed(1)+'%'; }
+function tlFmtDate(ms,span){
+  var d=new Date(ms), mo=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];
+  if(span < 95*864e5)          return d.getDate()+' '+mo;
+  if(span < 3.2*365*864e5)     return mo+" '"+String(d.getFullYear()).slice(2);
+  return ''+d.getFullYear();
+}
+
+function tlRender(){
+  var cv=document.getElementById('tl-canvas'); if(!cv) return;
+  var ctx=cv.getContext('2d');
+  var dpr=window.devicePixelRatio||1, cssW=cv.clientWidth, cssH=cv.clientHeight;
+  cv.width=cssW*dpr; cv.height=cssH*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,cssW,cssH);
+
+  var PAD={l:54,r:14,t:16,b:30};
+  var plotW=cssW-PAD.l-PAD.r, plotH=cssH-PAD.t-PAD.b;
+  var P=tlBuildPlot(plotW);
+
+  var emptyEl=document.getElementById('tl-empty');
+  if(P.noNifty || !P.series.length){
+    emptyEl.textContent = P.noNifty
+      ? 'Nifty 50 history unavailable — cannot compute the benchmark.'
+      : ('No '+tlMetricLabel(TL.metric)+' history for the selected sectors in this window.');
+    emptyEl.style.display='flex';
+  } else emptyEl.style.display='none';
+
+  var from=P.from, to=P.to, span=Math.max(1,to-from);
+
+  var yMin=Infinity,yMax=-Infinity;
+  P.series.forEach(function(s){ s.pts.forEach(function(p){ if(p.v<yMin)yMin=p.v; if(p.v>yMax)yMax=p.v; }); });
+  yMin=Math.min(yMin,0); yMax=Math.max(yMax,0);
+  if(!isFinite(yMin)){ yMin=-1; yMax=1; }
+  if(yMin===yMax){ yMin-=1; yMax+=1; }
+  var padY=(yMax-yMin)*0.08; yMin-=padY; yMax+=padY;
+
+  function xOf(ms){ return PAD.l + ((ms-from)/span)*plotW; }
+  function yOf(v){ return PAD.t + (1-(v-yMin)/(yMax-yMin))*plotH; }
+
+  var cs=getComputedStyle(document.documentElement);
+  var cGrid=cs.getPropertyValue('--bdr').trim(), cTxt=cs.getPropertyValue('--sub').trim(), cGhost=cs.getPropertyValue('--ghost').trim();
+  var cZero=cs.getPropertyValue('--txt').trim();
+
+  // y gridlines + labels (zero line emphasised = Nifty 50 baseline)
+  ctx.font="10px 'JetBrains Mono', monospace"; ctx.textBaseline='middle';
+  tlNiceTicks(yMin,yMax,5).forEach(function(t){
+    var y=yOf(t), isZero=Math.abs(t)<1e-9;
+    ctx.strokeStyle=isZero?cZero:cGrid; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(PAD.l,y); ctx.lineTo(cssW-PAD.r,y); ctx.stroke();
+    ctx.fillStyle=cTxt; ctx.textAlign='right';
+    ctx.fillText((t>0?'+':'')+t.toFixed(t%1?1:0)+'%', PAD.l-7, y);
+  });
+
+  // x ticks
+  ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillStyle=cGhost;
+  var xn=Math.min(6,Math.max(2,Math.floor(plotW/110)));
+  for(var k=0;k<=xn;k++){ var ms=from+span*k/xn; ctx.fillText(tlFmtDate(ms,span), PAD.l+plotW*k/xn, cssH-PAD.b+8); }
+
+  // baseline label
+  ctx.fillStyle=cTxt; ctx.textAlign='left'; ctx.textBaseline='bottom';
+  ctx.font="9px 'JetBrains Mono', monospace";
+  ctx.fillText(TL.baseline==='nifty' ? 'Nifty 50 baseline' : 'Window start', PAD.l+4, yOf(0)-3);
+
+  // lines
+  P.series.forEach(function(s){
+    ctx.strokeStyle=s.color; ctx.lineWidth=1.5; ctx.setLineDash([]); ctx.lineJoin='round';
+    ctx.beginPath();
+    for(var i=0;i<s.pts.length;i++){ var x=xOf(s.pts[i].ms), y=yOf(s.pts[i].v); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+    ctx.stroke();
+  });
+
+  // crosshair + readout
+  var ro=document.getElementById('tl-readout');
+  if(TL_HOVER_MS!=null && TL_HOVER_MS>=from && TL_HOVER_MS<=to && P.series.length){
+    var hx=xOf(TL_HOVER_MS);
+    ctx.strokeStyle=cGhost; ctx.lineWidth=1; ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(hx,PAD.t); ctx.lineTo(hx,cssH-PAD.b); ctx.stroke(); ctx.setLineDash([]);
+    tlDrawReadout(ro, P.series, TL_HOVER_MS, hx, PAD, cssW, cv.clientHeight);
+  } else if(ro){ ro.style.display='none'; }
+
+  TL._plot={series:P.series, from:from, to:to, span:span, PAD:PAD, plotW:plotW, xOf:xOf};
+}
+
+function tlDrawReadout(ro, series, ms, hx, PAD, cssW, cssH){
+  if(!ro) return;
+  var rows=[];
+  series.forEach(function(s){
+    var best=null, bd=Infinity;
+    for(var i=0;i<s.pts.length;i++){ var d=Math.abs(s.pts[i].ms-ms); if(d<bd){bd=d;best=s.pts[i];} }
+    if(best) rows.push({name:s.name, color:s.color, v:best.v});
+  });
+  rows.sort(function(a,b){return b.v-a.v;});
+  var dateStr=new Date(ms).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});
+  var html='<div class="ro-date">'+dateStr+'</div>';
+  rows.forEach(function(r){
+    var cls=r.v>0?'pos':r.v<0?'neg':'';
+    html+='<div class="ro-row"><span class="swatch" style="background:'+r.color+'"></span>'
+        +'<span class="ro-name">'+r.name+'</span>'
+        +'<span class="ro-val '+cls+'">'+tlFmtPct(r.v)+'</span></div>';
+  });
+  ro.innerHTML=html; ro.style.display='block';
+  var rw=ro.offsetWidth, rh=ro.offsetHeight, lx=hx+14;
+  if(lx+rw>cssW-6) lx=hx-14-rw;
+  ro.style.left=Math.max(6,lx)+'px';
+  ro.style.top=Math.max(6, Math.min(cssH-rh-6, PAD.t))+'px';
+}
+
+/* ── controls ────────────────────────────────────────────────────── */
+function tlBuildPills(){
+  var el=document.getElementById('tl-pills'); if(!el) return; el.innerHTML='';
+  TL_RANGES.forEach(function(r){
+    var b=document.createElement('button');
+    b.className='cm-pill'+(TL.range===r&&!TL.from?' active':'');
+    b.textContent=r; b.dataset.range=r;
+    b.onclick=function(){ TL.range=r; TL.from=TL.to=null; tlSyncDates(); tlBuildPills(); tlRender(); };
+    el.appendChild(b);
+  });
+}
+function tlBuildLegend(){
+  var el=document.getElementById('tl-legend'); if(!el) return; el.innerHTML='';
+  var all=document.createElement('button'); all.className='tl-legend-ctl'; all.textContent='ALL';
+  all.onclick=function(){ TL.hidden={}; tlBuildLegend(); tlRender(); };
+  var none=document.createElement('button'); none.className='tl-legend-ctl'; none.textContent='NONE';
+  none.onclick=function(){ SECTORS.forEach(function(s){TL.hidden[s.name]=true;}); TL.hidden['Nifty 50']=true; tlBuildLegend(); tlRender(); };
+  el.appendChild(all); el.appendChild(none);
+
+  // Nifty 50 chip — dashed baseline in 'nifty' mode, ordinary toggleable line in 'none' mode
+  if(TL.baseline==='nifty'){
+    var base=document.createElement('div');
+    base.className='cm-checkbox tl-baseline';
+    base.innerHTML='<span class="swatch" style="background:'+tlColor('Nifty 50')+'"></span>Nifty 50 · baseline';
+    el.appendChild(base);
+  } else {
+    var nOn=!TL.hidden['Nifty 50'];
+    var nchip=document.createElement('div');
+    nchip.className='cm-checkbox'+(nOn?' checked':'');
+    nchip.innerHTML='<span class="swatch" style="background:'+tlColor('Nifty 50')+'"></span>Nifty 50';
+    nchip.onclick=function(){ TL.hidden['Nifty 50']=!TL.hidden['Nifty 50']; tlBuildLegend(); tlRender(); };
+    el.appendChild(nchip);
+  }
+
+  SECTORS.forEach(function(s){
+    var name=s.name, on=!TL.hidden[name];
+    var chip=document.createElement('div');
+    chip.className='cm-checkbox'+(on?' checked':'');
+    chip.innerHTML='<span class="swatch" style="background:'+s.color+'"></span>'+name;
+    chip.onclick=function(){ TL.hidden[name]=!TL.hidden[name]; tlBuildLegend(); tlRender(); };
+    el.appendChild(chip);
+  });
+}
+function tlSyncDates(){
+  var f=document.getElementById('tl-from'), t=document.getElementById('tl-to'); if(!f||!t) return;
+  var w=tlWindow();
+  f.value=new Date(w.from).toISOString().slice(0,10);
+  t.value=new Date(w.to).toISOString().slice(0,10);
+  var lo=new Date((function(){ var min=w.max; ['Nifty 50'].concat(SECTORS.map(function(s){return s.name;})).forEach(function(n){var ts=tlTs(n);if(ts.length)min=Math.min(min,ts[0]);}); return min; })()).toISOString().slice(0,10);
+  var hi=new Date(w.max).toISOString().slice(0,10);
+  f.min=t.min=lo; f.max=t.max=hi;
+}
+function tlOnDateEdit(){
+  var f=document.getElementById('tl-from').value, t=document.getElementById('tl-to').value;
+  if(f&&t){ TL.from=new Date(f+'T00:00:00').getTime(); TL.to=new Date(t+'T00:00:00').getTime(); tlBuildPills(); tlRender(); }
+}
+function tlOnMove(clientX){
+  var p=TL._plot; if(!p) return;
+  var cv=document.getElementById('tl-canvas'); var rect=cv.getBoundingClientRect();
+  var x=clientX-rect.left, frac=(x-p.PAD.l)/p.plotW;
+  if(frac<0||frac>1){ TL_HOVER_MS=null; tlRender(); return; }
+  TL_HOVER_MS=p.from+frac*p.span; tlRender();
+}
+function tlBindOnce(){
+  if(TL._bound) return; TL._bound=true;
+  document.getElementById('tl-metric').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    this.querySelectorAll('button').forEach(function(x){x.classList.toggle('active',x===b);});
+    TL.metric=b.dataset.m; tlBuildLegend(); tlRender();
+  });
+  document.getElementById('tl-baseline').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    this.querySelectorAll('button').forEach(function(x){x.classList.toggle('active',x===b);});
+    TL.baseline=b.dataset.b; tlBuildLegend(); tlRender();
+  });
+  document.getElementById('tl-from').addEventListener('change',tlOnDateEdit);
+  document.getElementById('tl-to').addEventListener('change',tlOnDateEdit);
+  var cv=document.getElementById('tl-canvas');
+  cv.addEventListener('mousemove',function(e){ tlOnMove(e.clientX); });
+  cv.addEventListener('mouseleave',function(){ TL_HOVER_MS=null; tlRender(); });
+  cv.addEventListener('touchstart',function(e){ if(e.touches[0]) tlOnMove(e.touches[0].clientX); },{passive:true});
+  cv.addEventListener('touchmove', function(e){ if(e.touches[0]) tlOnMove(e.touches[0].clientX); },{passive:true});
+  var gb=document.getElementById('tl-gate-btn');
+  if(gb) gb.onclick=function(){ if(currentUser){ openPlusPane(); } else if(typeof openSignInPrompt==='function'){ openSignInPrompt(); } };
+}
+
+/* ── data readiness ──────────────────────────────────────────────── */
+async function tlEnsureData(){
+  await _ensureNifty50Loaded();
+  var missing=SECTORS.filter(function(s){ return !dataCache[s.name]; });
+  await Promise.all(missing.map(function(s){
+    return fetchWithRetry(s.url)
+      .then(function(raw){ dataCache[s.name]=normalise(raw); })
+      .catch(function(){ dataCache[s.name]=dataCache[s.name]||[]; });
+  }));
+}
+
+/* ── entry (called from showPage) ────────────────────────────────── */
+function tlEnter(){
+  var app=document.getElementById('tl-app'), gate=document.getElementById('tl-gate');
+  if(!userIsSubscribed()){ app.style.display='none'; gate.style.display='flex'; tlBindOnce(); return; }
+  gate.style.display='none'; app.style.display='';
+  tlBindOnce();
+  if(!TL._entered){ tlBuildPills(); tlBuildLegend(); TL._entered=true; }
+  var load=document.getElementById('tl-loading');
+  var needLoad = !tlRows('Nifty 50').length || SECTORS.some(function(s){return !dataCache[s.name];});
+  if(needLoad){ if(load) load.style.display='flex'; }
+  tlEnsureData().then(function(){
+    if(load) load.style.display='none';
+    tlSyncDates(); tlBuildLegend(); tlRender();
+  });
+}
+function tlRenderIfVisible(){
+  var p=document.getElementById('page-tl');
+  if(p && p.style.display!=='none') tlRender();
+}
+// Re-render on resize and on theme switch (theme toggles <html class="light">)
+window.addEventListener('resize', tlRenderIfVisible);
+new MutationObserver(tlRenderIfVisible).observe(document.documentElement,{attributes:true,attributeFilter:['class']});
+
+
+/* ════════════════════════════════════════════════════════════════════
+   showPage — REPLACE the existing function with this version.
+   Adds 'timeline' / #page-tl / #tab-tl and calls tlEnter() on open.
+════════════════════════════════════════════════════════════════════ */
 function showPage(p){
-  document.getElementById('page-dashboard').style.display=p==='dashboard'?'':'none';
-  document.getElementById('page-bt').style.display=p==='backtest'?'':'none';
-  document.getElementById('page-help').style.display=p==='help'?'':'none';
-  ['dash','bt','help'].forEach(function(id){
-    var tab=document.getElementById('tab-'+id);
-    var active=(id==='dash'&&p==='dashboard')||(id==='bt'&&p==='backtest')||(id==='help'&&p==='help');
+  document.getElementById('page-dashboard').style.display = p==='dashboard' ? '' : 'none';
+  document.getElementById('page-tl').style.display        = p==='timeline'  ? '' : 'none';
+  document.getElementById('page-bt').style.display        = p==='backtest'  ? '' : 'none';
+  document.getElementById('page-help').style.display      = p==='help'      ? '' : 'none';
+  [['dash','dashboard'],['tl','timeline'],['bt','backtest'],['help','help']].forEach(function(pair){
+    var tab=document.getElementById('tab-'+pair[0]); if(!tab) return;
+    var active=(p===pair[1]);
     tab.classList.toggle('active',active);
     tab.setAttribute('aria-selected',active?'true':'false');
   });
+  if(p==='timeline') tlEnter();
   if(p==='help') window.scrollTo({top:0,behavior:'instant'});
 }
 function toggleTheme(){
