@@ -309,6 +309,79 @@ html.light .cb-eps-panel{background:rgba(56,189,248,.06)}
 html.light #my-alerts-overlay{background:var(--bg)}
 
 /* ── PLUS PANE ── */
+/* ── Advanced Settings pane (adv-) — mirrors #plus-pane shell ── */
+#adv-pane{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;background:var(--bg);transform:translateY(100%);transition:transform .42s cubic-bezier(.4,.2,.2,1);visibility:hidden}
+#adv-pane.open{transform:translateY(0);visibility:visible}
+.adv-header{position:sticky;top:0;z-index:10;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(8,11,18,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);flex-shrink:0}
+html.light .adv-header{background:rgba(238,241,248,.96)}
+.adv-title{font-family:var(--cond);font-size:1.4rem;font-weight:800;letter-spacing:-.2px;color:var(--txt);display:flex;align-items:center;gap:8px}
+.adv-title .adv-gear{opacity:.6}
+.adv-body{flex:1;overflow-y:auto;width:100%}
+.adv-inner{max-width:780px;margin:0 auto;padding:22px 22px 80px}
+@media(max-width:680px){.adv-inner{padding:16px 12px 64px}}
+.adv-warn{display:flex;gap:11px;align-items:flex-start;padding:13px 15px;border-radius:11px;border:1px solid rgba(251,191,36,.32);background:rgba(251,191,36,.08);margin-bottom:26px}
+.adv-warn svg{flex-shrink:0;color:#fbbf24;margin-top:1px}
+.adv-warn-txt{font-family:var(--body);font-size:.8rem;line-height:1.6;color:var(--sub)}
+.adv-warn-txt strong{color:var(--txt)}
+.adv-sec{margin-bottom:30px}
+.adv-sec-h{font-family:var(--cond);font-size:1.18rem;font-weight:800;color:var(--txt);margin-bottom:3px;letter-spacing:-.2px}
+.adv-sec-d{font-family:var(--body);font-size:.76rem;color:var(--sub);line-height:1.55;margin-bottom:14px}
+.adv-sub{font-family:var(--mono);font-size:.56rem;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--ghost);margin:16px 0 9px}
+.adv-grid{display:grid;gap:11px}
+.adv-grid.g3{grid-template-columns:repeat(3,1fr)}
+.adv-grid.g2{grid-template-columns:repeat(2,1fr)}
+.adv-grid.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:520px){.adv-grid.g3,.adv-grid.g4{grid-template-columns:repeat(2,1fr)}}
+.adv-field{display:flex;flex-direction:column;gap:5px}
+.adv-field label{font-family:var(--mono);font-size:.58rem;letter-spacing:.4px;color:var(--sub);text-transform:uppercase}
+.adv-field .adv-hint{font-family:var(--mono);font-size:.54rem;color:var(--ghost)}
+.adv-input{width:100%;box-sizing:border-box;padding:9px 10px;border-radius:8px;border:1px solid var(--bdr2);background:var(--bg2);color:var(--txt);font-family:var(--mono);font-size:.82rem;text-align:center;-moz-appearance:textfield}
+.adv-input:focus{outline:none;border-color:#6366f1;background:var(--bg)}
+.adv-input::-webkit-outer-spin-button,.adv-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.adv-input.adv-err{border-color:#f87171;background:rgba(248,113,113,.06)}
+.adv-sumline{font-family:var(--mono);font-size:.6rem;color:var(--ghost);margin-top:8px}
+.adv-sumline.adv-err-txt{color:#f87171}
+/* ── multi-handle slider (weights + bands) ── */
+.adv-slider-host{margin:4px 0 2px}
+.adv-slider{position:relative;user-select:none;-webkit-user-select:none;touch-action:none;margin-top:6px}
+.adv-slider.has-bubbles{padding-top:26px}
+.adv-sl-track{position:relative;height:34px;border-radius:9px;background:var(--bg2);border:1px solid var(--bdr2)}
+.adv-sl-zone{position:absolute;top:0;bottom:0}
+.adv-sl-zone.soft{opacity:.5}
+.adv-sl-handle{position:absolute;top:50%;width:15px;height:46px;transform:translate(-50%,-50%);border-radius:6px;background:var(--txt);border:2px solid var(--bg);box-shadow:0 2px 8px rgba(0,0,0,.4);cursor:ew-resize;z-index:3;touch-action:none}
+.adv-sl-handle::after{content:'';position:absolute;left:50%;top:50%;width:2px;height:15px;background:var(--bg);transform:translate(-50%,-50%);border-radius:2px;opacity:.55}
+.adv-sl-handle:focus{outline:2px solid #6366f1;outline-offset:2px}
+.adv-sl-handle:focus-visible{outline:2px solid #6366f1;outline-offset:2px}
+.adv-sl-handle.drag{background:#6366f1}
+.adv-sl-handle.drag::after{background:#fff}
+.adv-sl-bubble{position:absolute;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);font-family:var(--mono);font-size:.62rem;font-weight:700;color:var(--txt);background:var(--bg);border:1px solid var(--bdr2);border-radius:6px;padding:2px 6px;white-space:nowrap;pointer-events:none}
+.adv-sl-seglabels{position:relative;height:32px;margin-top:10px}
+.adv-sl-seglabel{position:absolute;transform:translateX(-50%);text-align:center;display:flex;flex-direction:column;gap:1px;line-height:1.15;white-space:nowrap}
+.adv-sl-segname{font-family:var(--mono);font-size:.52rem;letter-spacing:.5px;color:var(--ghost);text-transform:uppercase}
+.adv-sl-segval{font-family:var(--mono);font-size:.74rem;font-weight:700;color:var(--txt)}
+.adv-sl-zname{font-family:var(--mono);font-size:.5rem;letter-spacing:.3px;color:var(--sub);text-transform:uppercase}
+/* per-sector classification rows */
+.adv-cls-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--bdr)}
+.adv-cls-row:last-child{border-bottom:none}
+.adv-cls-name{font-family:var(--body);font-size:.84rem;font-weight:600;color:var(--txt);display:flex;align-items:center;gap:8px}
+.adv-cls-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.adv-seg{display:inline-flex;border:1px solid var(--bdr2);border-radius:8px;overflow:hidden;background:var(--bg2)}
+.adv-seg button{padding:6px 13px;border:none;background:transparent;color:var(--sub);font-family:var(--mono);font-size:.64rem;font-weight:600;letter-spacing:.4px;cursor:pointer;transition:all .12s;border-left:1px solid var(--bdr2)}
+.adv-seg button:first-child{border-left:none}
+.adv-seg button:hover{color:var(--txt);background:var(--bg3)}
+.adv-seg button.on{background:#3b82f6;color:#fff}
+/* footer actions */
+.adv-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:34px;padding-top:22px;border-top:1px solid var(--bdr)}
+.adv-btn-apply{padding:11px 26px;border-radius:10px;border:none;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;font-family:var(--body);font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s}
+.adv-btn-apply:hover{transform:translateY(-1px);box-shadow:0 8px 26px rgba(99,102,241,.35)}
+.adv-btn-reset{padding:10px 20px;border-radius:10px;border:1px solid var(--bdr2);background:transparent;color:var(--sub);font-family:var(--body);font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s}
+.adv-btn-reset:hover{color:#f87171;border-color:rgba(248,113,113,.5)}
+.adv-saved{font-family:var(--mono);font-size:.62rem;color:var(--vchp-c);opacity:0;transition:opacity .2s}
+.adv-saved.show{opacity:1}
+/* menu-item "customised" dot */
+.adv-menu-dot{width:6px;height:6px;border-radius:50%;background:#a5b4fc;margin-left:auto;flex-shrink:0;display:none}
+.adv-menu-dot.on{display:block}
+
 #plus-pane{position:fixed;inset:0;z-index:500;display:flex;flex-direction:column;background:var(--bg);transform:translateY(100%);transition:transform .42s cubic-bezier(.4,.2,.2,1);visibility:hidden}
 #plus-pane.open{transform:translateY(0);visibility:visible}
 .pp-header{position:sticky;top:0;z-index:10;padding:10px 22px;display:flex;align-items:center;justify-content:space-between;gap:12px;background:rgba(8,11,18,.95);backdrop-filter:blur(20px);border-bottom:1px solid var(--bdr);flex-shrink:0}
@@ -1273,6 +1346,11 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
         <div class="user-menu-item" onclick="openContactPane();closeUserMenu()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           Contact us
+        </div>
+        <div class="user-menu-item" id="menu-adv-btn" onclick="openAdvPane();closeUserMenu()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          Advanced settings
+          <span class="adv-menu-dot" id="adv-menu-dot"></span>
         </div>
         <div class="user-menu-item" onclick="authSignOut()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -2600,6 +2678,18 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   </div>
 </div>
 
+<!-- ══════════════ ADVANCED SETTINGS PANE ══════════════ -->
+<div id="adv-pane" role="dialog" aria-modal="true" aria-label="Advanced settings">
+  <div class="adv-header">
+    <div class="adv-title">
+      <svg class="adv-gear" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Advanced Settings
+    </div>
+    <button class="sd-close" onclick="closeAdvPane()" aria-label="Close">✕</button>
+  </div>
+  <div class="adv-body"><div class="adv-inner" id="adv-inner"><!-- built by advRenderPane() --></div></div>
+</div>
+
 <!-- ══════════════ CHART MODAL ══════════════ -->
 <div id="chart-modal" role="dialog" aria-modal="true" aria-label="Sector chart">
   <div class="cm-header">
@@ -2743,12 +2833,63 @@ var liveCache={};  /* keyed by our sector name: {price,pe,pb,asOf} */
    is safe — it never compares same-day to same-day. */
 var appendState='pre-append';
 
+/* ════════════════════════════════════════
+   ADVANCED SETTINGS (adv / ADV)  — Plus-gated, per-device (localStorage)
+   ─────────────────────────────────────────
+   A single override object read by the three calculation single-sources:
+     • weightedRef()   reads ADV.wStd / ADV.wAlt   (blend proportions)
+     • bandOfRefPct()  reads ADV.bandRef           (% of weighted-ref boundaries)
+     • bandOfPctile()  reads ADV.bandPctile        (percentile-rank boundaries)
+     • cardType()      reads ADV.cls               (per-sector PE/PB/Dual override)
+   plus the chart-modal median zones, which mirror ADV.bandRef.
+   Every consumer guards with (ADV&&…)||default, so a missing/partial ADV
+   silently falls back to stock behaviour. Overrides never leave the device. */
+var ADV_DEFAULTS={
+  wStd:{w3:0.30,w5:0.60,w10:0.10},   /* standard blend, ≥5yr history (3yr/5yr/10yr) */
+  wAlt:{w3:0.60,wAll:0.40},          /* alternate blend, <5yr history (3yr/all-time) */
+  bandRef:[80,90,105,120],           /* bandOfRefPct boundaries, % of weighted ref  */
+  bandPctile:[10,30,70,90],          /* bandOfPctile boundaries, percentile rank     */
+  cls:{}                             /* {sectorName:'pe'|'pb'|'dual'} — empty = built-in */
+};
+var ADV_LSKEY='ss_adv_v1';
+function advLoad(){
+  var d=JSON.parse(JSON.stringify(ADV_DEFAULTS));
+  try{
+    var raw=localStorage.getItem(ADV_LSKEY);
+    if(raw){
+      var o=JSON.parse(raw);
+      if(o&&typeof o==='object'){
+        if(o.wStd){ ['w3','w5','w10'].forEach(function(k){ if(isFinite(+o.wStd[k])&&+o.wStd[k]>=0) d.wStd[k]=+o.wStd[k]; }); }
+        if(o.wAlt){ ['w3','wAll'].forEach(function(k){ if(isFinite(+o.wAlt[k])&&+o.wAlt[k]>=0) d.wAlt[k]=+o.wAlt[k]; }); }
+        if(Array.isArray(o.bandRef)   && o.bandRef.length===4   && o.bandRef.every(function(v){return isFinite(+v);}))    d.bandRef=o.bandRef.map(Number);
+        if(Array.isArray(o.bandPctile)&& o.bandPctile.length===4&& o.bandPctile.every(function(v){return isFinite(+v);})) d.bandPctile=o.bandPctile.map(Number);
+        if(o.cls&&typeof o.cls==='object'){
+          Object.keys(o.cls).forEach(function(k){ if(['pe','pb','dual'].indexOf(o.cls[k])>=0) d.cls[k]=o.cls[k]; });
+        }
+      }
+    }
+  }catch(e){}
+  return d;
+}
+var ADV=advLoad();
+function advSave(){ try{ localStorage.setItem(ADV_LSKEY,JSON.stringify(ADV)); }catch(e){} }
+function advReset(){ ADV=JSON.parse(JSON.stringify(ADV_DEFAULTS)); try{ localStorage.removeItem(ADV_LSKEY); }catch(e){} }
+/* True when any override deviates from stock defaults — drives the menu dot. */
+function advIsCustomised(){
+  try{ return JSON.stringify(ADV)!==JSON.stringify(ADV_DEFAULTS); }catch(e){ return false; }
+}
+
 /* Dual = show both PE and PB */
 var DUAL_S=['Infra','Energy','Metals','Oil & Gas'];
 /* PB only */
 var PURE_PB=['Bank','PSU Bank','Fin Services','Realty'];
 /* All others (IT/Auto/FMCG/Pharma/Defence/Healthcare/Cons. Durables) are PE only */
-function cardType(n){ return DUAL_S.indexOf(n)>=0?'dual':PURE_PB.indexOf(n)>=0?'pb':'pe'; }
+/* Built-in classification, overridable per-sector via ADV.cls (Advanced Settings). */
+function cardTypeDefault(n){ return DUAL_S.indexOf(n)>=0?'dual':PURE_PB.indexOf(n)>=0?'pb':'pe'; }
+function cardType(n){
+  if(ADV&&ADV.cls&&ADV.cls[n]) return ADV.cls[n];
+  return cardTypeDefault(n);
+}
 
 var BAND={
   vchp:{label:'Very Cheap',cls:'bvchp',clr:'var(--vchp-c)',bd:'var(--vchp-bd)',tl:'var(--vchp-tl)',sort:0},
@@ -2816,10 +2957,11 @@ function pctRankOf(arr,val){
 /* Band from percentile rank in 5yr distribution (secondary/info signal). */
 function bandOfPctile(pct){
   if(isNaN(pct)) return 'na';
-  if(pct<=10) return 'vchp';
-  if(pct<=30) return 'chp';
-  if(pct<=70) return 'neu';
-  if(pct<=90) return 'exp';
+  var B=(ADV&&ADV.bandPctile)||[10,30,70,90];
+  if(pct<=B[0]) return 'vchp';
+  if(pct<=B[1]) return 'chp';
+  if(pct<=B[2]) return 'neu';
+  if(pct<=B[3]) return 'exp';
   return 'vexp';
 }
 /* Band from % of weighted ref (primary signal — drives card color and sort).
@@ -2827,10 +2969,11 @@ function bandOfPctile(pct){
    their own median (positive drift). */
 function bandOfRefPct(pctRef){
   if(isNaN(pctRef)) return 'na';
-  if(pctRef<=80)  return 'vchp';
-  if(pctRef<=90)  return 'chp';
-  if(pctRef<=105) return 'neu';
-  if(pctRef<=120) return 'exp';
+  var B=(ADV&&ADV.bandRef)||[80,90,105,120];
+  if(pctRef<=B[0])  return 'vchp';
+  if(pctRef<=B[1])  return 'chp';
+  if(pctRef<=B[2])  return 'neu';
+  if(pctRef<=B[3])  return 'exp';
   return 'vexp';
 }
 /* Divergence between the two signals. Returns an object:
@@ -2862,17 +3005,19 @@ function weightedRef(m3,m5,m10,mAll,hasFullHistory){
      Backwards-compatible: callers that don't pass mAll/hasFullHistory
      fall through to the standard blend. */
   if(hasFullHistory===false){
+    var WA=(ADV&&ADV.wAlt)||{w3:0.60,wAll:0.40};
     var okA=!isNaN(mAll)&&mAll>0, ok3=!isNaN(m3)&&m3>0;
     if(!okA&&!ok3) return NaN;
     var na=0,da=0;
-    if(ok3){na+=.60*m3;da+=.60;} if(okA){na+=.40*mAll;da+=.40;}
-    return na/da;
+    if(ok3){na+=WA.w3*m3;da+=WA.w3;} if(okA){na+=WA.wAll*mAll;da+=WA.wAll;}
+    return da>0?na/da:NaN;
   }
+  var WS=(ADV&&ADV.wStd)||{w3:0.30,w5:0.60,w10:0.10};
   var ok3=!isNaN(m3)&&m3>0,ok5=!isNaN(m5)&&m5>0,ok10=!isNaN(m10)&&m10>0;
   if(!ok3&&!ok5&&!ok10) return NaN;
   var n=0,d=0;
-  if(ok3){n+=.30*m3;d+=.30;} if(ok5){n+=.60*m5;d+=.60;} if(ok10){n+=.10*m10;d+=.10;}
-  return n/d;
+  if(ok3){n+=WS.w3*m3;d+=WS.w3;} if(ok5){n+=WS.w5*m5;d+=WS.w5;} if(ok10){n+=WS.w10*m10;d+=WS.w10;}
+  return d>0?n/d:NaN;
 }
 function f(n,d){return(n==null||isNaN(n)||!isFinite(n))?'—':(+n).toFixed(d!=null?d:1);}
 function fx(x){return(x==null||isNaN(x)||!isFinite(x))?'—':x.toFixed(2)+'×';}
@@ -7267,22 +7412,24 @@ function cmDrawCanvas(canvas, rows){
         var rgb=isL
           ? { vchp:'0,150,60',   chp:'5,150,105',   neu:'180,130,20', exp:'194,65,12',  vexp:'185,28,28' }
           : { vchp:'0,200,83',   chp:'105,240,174', neu:'255,215,64', exp:'255,112,67', vexp:'255,23,68' };
+        var _bR=(ADV&&ADV.bandRef)||[80,90,105,120];
+        var bm0=_bR[0]/100, bm1=_bR[1]/100, bm2=_bR[2]/100, bm3=_bR[3]/100;
         var bands=[
-          {key:'vchp', lo:0,    hi:0.80},
-          {key:'chp',  lo:0.80, hi:0.90},
-          {key:'neu',  lo:0.90, hi:1.05},
-          {key:'exp',  lo:1.05, hi:1.20},
-          {key:'vexp', lo:1.20, hi:999 },  /* unbounded — clipped to axis top */
+          {key:'vchp', lo:0,    hi:bm0},
+          {key:'chp',  lo:bm0,  hi:bm1},
+          {key:'neu',  lo:bm1,  hi:bm2},
+          {key:'exp',  lo:bm2,  hi:bm3},
+          {key:'vexp', lo:bm3,  hi:999 },  /* unbounded — clipped to axis top */
         ];
         /* Boundaries between zones. Each is drawn in the COLOR of the zone
            ABOVE it (i.e. the boundary at 0.80 sits between vchp and chp,
            coloured in chp). Reading top-down: the line you cross marks
            the zone you're entering. */
         var edges=[
-          {mult:0.80, color:'chp' },
-          {mult:0.90, color:'neu' },
-          {mult:1.05, color:'exp' },
-          {mult:1.20, color:'vexp'},
+          {mult:bm0, color:'chp' },
+          {mult:bm1, color:'neu' },
+          {mult:bm2, color:'exp' },
+          {mult:bm3, color:'vexp'},
         ];
 
         /* Build the (x, ref) array once, filtered to the visible window
@@ -9613,6 +9760,262 @@ async function loadAISummary(sectorName, st){
 /* ════════════════════════════════════════
    PLUS PANE
 ════════════════════════════════════════ */
+/* ════════════════════════════════════════
+   ADVANCED SETTINGS — pane UI + apply/reset + recompute
+   Plus-gated entry; non-subscribers are routed to the Plus pane.
+   localStorage-backed (ADV / advLoad / advSave / advReset above).
+════════════════════════════════════════ */
+var ADV_BAND_LABELS=['Very Cheap','Cheap','Neutral','Expensive','Very Exp'];
+var ADV_BAND_COLORS=['var(--vchp-c)','var(--chp-c)','var(--neu-c)','var(--exp-c)','var(--vexp-c)'];
+var ADV_W_COLORS=['#6366f1','#8b5cf6','#06b6d4'];
+var advUI=null;      /* working copy while the pane is open */
+var advSliders={};   /* live slider apis, keyed by name */
+
+/* ── Generic multi-handle slider (shared by weights + bands) ──
+   opts: host, min, max, step, handles[asc], zoneColors[len=handles+1],
+         zoneClass, handleBubbles(bool), zoneLabelMode('widthpct'|'name'|'none'),
+         segLabels[], zoneNames[], unit, allowZero(bool), onChange(handles).
+   Pointer-based — mouse + touch. Returns { get, getWidths, paint }. */
+function advMakeSlider(opts){
+  var host=opts.host, min=opts.min, max=opts.max, step=opts.step||1;
+  var H=opts.handles.slice(), zc=opts.zoneColors, n=H.length;
+  var unit=opts.unit||'', allowZero=!!opts.allowZero, zlm=opts.zoneLabelMode||'none';
+  function pc(v){ return (v-min)/(max-min)*100; }
+  function rnd(v){ return Math.round(v/step)*step; }
+  host.classList.add('adv-slider');
+  if(opts.handleBubbles) host.classList.add('has-bubbles');
+  host.innerHTML='<div class="adv-sl-track"></div>';
+  var track=host.querySelector('.adv-sl-track');
+  var zones=[];
+  for(var i=0;i<=n;i++){ var z=document.createElement('div'); z.className='adv-sl-zone'+(opts.zoneClass?(' '+opts.zoneClass):''); z.style.background=zc[i]; track.appendChild(z); zones.push(z); }
+  var handles=[];
+  for(var j=0;j<n;j++){
+    var hd=document.createElement('div'); hd.className='adv-sl-handle'; hd.tabIndex=0;
+    hd.setAttribute('role','slider'); hd.setAttribute('aria-valuemin',min); hd.setAttribute('aria-valuemax',max); hd.dataset.i=j;
+    if(opts.handleBubbles){ var bb=document.createElement('div'); bb.className='adv-sl-bubble'; hd.appendChild(bb); }
+    track.appendChild(hd); handles.push(hd);
+  }
+  var seglabels=[];
+  if(zlm!=='none'){
+    var wrap=document.createElement('div'); wrap.className='adv-sl-seglabels';
+    for(var s=0;s<=n;s++){ var sl=document.createElement('div'); sl.className='adv-sl-seglabel'; wrap.appendChild(sl); seglabels.push(sl); }
+    host.appendChild(wrap);
+  }
+  function widths(){ var w=[]; for(var i=0;i<=n;i++){ var lo=i===0?min:H[i-1]; var hi=i===n?max:H[i]; w.push(hi-lo); } return w; }
+  function paint(){
+    for(var i=0;i<=n;i++){ var lo=i===0?0:pc(H[i-1]); var hi=i===n?100:pc(H[i]); zones[i].style.left=lo+'%'; zones[i].style.width=(hi-lo)+'%'; }
+    for(var j=0;j<n;j++){ handles[j].style.left=pc(H[j])+'%'; handles[j].setAttribute('aria-valuenow',H[j]); if(opts.handleBubbles){ handles[j].querySelector('.adv-sl-bubble').textContent=Math.round(H[j])+unit; } }
+    if(seglabels.length){
+      var w=widths();
+      for(var s=0;s<=n;s++){
+        var lo2=s===0?0:pc(H[s-1]); var hi2=s===n?100:pc(H[s]); seglabels[s].style.left=((lo2+hi2)/2)+'%';
+        if(zlm==='widthpct') seglabels[s].innerHTML='<span class="adv-sl-segname">'+(opts.segLabels?opts.segLabels[s]:'')+'</span><span class="adv-sl-segval">'+Math.round(w[s])+unit+'</span>';
+        else if(zlm==='name')  seglabels[s].innerHTML='<span class="adv-sl-zname">'+(opts.zoneNames?opts.zoneNames[s]:'')+'</span>';
+      }
+    }
+  }
+  function setX(idx,clientX){
+    var r=track.getBoundingClientRect(); var v=rnd(min+((clientX-r.left)/r.width)*(max-min));
+    var lo=idx===0?min:H[idx-1]+(allowZero?0:step);
+    var hi=idx===n-1?max:H[idx+1]-(allowZero?0:step);
+    v=Math.max(lo,Math.min(hi,v)); if(v!==H[idx]){ H[idx]=v; paint(); if(opts.onChange) opts.onChange(H.slice()); } else { H[idx]=v; paint(); }
+  }
+  handles.forEach(function(hd){
+    hd.addEventListener('pointerdown',function(e){
+      e.preventDefault(); var idx=+hd.dataset.i; hd.classList.add('drag'); try{hd.setPointerCapture(e.pointerId);}catch(_){}
+      function mv(ev){ setX(idx,ev.clientX); }
+      function up(){ hd.classList.remove('drag'); hd.removeEventListener('pointermove',mv); hd.removeEventListener('pointerup',up); hd.removeEventListener('pointercancel',up); if(opts.onChange) opts.onChange(H.slice()); }
+      hd.addEventListener('pointermove',mv); hd.addEventListener('pointerup',up); hd.addEventListener('pointercancel',up);
+    });
+    hd.addEventListener('keydown',function(e){
+      var idx=+hd.dataset.i, d=0;
+      if(e.key==='ArrowLeft'||e.key==='ArrowDown') d=-step; else if(e.key==='ArrowRight'||e.key==='ArrowUp') d=step; else return;
+      e.preventDefault();
+      var lo=idx===0?min:H[idx-1]+(allowZero?0:step); var hi=idx===n-1?max:H[idx+1]-(allowZero?0:step);
+      H[idx]=Math.max(lo,Math.min(hi,rnd(H[idx]+d))); paint(); if(opts.onChange) opts.onChange(H.slice());
+    });
+  });
+  paint();
+  return { get:function(){return H.slice();}, getWidths:widths, paint:paint };
+}
+
+function advNormPct(arr){ var s=arr.reduce(function(a,b){return a+(b>0?b:0);},0)||1; return arr.map(function(x){return (x>0?x:0)/s*100;}); }
+
+function advRenderPane(){
+  var inner=document.getElementById('adv-inner');
+  if(!inner) return;
+  advUI={
+    wStd: advNormPct([ADV.wStd.w3, ADV.wStd.w5, ADV.wStd.w10]),
+    wAlt: advNormPct([ADV.wAlt.w3, ADV.wAlt.wAll]),
+    bandRef: ADV.bandRef.slice(),
+    bandPctile: ADV.bandPctile.slice()
+  };
+  var h='';
+
+  /* Warning banner */
+  h+='<div class="adv-warn">';
+  h+='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+  h+='<div class="adv-warn-txt"><strong>These settings change how every valuation signal is computed.</strong> They override the defaults that the dashboard, backtest, projections, alerts and chart zones are tuned against. Changes are stored on this device only and never leave your browser. If anything looks wrong, use <strong>Reset to defaults</strong> at the bottom.</div>';
+  h+='</div>';
+
+  /* ── Section 1: weighted-median weights ── */
+  h+='<div class="adv-sec">';
+  h+='<div class="adv-sec-h">Weighted-median reference</div>';
+  h+='<div class="adv-sec-d">The reference multiple each sector is judged against is a blend of its medians over several windows. Drag the dividers to set how much each window contributes — the split always totals 100%, and windows with too little data are dropped and their share redistributed automatically.</div>';
+  h+='<div class="adv-sub">Standard blend · ≥ 5 years of history</div>';
+  h+='<div class="adv-slider-host" id="adv-sl-wstd"></div>';
+  h+='<div class="adv-sub">Alternate blend · &lt; 5 years of history</div>';
+  h+='<div class="adv-slider-host" id="adv-sl-walt"></div>';
+  h+='</div>';
+
+  /* ── Section 2: valuation bands ── */
+  h+='<div class="adv-sec">';
+  h+='<div class="adv-sec-h">Valuation bands</div>';
+  h+='<div class="adv-sec-d">Drag the handles to move the four boundaries that split each metric into Very Cheap → Very Expensive. Handles can\u2019t cross, so the order is always valid. The primary set also drives the chart\u2019s median zones.</div>';
+  h+='<div class="adv-sub">Primary · % of weighted reference</div>';
+  h+='<div class="adv-slider-host" id="adv-sl-bref"></div>';
+  h+='<div class="adv-sub">Secondary · percentile rank (0–100)</div>';
+  h+='<div class="adv-slider-host" id="adv-sl-bpct"></div>';
+  h+='</div>';
+
+  /* ── Section 3: per-sector classification ── */
+  h+='<div class="adv-sec">';
+  h+='<div class="adv-sec-h">Sector metric type</div>';
+  h+='<div class="adv-sec-d">Whether each sector is judged on P/E, P/B, or both. This propagates everywhere the metric type is read — cards, chart defaults, backtest, projections and alerts.</div>';
+  SECTORS.forEach(function(s){
+    var cur=cardType(s.name);
+    h+='<div class="adv-cls-row">';
+    h+='<div class="adv-cls-name"><span class="adv-cls-dot" style="background:'+s.color+'"></span>Nifty '+advEsc(s.name)+'</div>';
+    h+='<div class="adv-seg" data-sec="'+advEsc(s.name)+'">';
+    ['pe','pb','dual'].forEach(function(t){
+      var lbl=t==='pe'?'P/E':t==='pb'?'P/B':'Dual';
+      h+='<button type="button" data-t="'+t+'" class="'+(cur===t?'on':'')+'" onclick="advPickType(this)">'+lbl+'</button>';
+    });
+    h+='</div></div>';
+  });
+  h+='</div>';
+
+  /* ── Footer actions ── */
+  h+='<div class="adv-actions">';
+  h+='<button class="adv-btn-apply" onclick="advApply()">Apply changes</button>';
+  h+='<button class="adv-btn-reset" onclick="advResetClick()">Reset to defaults</button>';
+  h+='<span class="adv-saved" id="adv-saved">✓ Applied</span>';
+  h+='</div>';
+
+  inner.innerHTML=h;
+
+  /* instantiate sliders */
+  advSliders.wStd=advMakeSlider({
+    host:document.getElementById('adv-sl-wstd'), min:0, max:100, step:1, allowZero:true,
+    handles:[ Math.round(advUI.wStd[0]), Math.round(advUI.wStd[0]+advUI.wStd[1]) ],
+    zoneColors:ADV_W_COLORS, zoneLabelMode:'widthpct', segLabels:['3-Year','5-Year','10-Year'], unit:'%',
+    onChange:function(){ var w=advSliders.wStd.getWidths(); advUI.wStd=w; }
+  });
+  advSliders.wAlt=advMakeSlider({
+    host:document.getElementById('adv-sl-walt'), min:0, max:100, step:1, allowZero:true,
+    handles:[ Math.round(advUI.wAlt[0]) ],
+    zoneColors:[ADV_W_COLORS[0],ADV_W_COLORS[2]], zoneLabelMode:'widthpct', segLabels:['3-Year','All-Time'], unit:'%',
+    onChange:function(){ var w=advSliders.wAlt.getWidths(); advUI.wAlt=w; }
+  });
+  advSliders.bRef=advMakeSlider({
+    host:document.getElementById('adv-sl-bref'), min:50, max:170, step:1, allowZero:false,
+    handles:advUI.bandRef.slice(), zoneColors:ADV_BAND_COLORS, zoneClass:'soft',
+    handleBubbles:true, zoneLabelMode:'name', zoneNames:ADV_BAND_LABELS, unit:'%',
+    onChange:function(hs){ advUI.bandRef=hs; }
+  });
+  advSliders.bPct=advMakeSlider({
+    host:document.getElementById('adv-sl-bpct'), min:0, max:100, step:1, allowZero:false,
+    handles:advUI.bandPctile.slice(), zoneColors:ADV_BAND_COLORS, zoneClass:'soft',
+    handleBubbles:true, zoneLabelMode:'name', zoneNames:ADV_BAND_LABELS, unit:'%',
+    onChange:function(hs){ advUI.bandPctile=hs; }
+  });
+}
+
+function advEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* segmented type picker */
+function advPickType(btn){
+  var grp=btn.parentNode;
+  Array.prototype.forEach.call(grp.children,function(b){ b.classList.toggle('on', b===btn); });
+}
+
+function advApply(){
+  if(!advUI) return;
+  /* weights → proportions (÷100) so an unchanged blend equals the stored defaults */
+  ADV.wStd={ w3:advUI.wStd[0]/100, w5:advUI.wStd[1]/100, w10:advUI.wStd[2]/100 };
+  ADV.wAlt={ w3:advUI.wAlt[0]/100, wAll:advUI.wAlt[1]/100 };
+  ADV.bandRef=advUI.bandRef.slice();
+  ADV.bandPctile=advUI.bandPctile.slice();
+  /* classification — store only entries that differ from built-in */
+  var cls={};
+  document.querySelectorAll('#adv-inner .adv-seg').forEach(function(grp){
+    var sec=grp.getAttribute('data-sec');
+    var on=grp.querySelector('button.on');
+    var t=on?on.getAttribute('data-t'):null;
+    if(sec&&t&&t!==cardTypeDefault(sec)) cls[sec]=t;
+  });
+  ADV.cls=cls;
+
+  advSave();
+  advRecomputeAll();
+  advReflectMenuDot();
+
+  var saved=document.getElementById('adv-saved');
+  if(saved){ saved.classList.add('show'); setTimeout(function(){ saved.classList.remove('show'); },1800); }
+}
+
+function advResetClick(){
+  if(!confirm('Reset all advanced settings to their defaults? This clears your overrides on this device.')) return;
+  advReset();
+  advRecomputeAll();
+  advRenderPane();      /* re-render inputs to default values */
+  advReflectMenuDot();
+}
+
+/* Re-run computeStats for every loaded sector and repaint the dashboard.
+   Open modals/tabs read ADV live, so they pick changes up on next open. */
+function advRecomputeAll(){
+  if(typeof statCache!=='undefined') statCache={};
+  if(typeof dataCache==='undefined') return;
+  Object.keys(dataCache).forEach(function(name){
+    var sec=SECTORS.find(function(s){return s.name===name;});
+    if(!sec) return;
+    var live=(typeof liveCache!=='undefined'&&liveCache[name])||null;
+    var st=computeStats(dataCache[name],live);
+    if(st) renderCard(sec,st);
+  });
+  if(typeof sortCards==='function') sortCards();
+}
+
+function advReflectMenuDot(){
+  var dot=document.getElementById('adv-menu-dot');
+  if(dot) dot.classList.toggle('on', advIsCustomised());
+}
+
+function openAdvPane(){
+  /* Plus-gated. Non-subscribers see the upgrade pane instead. */
+  if(typeof userIsSubscribed==='function' && !userIsSubscribed()){
+    if(typeof currentUser!=='undefined' && currentUser){ if(typeof openPlusPane==='function') openPlusPane(); }
+    else if(typeof openSignInPrompt==='function'){ openSignInPrompt(); }
+    else if(typeof authSignIn==='function'){ authSignIn(); }
+    return;
+  }
+  advRenderPane();
+  var pane=document.getElementById('adv-pane');
+  if(!pane) return;
+  pane.classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeAdvPane(){
+  var pane=document.getElementById('adv-pane');
+  if(pane) pane.classList.remove('open');
+  document.body.style.overflow='';
+}
+/* Show the "customised" dot on the menu item if overrides are active. */
+function _advInit(){ advReflectMenuDot(); }
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',_advInit,{once:true});
+else _advInit();
+
 function openPlusPane(){
   var pane=document.getElementById('plus-pane');
   var body=document.getElementById('pp-body');
