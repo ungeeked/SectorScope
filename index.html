@@ -3163,12 +3163,23 @@ function computeStats(data,live){
   var pbRef=weightedRef(pb3,pb5,pb10,pbAll,hasFullHistory);
 
   /* percentile rank in 3-year winsorised history */
-  /* Use live intraday Price/PE/PB/EPS when available; fall back to last historical row.
-     EPS is derived from Price/PE in the live feed — see fetchLiveData(). */
-  var curPE   =(live&&live.pe   &&!isNaN(live.pe)   &&live.pe   >0)?live.pe   :last.pe;
-  var curPB   =(live&&live.pb   &&!isNaN(live.pb)   &&live.pb   >0)?live.pb   :last.pb;
+  /* ── CURRENT VALUES — price live, multiples/fundamentals from D1 ──
+     NSE's live feed only updates PRICE intraday; its pe/pb are yesterday's
+     end-of-day values served unchanged through the session (stale), and the
+     live-feed EPS is derived as price/pe in fetchLiveData() — i.e. today's
+     price over yesterday's multiple, which is wrong. So we take PRICE live and
+     take P/E, P/B, EPS and Book Value from the last D1 end-of-day row, where
+     price, pe, pb and the derived eps/bv are all from the same instant and
+     mutually consistent. This keeps the multiples honest across results days
+     (no live-price ÷ stale-EPS artifact that could transiently mislabel a
+     sector cheap/expensive and drive a wrong position) and keeps the dashboard
+     aligned with the alert cron, which also evaluates on NSE's EOD pe/pb. */
   var curPrice=(live&&live.price&&!isNaN(live.price)&&live.price>0)?live.price:last.price;
-  var curEPS  =(live&&live.eps  &&!isNaN(live.eps)  &&live.eps  >0)?live.eps  :last.eps;
+  var curPE   =(!isNaN(last.pe)&&last.pe>0)?last.pe:NaN;
+  var curPB   =(!isNaN(last.pb)&&last.pb>0)?last.pb:NaN;
+  var curEPS  =last.eps;
+  if((isNaN(curEPS)||curEPS<=0)&&!isNaN(last.price)&&!isNaN(last.pe)&&last.pe>0) curEPS=last.price/last.pe;
+  var curBV   =(!isNaN(last.price)&&!isNaN(last.pb)&&last.pb>0)?(last.price/last.pb):NaN;
   var pePct=pctRankOf(peW3,curPE);
   var pbPct=pctRankOf(pbW3,curPB);
 
@@ -3193,7 +3204,11 @@ function computeStats(data,live){
        • 1-year-ago endpoint = avg over ±7 days around the target date.
      This reduces single-day noise on either end and silently tolerates
      short data gaps (up to ~7 days) around the 365-day mark. */
-  var liveEpsVal=(live&&live.eps&&!isNaN(live.eps)&&live.eps>0)?live.eps:null;
+  /* Do NOT fold the live-feed EPS into the trailing average — it's the wrong
+     price/stale-pe value (see current-values note above). EPS is now frozen to
+     the last D1 row, already the final point of the trailing window, so pass
+     null and let the historical trailing average stand. */
+  var liveEpsVal=null;
   var curEPSAvg=epsTrailingAvg(data,liveEpsVal,7);
   var eps365Avg=epsWindowAvg(data,365,7);
   var epsYoY=(!isNaN(curEPSAvg)&&!isNaN(eps365Avg)&&eps365Avg>0)?(curEPSAvg/eps365Avg-1):NaN;
@@ -3303,11 +3318,11 @@ function computeStats(data,live){
     ? (curPrice-prevClose)/prevClose : NaN;
 
   return{
-    curPE,curPB,curEPS,curPrice,prevClose,priceChange,
+    curPE,curPB,curEPS,curBV,curPrice,prevClose,priceChange,
     pe3,pe5,pe10,peRef,pePct,pePctRef,peBand,pePctBand,peDiv,
     pb3,pb5,pb10,pbRef,pbPct,pbPctRef,pbBand,pbPctBand,pbDiv,
     maxEPS, epsPctPeak, epsYoY, epsPillState,
-    isLive:!!(live&&(live.pe||live.pb)), liveAsOf:live?live.asOf:null,
+    isLive:!!(live&&live.price&&!isNaN(live.price)&&live.price>0), liveAsOf:live?live.asOf:null,
     data3yr:s3,
     dataYears:dataYears, isShortHistory:isShortHistory
   };
@@ -4383,7 +4398,10 @@ function pjRenderStats(st){
       ['Max EPS',            pjUnit(st.maxEPS)]
     ];
   }else{
-    var curBV=(st.curPrice!=null&&st.curPB!=null&&!isNaN(st.curPrice)&&!isNaN(st.curPB)&&st.curPB>0)?(st.curPrice/st.curPB):NaN;
+    /* Book value from the D1 EOD row (st.curBV), NOT curPrice/curPB — curPrice
+       is live while curPB is EOD, so recomputing here would re-introduce the
+       live-price ÷ stale-multiple mismatch we removed in computeStats. */
+    var curBV=(st.curBV!=null&&!isNaN(st.curBV))?st.curBV:NaN;
     tiles=[
       ['Current P/B',        pjF1(st.curPB)],
       ['Weighted Median P/B',pjF1(st.pbRef)],
