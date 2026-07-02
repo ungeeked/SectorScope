@@ -9687,18 +9687,39 @@ async function loadAISummary(sectorName, st){
       }
     }
 
+    /* Rows for the projection inputs. eodPrice is the LAST D1 CLOSE, never
+       the live price — live price would change the payload (and therefore
+       the worker's cache key) through the session, and the summary should
+       evaluate on the same frozen-EOD basis as the dashboard and alerts.
+       maxBV reuses the Projections tab's own helper (single source of
+       truth for peak book value). */
+    var rowsForAI=dataCache[sectorName]||null;
+    var lastRowForAI=(rowsForAI&&rowsForAI.length)?rowsForAI[rowsForAI.length-1]:null;
+    var eodPriceForAI=(lastRowForAI&&lastRowForAI.price!=null&&!isNaN(lastRowForAI.price)&&lastRowForAI.price>0)
+      ? lastRowForAI.price : null;
+
     var payload={
       sector    :sectorName,
+      cardType  :cardType(sectorName),   /* 'dual' | 'pe' | 'pb' — worker shapes prompt from this */
       curPE     :st.curPE,     curPB     :st.curPB,
       pePctRef  :st.pePctRef,  pbPctRef  :st.pbPctRef,
       peRef     :st.peRef,     pbRef     :st.pbRef,
       peBand    :st.peBand,    pbBand    :st.pbBand,
       pePct     :st.pePct,     pbPct     :st.pbPct,
+      /* Secondary-signal bands + per-metric divergence kind — computed
+         here so custom Advanced-Settings thresholds are honoured; the
+         worker only falls back to default thresholds when these are
+         absent (older cached frontend). */
+      pePctBand :st.pePctBand, pbPctBand :st.pbPctBand,
+      peDivKind :st.peDiv?st.peDiv.kind:'none',
+      pbDivKind :st.pbDiv?st.pbDiv.kind:'none',
       pe3       :st.pe3,       pe5       :st.pe5,       pe10      :st.pe10,
       pb3       :st.pb3,       pb5       :st.pb5,       pb10      :st.pb10,
       curEPS    :st.curEPS,    maxEPS    :st.maxEPS,
+      /* Projection inputs (worker computes implied price = ref × peak) */
+      maxBV     :pjComputeMaxBV(rowsForAI),
+      eodPrice  :eodPriceForAI,
       epsPctPeak:st.epsPctPeak,epsYoY   :st.epsYoY,    epsPill   :st.epsPillState,
-      divergence:(st.peDiv&&st.peDiv.kind!=='none')||(st.pbDiv&&st.pbDiv.kind!=='none'),
       backtest  :btForAI       /* may be null if not applicable */
     };
 
