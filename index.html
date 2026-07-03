@@ -3765,7 +3765,7 @@ function buildCard(sec,st){
 /* ════════════════════════════════════════
    DASHBOARD STATE + RENDER + LOAD
 ════════════════════════════════════════ */
-var loadedCount=0,failedCount=0,statCache={},dataCache={},aiSummaryCache={};
+var loadedCount=0,failedCount=0,statCache={},dataCache={},aiSummaryCache={},shpCache={};
 
 function sortVal(sec,st){
   var ct=cardType(sec.name);
@@ -5996,6 +5996,14 @@ function buildSectorDetailHTML(sec, st, data){
       +'</div>'
       +'<div id="sd-cons-body"><div class="sd-cons-state">Fetching live constituent data…</div></div>'
     +'</div>'
+    /* Institutional holdings (PLUS) — filled async by fetchShareholding()
+       when the overlay opens. Non-subscribers see the gate; subscribers
+       see the ffmc-weighted sector aggregate (coverage-gated), an
+       accuracy note, and the per-constituent filed numbers. */
+    +'<div id="sd-shp-wrap" style="display:none">'
+      +'<div class="sd-section-title">Institutional Holdings <span class="plus-tag">PLUS</span> <span id="sd-shp-period" style="font-weight:400;color:var(--ghost);letter-spacing:0;text-transform:none"></span></div>'
+      +'<div id="sd-shp-body"></div>'
+    +'</div>'
     +'<div class="sd-section-title">Quarterly Averages · Last 5 Years <span style="font-weight:400;color:var(--ghost);letter-spacing:0;text-transform:none">(scroll)</span></div>'
     +'<div class="sd-qtbl-wrap"><div class="sd-qtbl-scroll">'+qtbl+'</div></div>';
 }
@@ -6017,6 +6025,12 @@ function openSectorDetail(name){
   /* Kick off the live constituents fetch + start polling while the
      overlay is open. Cleaned up in closeSectorDetail. */
   startConstituentsTracking(name);
+
+  /* Institutional holdings — one cached fetch per sector; renders into
+     the hidden sd-shp-wrap if the data passes the coverage gate. Runs
+     after startConstituentsTracking so consState.sector (the shared
+     open-overlay guard) is set before the async render lands. */
+  fetchShareholding(name);
 
   /* For sectors where EPS (USD) is meaningful, ensure the FX series is
      loaded so the EPS growth chart can show grouped INR+USD bars. If the
@@ -6050,6 +6064,189 @@ document.addEventListener('keydown',function(e){
   if(e.key==='Escape') closeSectorDetail();
 });
 
+
+/* ════════════════════════════════════════
+   INSTITUTIONAL HOLDINGS — quarterly FII/DII change for the open sector
+   Data: /shareholding/:sector (ffmc-weighted QoQ change across index
+   constituents, ingested quarterly from SHP XBRL filings). Edge-cached
+   6h server-side; shpCache avoids refetching per overlay reopen.
+   Render gate: ok:true AND coverage ≥ 0.8 — below that the section stays
+   hidden entirely (mid-filing-window aggregates mixing quarters are
+   worse than no number).
+════════════════════════════════════════ */
+function shpMonthLabel(iso){ /* '2026-03-31' → 'Mar 2026' */
+  if(!iso||!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return '';
+  var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return M[parseInt(iso.slice(5,7),10)-1]+' '+iso.slice(0,4);
+}
+/* Inline SVG sparkline for a quarterly holdings series. Min–max
+   normalised per series (each stock's own range fills the height —
+   these charts show shape/direction, not cross-stock magnitude).
+   Stroke coloured by net direction over the window. Two points minimum;
+   a single point renders a dot. */
+function shpSparkline(vals){
+  var pts=[];
+  for(var i=0;i<vals.length;i++){ var v=vals[i]; if(v!=null&&!isNaN(v)) pts.push(v); }
+  if(!pts.length) return '<span style="color:var(--ghost)">—</span>';
+  var W=92,H=26,PAD=3;
+  var mn=Math.min.apply(null,pts),mx=Math.max.apply(null,pts);
+  var span=(mx-mn)||1;
+  var net=pts[pts.length-1]-pts[0];
+  var clr=net>0.005?'var(--chp-c)':net<-0.005?'var(--vexp-c)':'var(--sub)';
+  if(pts.length===1){
+    return '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" aria-hidden="true">'
+      +'<circle cx="'+(W-PAD)+'" cy="'+(H/2)+'" r="2" fill="'+clr+'"/></svg>';
+  }
+  var step=(W-2*PAD)/(pts.length-1);
+  var coords=[];
+  for(var j=0;j<pts.length;j++){
+    var x=PAD+j*step;
+    var y=PAD+(H-2*PAD)*(1-(pts[j]-mn)/span);
+    coords.push(x.toFixed(1)+','+y.toFixed(1));
+  }
+  var last=coords[coords.length-1].split(',');
+  return '<svg width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" aria-hidden="true">'
+    +'<polyline points="'+coords.join(' ')+'" fill="none" stroke="'+clr+'" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>'
+    +'<circle cx="'+last[0]+'" cy="'+last[1]+'" r="2" fill="'+clr+'"/>'
+  +'</svg>';
+}
+function fetchShareholding(sector){
+  /* PLUS gate — mirrors the constituents pattern: gate rendered in place,
+     data never fetched for non-subscribers. */
+  if(typeof userIsSubscribed==='function' && !userIsSubscribed()){
+    renderShpGate(sector);
+    return;
+  }
+  var cached=shpCache[sector];
+  if(cached){ renderShpBlock(sector,cached); return; }
+  fetch(WORKER_BASE+'/shareholding/'+encodeURIComponent(sector),{redirect:'follow'})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(json){
+      shpCache[sector]=json;
+      renderShpBlock(sector,json);
+    })
+    .catch(function(err){
+      /* Silent: the section simply stays hidden. 404 is expected for a
+         sector with no ingested data yet. */
+      console.warn('[shp]',sector,err&&err.message);
+    });
+}
+function renderShpGate(sector){
+  if(!consState||consState.sector!==sector) return;
+  var wrap=document.getElementById('sd-shp-wrap');
+  var body=document.getElementById('sd-shp-body');
+  if(!wrap||!body) return;
+  var signedIn = !!(typeof currentUser !== 'undefined' && currentUser);
+  var ctaLabel = signedIn ? 'Upgrade to Plus' : 'Sign in with Google';
+  var ctaCall  = signedIn ? 'openPlusPane()' : 'authSignIn()';
+  body.innerHTML='<div class="sd-cons-gate">'
+    +'<div class="sd-cons-gate-icon">🔒</div>'
+    +'<div class="sd-cons-gate-title">Institutional Holdings <span class="plus-tag">PLUS</span></div>'
+    +'<div class="sd-cons-gate-desc">See how FII and DII holdings have trended over the last 8 quarters — for every constituent stock and the sector overall, straight from exchange filings.</div>'
+    +'<button class="sd-cons-gate-btn" onclick="'+ctaCall+'">'+ctaLabel+'</button>'
+  +'</div>';
+  wrap.style.display='';
+}
+function renderShpBlock(sector,d){
+  /* Guard: overlay may have closed or switched sectors mid-flight. */
+  if(!consState||consState.sector!==sector) return;
+  var wrap=document.getElementById('sd-shp-wrap');
+  var body=document.getElementById('sd-shp-body');
+  var period=document.getElementById('sd-shp-period');
+  if(!wrap||!body) return;
+
+  var hasDetail=d&&Array.isArray(d.detail)&&d.detail.some(function(r){return r&&r.fiiPct!=null;});
+  if(!d||!hasDetail){ wrap.style.display='none'; return; }
+
+  /* Column set = union of quarters across constituents (ascending, cap 8)
+     so per-symbol gaps render as — without misaligning rows. */
+  var qSet={};
+  d.detail.forEach(function(r){
+    (r&&Array.isArray(r.series)?r.series:[]).forEach(function(p){ if(p&&p.q) qSet[p.q]=1; });
+  });
+  var quarters=Object.keys(qSet).sort().slice(-8);
+
+  function shpQLabel(iso){ /* '2026-03-31' → "Mar '26" */
+    if(!iso) return '';
+    var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return M[parseInt(iso.slice(5,7),10)-1]+" '"+iso.slice(2,4);
+  }
+  function qoqColor(v,prev){
+    if(v==null||prev==null||isNaN(v)||isNaN(prev)) return 'var(--txt)';
+    return v-prev>0.005?'var(--chp-c)':v-prev<-0.005?'var(--vexp-c)':'var(--txt)';
+  }
+  function valTd(v,prev,isLast,extra){
+    return '<td style="text-align:right;padding:6px 9px;white-space:nowrap;color:'+qoqColor(v,prev)+(isLast?';font-weight:700':'')+(extra||'')+'">'
+      +((v==null||isNaN(v))?'<span style="color:var(--ghost)">—</span>':v.toFixed(1))
+    +'</td>';
+  }
+
+  function holdingsTable(metric,title){
+    var head='<th style="cursor:default;text-align:left;padding-left:14px">Stock</th>'
+      +'<th style="cursor:default" title="Derived free-float weight — share of sector total">Weight</th>';
+    for(var q=0;q<quarters.length;q++){
+      head+='<th style="cursor:default'+(q===quarters.length-1?';color:var(--txt)':'')+'">'+shpQLabel(quarters[q])+'</th>';
+    }
+
+    /* Per-quarter weighted sums for the bottom row, renormalised over the
+       symbols reporting in that quarter. A cell only shows when reporting
+       symbols carry ≥80% of total weight — the same coverage bar the old
+       aggregate applied, now per column. */
+    var wTot=0;
+    d.detail.forEach(function(r){ if(r&&r.weightPct!=null) wTot+=r.weightPct; });
+    var wSum=new Array(quarters.length).fill(0), vSum=new Array(quarters.length).fill(0);
+
+    var rows='';
+    for(var i=0;i<d.detail.length;i++){
+      var r=d.detail[i];
+      if(!r||r.fiiPct==null) continue;
+      var byQ={};
+      (Array.isArray(r.series)?r.series:[]).forEach(function(p){ if(p&&p.q) byQ[p.q]=p[metric]; });
+      var tds='';
+      for(var q2=0;q2<quarters.length;q2++){
+        var v=byQ[quarters[q2]];
+        if(v!=null&&!isNaN(v)&&r.weightPct!=null){
+          wSum[q2]+=r.weightPct; vSum[q2]+=r.weightPct*v;
+        }
+        tds+=valTd(v, q2>0?byQ[quarters[q2-1]]:null, q2===quarters.length-1);
+      }
+      var wCell='<td style="text-align:right;padding:6px 9px;white-space:nowrap;color:var(--sub)">'
+        +((r.weightPct==null||isNaN(r.weightPct))?'<span style="color:var(--ghost)">—</span>':r.weightPct.toFixed(1)+'%')
+      +'</td>';
+      rows+='<tr><td style="text-align:left;padding:6px 10px 6px 14px;font-weight:600;position:sticky;left:0;background:var(--bg2)">'+escapeHtml(r.symbol)+'</td>'+wCell+tds+'</tr>';
+    }
+    if(!rows) return '';
+
+    /* Bottom row: sector weighted average per quarter. */
+    var wVals=[];
+    for(var q3=0;q3<quarters.length;q3++){
+      wVals.push((wTot>0&&wSum[q3]/wTot>=0.8)?(vSum[q3]/wSum[q3]):null);
+    }
+    var wTds='';
+    for(var q4=0;q4<quarters.length;q4++){
+      wTds+=valTd(wVals[q4], q4>0?wVals[q4-1]:null, q4===quarters.length-1);
+    }
+    rows+='<tr style="border-top:2px solid var(--bdr)">'
+      +'<td style="text-align:left;padding:7px 10px 7px 14px;font-weight:700;position:sticky;left:0;background:var(--bg2)">Sector · weighted</td>'
+      +'<td style="text-align:right;padding:7px 9px;color:var(--ghost)">100%</td>'
+      +wTds
+    +'</tr>';
+
+    return '<div style="font-family:var(--mono);font-size:.55rem;text-transform:uppercase;letter-spacing:.8px;color:var(--sub);margin:10px 0 4px">'+title+' <span style="color:var(--ghost);text-transform:none;letter-spacing:0">— % of shares, by quarter</span></div>'
+      +'<div style="overflow-x:auto">'
+      +'<table class="sd-cons-table"><thead><tr>'+head+'</tr></thead><tbody>'+rows+'</tbody></table>'
+    +'</div>';
+  }
+
+  var html=holdingsTable('fii','FII Holdings')+holdingsTable('dii','DII Holdings');
+  if(!html){ wrap.style.display='none'; return; }
+
+  html+='<div class="ai-disclaimer" style="padding-top:8px">Weight is a derived free-float share (total shares × price adjusted for promoter holding — not NSE\'s official free-float factors), so the Sector · weighted row is approximate; a weighted cell is shown only when stocks covering at least 80% of sector weight have filed that quarter. Per-stock figures are exact as filed.</div>';
+
+  body.innerHTML=html;
+  if(period) period.textContent='· quarterly, up to '+escapeHtml(shpMonthLabel(d.latestQuarter));
+  wrap.style.display='';
+}
 
 /* ════════════════════════════════════════
    INDEX CONSTITUENTS — live NSE constituent prices for the open sector
