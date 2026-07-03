@@ -854,6 +854,19 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .sd-cons-range-bar::after{content:"";position:absolute;top:-2px;left:var(--pos,0%);width:2px;height:7px;background:var(--txt);border-radius:1px;transform:translateX(-1px)}
 .sd-cons-range-bounds{display:flex;justify-content:space-between;font-size:.5rem;color:var(--ghost)}
 .sd-cons-state{padding:30px 16px;text-align:center;color:var(--ghost);font-family:var(--mono);font-size:.62rem}
+/* ── Institutional Holdings tables — same visual system as constituents:
+   sd-cons-wrap card + sd-cons-table typography. Additions below cover
+   what constituents doesn't need: a sticky symbol column (10+ numeric
+   columns scroll horizontally), a per-table title bar, and the
+   highlighted Sector·weighted total row. */
+.sd-shp-title{padding:10px 14px 8px;border-bottom:1px solid var(--bdr);font-family:var(--mono);font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--sub)}
+.sd-shp-title small{font-weight:400;color:var(--ghost);text-transform:none;letter-spacing:0}
+.sd-shp-scroll{overflow-x:auto}
+.sd-shp-tbl thead th{cursor:default}
+.sd-shp-tbl tbody td:first-child,.sd-shp-tbl thead th:first-child{position:sticky;left:0;background:var(--bg2);z-index:1}
+.sd-shp-tbl tbody tr.sd-shp-total td{background:var(--bg3);font-weight:700;color:var(--txt);border-top:2px solid var(--bdr)}
+.sd-shp-tbl tbody tr.sd-shp-total td:first-child{background:var(--bg3)}
+.sd-shp-tbl tbody tr.sd-shp-total:hover td{background:var(--bg3)}
 .sd-cons-state.err{color:var(--exp-c)}
 /* Generic PLUS tag used by section titles outside the AI-summary /
    chart-modal scopes. Same gradient as the existing scoped rules. */
@@ -879,7 +892,7 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 /* quarterly table */
 .sd-qtbl-wrap{background:var(--bg2);border:1px solid var(--bdr);border-radius:11px;overflow:hidden;margin-bottom:22px}
 .sd-qtbl-scroll{overflow-x:auto;max-height:340px;overflow-y:auto}
-.sd-qtbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.66rem}
+.sd-qtbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.7rem}
 .sd-qtbl thead{position:sticky;top:0;z-index:2}
 .sd-qtbl thead th{padding:9px 12px 7px;text-align:right;font-size:.52rem;font-weight:600;text-transform:uppercase;letter-spacing:.6px;color:var(--ghost);background:var(--bg3);border-bottom:1px solid var(--bdr);white-space:nowrap}
 .sd-qtbl thead th:first-child{text-align:left}
@@ -887,8 +900,8 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .sd-qtbl tbody tr:last-child{border-bottom:none}
 .sd-qtbl tbody tr:hover{background:rgba(255,255,255,.025)}
 html.light .sd-qtbl tbody tr:hover{background:rgba(0,0,0,.025)}
-.sd-qtbl td{padding:7px 12px;text-align:right;color:var(--sub);vertical-align:middle}
-.sd-qtbl td:first-child{text-align:left;color:var(--txt);font-weight:600;white-space:nowrap}
+.sd-qtbl td{padding:10px 12px;text-align:right;color:var(--sub);vertical-align:middle;font-variant-numeric:tabular-nums}
+.sd-qtbl td:first-child{text-align:left;color:var(--txt);font-family:var(--cond);font-weight:700;font-size:.84rem;letter-spacing:-.2px;white-space:nowrap}
 .sd-qtbl td.qt-hi{color:var(--vchp-c)}.sd-qtbl td.qt-lo{color:var(--exp-c)}
 
 /* ── HELP v2 ── */
@@ -6172,26 +6185,28 @@ function renderShpBlock(sector,d){
     return M[parseInt(iso.slice(5,7),10)-1]+" '"+iso.slice(2,4);
   }
   function qoqColor(v,prev){
-    if(v==null||prev==null||isNaN(v)||isNaN(prev)) return 'var(--txt)';
-    return v-prev>0.005?'var(--chp-c)':v-prev<-0.005?'var(--vexp-c)':'var(--txt)';
+    if(v==null||prev==null||isNaN(v)||isNaN(prev)) return '';
+    var dlt=v-prev;
+    return dlt>0.005?'color:var(--chp-c)':dlt<-0.005?'color:var(--exp-c)':'';
   }
-  function valTd(v,prev,isLast,extra){
-    return '<td style="text-align:right;padding:6px 9px;white-space:nowrap;color:'+qoqColor(v,prev)+(isLast?';font-weight:700':'')+(extra||'')+'">'
+  function valTd(v,prev,isLast){
+    var style=[qoqColor(v,prev),isLast?'font-weight:700':''].filter(Boolean).join(';');
+    return '<td'+(style?' style="'+style+'"':'')+'>'
       +((v==null||isNaN(v))?'<span style="color:var(--ghost)">—</span>':v.toFixed(1))
     +'</td>';
   }
 
   function holdingsTable(metric,title){
-    var head='<th style="cursor:default;text-align:left;padding-left:14px">Stock</th>'
-      +'<th style="cursor:default" title="Derived free-float weight — share of sector total">Weight</th>';
+    var head='<th>Stock</th>'
+      +'<th title="Derived free-float weight — share of sector total">Weight</th>'
+      +'<th>Trend</th>';
     for(var q=0;q<quarters.length;q++){
-      head+='<th style="cursor:default'+(q===quarters.length-1?';color:var(--txt)':'')+'">'+shpQLabel(quarters[q])+'</th>';
+      head+='<th'+(q===quarters.length-1?' style="color:var(--txt)"':'')+'>'+shpQLabel(quarters[q])+'</th>';
     }
 
-    /* Per-quarter weighted sums for the bottom row, renormalised over the
+    /* Per-quarter weighted sums for the total row, renormalised over the
        symbols reporting in that quarter. A cell only shows when reporting
-       symbols carry ≥80% of total weight — the same coverage bar the old
-       aggregate applied, now per column. */
+       symbols carry ≥80% of total weight. */
     var wTot=0;
     d.detail.forEach(function(r){ if(r&&r.weightPct!=null) wTot+=r.weightPct; });
     var wSum=new Array(quarters.length).fill(0), vSum=new Array(quarters.length).fill(0);
@@ -6202,22 +6217,25 @@ function renderShpBlock(sector,d){
       if(!r||r.fiiPct==null) continue;
       var byQ={};
       (Array.isArray(r.series)?r.series:[]).forEach(function(p){ if(p&&p.q) byQ[p.q]=p[metric]; });
-      var tds='';
+      var seriesVals=[], tds='';
       for(var q2=0;q2<quarters.length;q2++){
         var v=byQ[quarters[q2]];
+        seriesVals.push(v!=null&&!isNaN(v)?v:null);
         if(v!=null&&!isNaN(v)&&r.weightPct!=null){
           wSum[q2]+=r.weightPct; vSum[q2]+=r.weightPct*v;
         }
         tds+=valTd(v, q2>0?byQ[quarters[q2-1]]:null, q2===quarters.length-1);
       }
-      var wCell='<td style="text-align:right;padding:6px 9px;white-space:nowrap;color:var(--sub)">'
-        +((r.weightPct==null||isNaN(r.weightPct))?'<span style="color:var(--ghost)">—</span>':r.weightPct.toFixed(1)+'%')
-      +'</td>';
-      rows+='<tr><td style="text-align:left;padding:6px 10px 6px 14px;font-weight:600;position:sticky;left:0;background:var(--bg2)">'+escapeHtml(r.symbol)+'</td>'+wCell+tds+'</tr>';
+      rows+='<tr>'
+        +'<td>'+escapeHtml(r.symbol)+'</td>'
+        +'<td style="color:var(--sub)">'+((r.weightPct==null||isNaN(r.weightPct))?'<span style="color:var(--ghost)">—</span>':r.weightPct.toFixed(1)+'%')+'</td>'
+        +'<td>'+shpSparkline(seriesVals)+'</td>'
+        +tds
+      +'</tr>';
     }
     if(!rows) return '';
 
-    /* Bottom row: sector weighted average per quarter. */
+    /* Total row: sector weighted average per quarter — highlighted. */
     var wVals=[];
     for(var q3=0;q3<quarters.length;q3++){
       wVals.push((wTot>0&&wSum[q3]/wTot>=0.8)?(vSum[q3]/wSum[q3]):null);
@@ -6226,22 +6244,25 @@ function renderShpBlock(sector,d){
     for(var q4=0;q4<quarters.length;q4++){
       wTds+=valTd(wVals[q4], q4>0?wVals[q4-1]:null, q4===quarters.length-1);
     }
-    rows+='<tr style="border-top:2px solid var(--bdr)">'
-      +'<td style="text-align:left;padding:7px 10px 7px 14px;font-weight:700;position:sticky;left:0;background:var(--bg2)">Sector · weighted</td>'
-      +'<td style="text-align:right;padding:7px 9px;color:var(--ghost)">100%</td>'
+    rows+='<tr class="sd-shp-total">'
+      +'<td>Sector · weighted</td>'
+      +'<td style="color:var(--ghost)">100%</td>'
+      +'<td>'+shpSparkline(wVals)+'</td>'
       +wTds
     +'</tr>';
 
-    return '<div style="font-family:var(--mono);font-size:.55rem;text-transform:uppercase;letter-spacing:.8px;color:var(--sub);margin:10px 0 4px">'+title+' <span style="color:var(--ghost);text-transform:none;letter-spacing:0">— % of shares, by quarter</span></div>'
-      +'<div style="overflow-x:auto">'
-      +'<table class="sd-cons-table"><thead><tr>'+head+'</tr></thead><tbody>'+rows+'</tbody></table>'
+    return '<div class="sd-cons-wrap">'
+      +'<div class="sd-shp-title">'+title+' <small>— % of shares, by quarter</small></div>'
+      +'<div class="sd-shp-scroll">'
+        +'<table class="sd-cons-table sd-shp-tbl"><thead><tr>'+head+'</tr></thead><tbody>'+rows+'</tbody></table>'
+      +'</div>'
     +'</div>';
   }
 
   var html=holdingsTable('fii','FII Holdings')+holdingsTable('dii','DII Holdings');
   if(!html){ wrap.style.display='none'; return; }
 
-  html+='<div class="ai-disclaimer" style="padding-top:8px">Weight is a derived free-float share (total shares × price adjusted for promoter holding — not NSE\'s official free-float factors), so the Sector · weighted row is approximate; a weighted cell is shown only when stocks covering at least 80% of sector weight have filed that quarter. Per-stock figures are exact as filed.</div>';
+  html+='<div class="ai-disclaimer" style="padding-top:0;margin-top:-12px">Weight is a derived free-float share (total shares × price adjusted for promoter holding — not NSE\'s official free-float factors), so the Sector · weighted row is approximate; a weighted cell is shown only when stocks covering at least 80% of sector weight have filed that quarter. Per-stock figures are exact as filed.</div>';
 
   body.innerHTML=html;
   if(period) period.textContent='· quarterly, up to '+escapeHtml(shpMonthLabel(d.latestQuarter));
