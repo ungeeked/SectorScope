@@ -854,12 +854,16 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .sd-cons-range-bar::after{content:"";position:absolute;top:-2px;left:var(--pos,0%);width:2px;height:7px;background:var(--txt);border-radius:1px;transform:translateX(-1px)}
 .sd-cons-range-bounds{display:flex;justify-content:space-between;font-size:.5rem;color:var(--ghost)}
 .sd-cons-state{padding:30px 16px;text-align:center;color:var(--ghost);font-family:var(--mono);font-size:.62rem}
-/* ── Institutional Holdings tables — same visual system as constituents:
+/* ── Shareholding Pattern tables — same visual system as constituents:
    sd-cons-wrap card + sd-cons-table typography. Additions below cover
    what constituents doesn't need: a sticky symbol column (10+ numeric
    columns scroll horizontally), a per-table title bar, and the
    highlighted Sector·weighted total row. */
 .sd-shp-title{padding:10px 14px 8px;border-bottom:1px solid var(--bdr);font-family:var(--mono);font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--sub)}
+.sd-shp-seg{display:flex;gap:4px;padding:10px 14px;border-bottom:1px solid var(--bdr2)}
+.sd-shp-seg button{font-family:var(--mono);font-size:.58rem;letter-spacing:.6px;text-transform:uppercase;background:none;border:1px solid var(--bdr);color:var(--sub);border-radius:6px;padding:5px 12px;cursor:pointer}
+.sd-shp-seg button.on{background:var(--bg3);color:var(--txt);border-color:var(--sub)}
+.sd-shp-note{color:var(--ghost);font-size:.62rem;line-height:1.55;padding:10px 14px 12px;border-top:1px solid var(--bdr2)}
 .sd-shp-title small{font-weight:400;color:var(--ghost);text-transform:none;letter-spacing:0}
 .sd-shp-scroll{overflow-x:auto}
 .sd-shp-tbl thead th{cursor:default}
@@ -2083,7 +2087,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   <!-- ══ 5. THE DETAIL PAGE ══ -->
   <div class="hp-sec" id="h-detail">
     <div class="hp-sec-h">5 · The detail page</div>
-    <div class="hp-p">When you tap a card, a full-screen overlay opens with everything that didn't fit on the card. There's an AI-written summary at the top (Plus only — covered in <strong>section 8</strong>), then five information sections: a snapshot of the current numbers, a side-by-side view of how today compares to historical medians at three time horizons, a pair of bar charts showing the sector's earnings trajectory, a live table of the index's constituent stocks (Plus only), and finally a scrollable quarterly history table.</div>
+    <div class="hp-p">When you tap a card, a full-screen overlay opens with everything that didn't fit on the card. There's an AI-written summary at the top (Plus only — covered in <strong>section 8</strong>), then six information sections: a snapshot of the current numbers, a side-by-side view of how today compares to historical medians at three time horizons, a pair of bar charts showing the sector's earnings trajectory, a live table of the index's constituent stocks (Plus only), a quarterly shareholding-pattern table — FII, DII, promoter and others per constituent (Plus only) — and finally a scrollable quarterly history table.</div>
     <div class="hp-p">This is where you go after the dashboard tells you a sector is interesting and you want to confirm whether the cheapness is genuine or a trap.</div>
 
     <!-- 3 sections -->
@@ -2287,9 +2291,38 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
         </div>
       </div>
 
+      <!-- Section D2: Shareholding Pattern (PLUS) -->
+      <div class="hp-ov-section">
+        <div class="hp-ov-head">⑤ Shareholding Pattern <span class="plus-tag">PLUS</span></div>
+        <div class="hp-ov-body">
+          <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">Every quarter, listed companies file their shareholding pattern with the exchange — exactly how much of the company is held by foreign institutions, domestic institutions and promoters. This section pulls those filings for <strong>every constituent of the sector's index</strong> and lays out the last 8 quarters.</div>
+
+          <div class="hp-p" style="font-size:.82rem"><strong>Four tabs</strong>, one metric each:</div>
+          <div class="hp-p" style="font-size:.8rem;color:var(--sub)"><strong style="color:var(--txt)">FII</strong> — foreign institutional investors (FPIs), as filed.<br>
+          <strong style="color:var(--txt)">DII</strong> — domestic institutions: mutual funds, insurance companies, banks, pension funds, as filed.<br>
+          <strong style="color:var(--txt)">Promoter</strong> — promoter &amp; promoter group. Near-constant by nature; a step change marks a real event (stake sale, QIP, offer-for-sale).<br>
+          <strong style="color:var(--txt)">Others</strong> — derived, not filed: 100 − promoter − FII − DII. Roughly retail investors plus employee trusts and depository receipts.</div>
+
+          <div class="hp-p" style="font-size:.82rem">Each row is one stock: its index weight, a trend sparkline, then the exact filed percentage for each quarter. Cells are coloured by their quarter-on-quarter move — <span style="color:var(--chp-c)">green</span> means the holding rose from the previous quarter, <span style="color:var(--exp-c)">orange</span> means it fell. The bottom <strong>Sector · weighted</strong> row rolls all constituents into one sector-level number per quarter.</div>
+
+          <div class="hp-card info" style="margin:12px 0">
+            <div class="hp-card-ttl">How the weights work</div>
+            <div class="hp-p" style="font-size:.8rem;margin-bottom:8px">Each stock's weight starts from its <strong>derived free-float market cap</strong>: total shares (from the filing itself) × last price × (1 − promoter holding). Weights are then <strong>capped per the NSE index rulebook</strong>, the same rules NSE applies to the indices themselves:</div>
+            <div class="hp-p" style="font-size:.78rem;color:var(--sub);margin-bottom:8px">
+            • <strong style="color:var(--txt)">Bank &amp; Fin Services</strong> — top 3 stocks capped at 19% / 14% / 10%; everyone else stays below the third.<br>
+            • <strong style="color:var(--txt)">Energy</strong> — no stock above 10%.<br>
+            • <strong style="color:var(--txt)">Infra &amp; Defence</strong> — no stock above 20%.<br>
+            • <strong style="color:var(--txt)">All other sectors</strong> — no stock above 33%, top 3 combined ≤62%.</div>
+            <div class="hp-p" style="font-size:.78rem;color:var(--sub);margin-bottom:0">These weights are <em>close to, but not exactly,</em> NSE's official index weights: NSE uses its own investability factors and re-caps only at quarterly rebalances, letting weights drift in between. Per-stock figures carry no such approximation — they're exactly as filed.</div>
+          </div>
+
+          <div class="hp-p" style="margin-bottom:0;font-size:.8rem;color:var(--sub)">Companies file within ~21 days of quarter end, on different dates — so for a few weeks each quarter the newest column fills in gradually. A Sector·weighted cell appears only once stocks covering at least <strong>80% of sector weight</strong> have filed that quarter; until then it shows a dash rather than a misleading partial average. Data updates automatically as filings land.</div>
+        </div>
+      </div>
+
       <!-- Section E: Quarterly Table -->
       <div class="hp-ov-section">
-        <div class="hp-ov-head">⑤ Quarterly Averages · Last 5 Years</div>
+        <div class="hp-ov-head">⑥ Quarterly Averages · Last 5 Years</div>
         <div class="hp-ov-body">
           <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">A scrollable table showing quarterly average Price, P/E, P/B, and EPS going back 5 years. Most recent quarter is at the top. Two cells in each column are highlighted:</div>
           <div style="overflow-x:auto">
@@ -6014,7 +6047,7 @@ function buildSectorDetailHTML(sec, st, data){
        see the ffmc-weighted sector aggregate (coverage-gated), an
        accuracy note, and the per-constituent filed numbers. */
     +'<div id="sd-shp-wrap" style="display:none">'
-      +'<div class="sd-section-title">Institutional Holdings <span class="plus-tag">PLUS</span> <span id="sd-shp-period" style="font-weight:400;color:var(--ghost);letter-spacing:0;text-transform:none"></span></div>'
+      +'<div class="sd-section-title">Shareholding Pattern <span class="plus-tag">PLUS</span> <span id="sd-shp-period" style="font-weight:400;color:var(--ghost);letter-spacing:0;text-transform:none"></span></div>'
       +'<div id="sd-shp-body"></div>'
     +'</div>'
     +'<div class="sd-section-title">Quarterly Averages · Last 5 Years <span style="font-weight:400;color:var(--ghost);letter-spacing:0;text-transform:none">(scroll)</span></div>'
@@ -6042,7 +6075,9 @@ function openSectorDetail(name){
   /* Institutional holdings — one cached fetch per sector; renders into
      the hidden sd-shp-wrap if the data passes the coverage gate. Runs
      after startConstituentsTracking so consState.sector (the shared
-     open-overlay guard) is set before the async render lands. */
+     open-overlay guard) is set before the async render lands. Tab
+     resets to FII per sector open. */
+  shpActiveTab='fii';
   fetchShareholding(name);
 
   /* For sectors where EPS (USD) is meaningful, ensure the FX series is
@@ -6079,7 +6114,7 @@ document.addEventListener('keydown',function(e){
 
 
 /* ════════════════════════════════════════
-   INSTITUTIONAL HOLDINGS — quarterly FII/DII change for the open sector
+   SHAREHOLDING PATTERN — quarterly FII/DII/promoter data for the open sector
    Data: /shareholding/:sector (ffmc-weighted QoQ change across index
    constituents, ingested quarterly from SHP XBRL filings). Edge-cached
    6h server-side; shpCache avoids refetching per overlay reopen.
@@ -6154,11 +6189,36 @@ function renderShpGate(sector){
   var ctaCall  = signedIn ? 'openPlusPane()' : 'authSignIn()';
   body.innerHTML='<div class="sd-cons-gate">'
     +'<div class="sd-cons-gate-icon">🔒</div>'
-    +'<div class="sd-cons-gate-title">Institutional Holdings <span class="plus-tag">PLUS</span></div>'
+    +'<div class="sd-cons-gate-title">Shareholding Pattern <span class="plus-tag">PLUS</span></div>'
     +'<div class="sd-cons-gate-desc">See how FII and DII holdings have trended over the last 8 quarters — for every constituent stock and the sector overall, straight from exchange filings.</div>'
     +'<button class="sd-cons-gate-btn" onclick="'+ctaCall+'">'+ctaLabel+'</button>'
   +'</div>';
   wrap.style.display='';
+}
+/* Active metric tab for the holdings table. Module-level so re-renders
+   (tab clicks) survive; reset to 'fii' each time a sector opens. */
+var shpActiveTab='fii';
+var SHP_TAB_NOTES={
+  fii:'% of total shares held by foreign institutions, as filed. Latest quarter bold.',
+  dii:'% of total shares held by domestic institutions (mutual funds, insurance, banks, pensions), as filed.',
+  pro:'Promoter & promoter group holding, as filed. Near-constant by nature \u2014 changes mark stake sales, QIPs or offers-for-sale.',
+  ret:'Others \u2014 derived: 100 \u2212 promoter \u2212 FII \u2212 DII \u2248 retail investors + employee trusts + depository receipts. Not a filed figure.'
+};
+function shpSeriesOf(r,metric,quarters){
+  /* Value per visible quarter column for one stock. 'ret' is derived and
+     requires all three inputs for that quarter; any gap → null. */
+  var byQ={};
+  (Array.isArray(r.series)?r.series:[]).forEach(function(p){ if(p&&p.q) byQ[p.q]=p; });
+  return quarters.map(function(q){
+    var p=byQ[q];
+    if(!p) return null;
+    if(metric==='ret'){
+      if(p.fii==null||p.dii==null||p.pro==null) return null;
+      return Math.max(0,100-p.pro-p.fii-p.dii);
+    }
+    var v=p[metric];
+    return (v!=null&&!isNaN(v))?v:null;
+  });
 }
 function renderShpBlock(sector,d){
   /* Guard: overlay may have closed or switched sectors mid-flight. */
@@ -6184,88 +6244,98 @@ function renderShpBlock(sector,d){
     var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
     return M[parseInt(iso.slice(5,7),10)-1]+" '"+iso.slice(2,4);
   }
-  function qoqColor(v,prev){
-    if(v==null||prev==null||isNaN(v)||isNaN(prev)) return '';
-    var dlt=v-prev;
-    return dlt>0.005?'color:var(--chp-c)':dlt<-0.005?'color:var(--exp-c)':'';
+  function qoqStyle(v,prev,isLast){
+    var parts=[];
+    if(v!=null&&prev!=null&&!isNaN(v)&&!isNaN(prev)){
+      var dlt=v-prev;
+      if(dlt>0.005)parts.push('color:var(--chp-c)');
+      else if(dlt<-0.005)parts.push('color:var(--exp-c)');
+    }
+    if(isLast)parts.push('font-weight:700');
+    return parts.length?' style="'+parts.join(';')+'"':'';
   }
-  function valTd(v,prev,isLast){
-    var style=[qoqColor(v,prev),isLast?'font-weight:700':''].filter(Boolean).join(';');
-    return '<td'+(style?' style="'+style+'"':'')+'>'
-      +((v==null||isNaN(v))?'<span style="color:var(--ghost)">—</span>':v.toFixed(1))
-    +'</td>';
+
+  var metric=shpActiveTab;
+
+  var head='<th>Stock</th>'
+    +'<th title="Derived free-float weight — share of sector total">Weight</th>'
+    +'<th>Trend</th>';
+  for(var q=0;q<quarters.length;q++){
+    head+='<th'+(q===quarters.length-1?' style="color:var(--txt)"':'')+'>'+shpQLabel(quarters[q])+'</th>';
   }
 
-  function holdingsTable(metric,title){
-    var head='<th>Stock</th>'
-      +'<th title="Derived free-float weight — share of sector total">Weight</th>'
-      +'<th>Trend</th>';
-    for(var q=0;q<quarters.length;q++){
-      head+='<th'+(q===quarters.length-1?' style="color:var(--txt)"':'')+'>'+shpQLabel(quarters[q])+'</th>';
-    }
+  /* Per-quarter weighted sums for the total row, renormalised over the
+     symbols reporting in that quarter. A cell only shows when reporting
+     symbols carry ≥80% of total weight. */
+  var wTot=0;
+  d.detail.forEach(function(r){ if(r&&r.weightPct!=null) wTot+=r.weightPct; });
+  var wSum=new Array(quarters.length).fill(0), vSum=new Array(quarters.length).fill(0);
 
-    /* Per-quarter weighted sums for the total row, renormalised over the
-       symbols reporting in that quarter. A cell only shows when reporting
-       symbols carry ≥80% of total weight. */
-    var wTot=0;
-    d.detail.forEach(function(r){ if(r&&r.weightPct!=null) wTot+=r.weightPct; });
-    var wSum=new Array(quarters.length).fill(0), vSum=new Array(quarters.length).fill(0);
-
-    var rows='';
-    for(var i=0;i<d.detail.length;i++){
-      var r=d.detail[i];
-      if(!r||r.fiiPct==null) continue;
-      var byQ={};
-      (Array.isArray(r.series)?r.series:[]).forEach(function(p){ if(p&&p.q) byQ[p.q]=p[metric]; });
-      var seriesVals=[], tds='';
-      for(var q2=0;q2<quarters.length;q2++){
-        var v=byQ[quarters[q2]];
-        seriesVals.push(v!=null&&!isNaN(v)?v:null);
-        if(v!=null&&!isNaN(v)&&r.weightPct!=null){
-          wSum[q2]+=r.weightPct; vSum[q2]+=r.weightPct*v;
-        }
-        tds+=valTd(v, q2>0?byQ[quarters[q2-1]]:null, q2===quarters.length-1);
-      }
-      rows+='<tr>'
-        +'<td>'+escapeHtml(r.symbol)+'</td>'
-        +'<td style="color:var(--sub)">'+((r.weightPct==null||isNaN(r.weightPct))?'<span style="color:var(--ghost)">—</span>':r.weightPct.toFixed(1)+'%')+'</td>'
-        +'<td>'+shpSparkline(seriesVals)+'</td>'
-        +tds
-      +'</tr>';
+  function rowHtml(label,wtxt,vals,isTotal){
+    var tds='';
+    for(var i=0;i<vals.length;i++){
+      var v=vals[i];
+      tds+='<td'+qoqStyle(v,i>0?vals[i-1]:null,i===vals.length-1)+'>'
+        +((v==null||isNaN(v))?'<span style="color:var(--ghost)">\u2014</span>':v.toFixed(1))
+      +'</td>';
     }
-    if(!rows) return '';
-
-    /* Total row: sector weighted average per quarter — highlighted. */
-    var wVals=[];
-    for(var q3=0;q3<quarters.length;q3++){
-      wVals.push((wTot>0&&wSum[q3]/wTot>=0.8)?(vSum[q3]/wSum[q3]):null);
-    }
-    var wTds='';
-    for(var q4=0;q4<quarters.length;q4++){
-      wTds+=valTd(wVals[q4], q4>0?wVals[q4-1]:null, q4===quarters.length-1);
-    }
-    rows+='<tr class="sd-shp-total">'
-      +'<td>Sector · weighted</td>'
-      +'<td style="color:var(--ghost)">100%</td>'
-      +'<td>'+shpSparkline(wVals)+'</td>'
-      +wTds
+    return '<tr'+(isTotal?' class="sd-shp-total"':'')+'>'
+      +'<td>'+label+'</td>'
+      +'<td style="color:var(--'+(isTotal?'ghost':'sub')+')">'+wtxt+'</td>'
+      +'<td>'+shpSparkline(vals)+'</td>'
+      +tds
     +'</tr>';
-
-    return '<div class="sd-cons-wrap">'
-      +'<div class="sd-shp-title">'+title+' <small>— % of shares, by quarter</small></div>'
-      +'<div class="sd-shp-scroll">'
-        +'<table class="sd-cons-table sd-shp-tbl"><thead><tr>'+head+'</tr></thead><tbody>'+rows+'</tbody></table>'
-      +'</div>'
-    +'</div>';
   }
 
-  var html=holdingsTable('fii','FII Holdings')+holdingsTable('dii','DII Holdings');
-  if(!html){ wrap.style.display='none'; return; }
+  var rows='';
+  for(var i=0;i<d.detail.length;i++){
+    var r=d.detail[i];
+    if(!r||r.fiiPct==null) continue;
+    var vals=shpSeriesOf(r,metric,quarters);
+    for(var q2=0;q2<quarters.length;q2++){
+      if(vals[q2]!=null&&r.weightPct!=null){ wSum[q2]+=r.weightPct; vSum[q2]+=r.weightPct*vals[q2]; }
+    }
+    rows+=rowHtml(escapeHtml(r.symbol),
+      (r.weightPct==null||isNaN(r.weightPct))?'\u2014':r.weightPct.toFixed(1)+'%',
+      vals,false);
+  }
+  if(!rows){ wrap.style.display='none'; return; }
 
-  html+='<div class="ai-disclaimer" style="padding-top:0;margin-top:-12px">Weight is a derived free-float share (total shares × price adjusted for promoter holding — not NSE\'s official free-float factors), so the Sector · weighted row is approximate; a weighted cell is shown only when stocks covering at least 80% of sector weight have filed that quarter. Per-stock figures are exact as filed.</div>';
+  var wVals=[];
+  for(var q3=0;q3<quarters.length;q3++){
+    wVals.push((wTot>0&&wSum[q3]/wTot>=0.8)?(vSum[q3]/wSum[q3]):null);
+  }
+  rows+=rowHtml('Sector \u00b7 weighted','100%',wVals,true);
 
-  body.innerHTML=html;
-  if(period) period.textContent='· quarterly, up to '+escapeHtml(shpMonthLabel(d.latestQuarter));
+  var seg='<div class="sd-shp-seg">'
+    +[['fii','FII'],['dii','DII'],['pro','Promoter'],['ret','Others']].map(function(t){
+      return '<button data-shptab="'+t[0]+'"'+(t[0]===metric?' class="on"':'')+'>'+t[1]+'</button>';
+    }).join('')
+  +'</div>';
+
+  body.innerHTML='<div class="sd-cons-wrap">'
+    +'<div class="sd-shp-title">Shareholding Pattern <small>\u2014 % of shares, by quarter</small></div>'
+    +seg
+    +'<div class="sd-shp-scroll">'
+      +'<table class="sd-cons-table sd-shp-tbl"><thead><tr>'+head+'</tr></thead><tbody>'+rows+'</tbody></table>'
+    +'</div>'
+    +'<div class="sd-shp-note">'+SHP_TAB_NOTES[metric]
+      +' Weight is a derived free-float share (total shares \u00d7 price adjusted for promoter holding), capped per the NSE index rulebook \u2014 close to, but not exactly, official index weights. The Sector\u00b7weighted row is approximate and a cell shows only when stocks covering \u226580% of sector weight have filed that quarter.'
+    +'</div>'
+  +'</div>';
+
+  /* Tab wiring — re-render from the cached payload; no refetch. */
+  var segEl=body.querySelector('.sd-shp-seg');
+  if(segEl){
+    segEl.addEventListener('click',function(e){
+      var b=e.target.closest('button');
+      if(!b||!b.dataset.shptab||b.dataset.shptab===shpActiveTab) return;
+      shpActiveTab=b.dataset.shptab;
+      renderShpBlock(sector,d);
+    });
+  }
+
+  if(period) period.textContent='\u00b7 quarterly, up to '+escapeHtml(shpMonthLabel(d.latestQuarter));
   wrap.style.display='';
 }
 
