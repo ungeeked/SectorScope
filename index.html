@@ -30,7 +30,7 @@
 <link rel="preconnect" href="https://accounts.google.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&family=Bebas+Neue&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
-<!-- Razorpay checkout.js is loaded on demand (see loadRazorpay) — saves ~30KB on cold load for users who never upgrade. -->
+<!-- Razorpay checkout.js is loaded on demand (see loadRazorpay) — saves ~30KB on cold load for users who never open the donate flow. -->
 <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "54b7012add694a9f98e8e37d89605df2"}'></script><!-- End Cloudflare Web Analytics -->
 <style>
 :root{
@@ -1344,10 +1344,6 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
           SectorScope Plus
         </div>
-        <div class="user-menu-item cancel-item" id="menu-cancel-btn" onclick="openPlusPane();closeUserMenu()" style="display:none">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-          SectorScope Plus
-        </div>
         <div class="user-menu-item" onclick="openMyAlerts();closeUserMenu()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           My Alerts
@@ -1622,7 +1618,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <div class="tl-gate-card">
       <div class="tl-gate-title">Projections <span class="plus-badge">PLUS</span></div>
       <div class="tl-gate-desc">Project where any sector's index could trade if its valuation multiple reverts to its weighted historical median and earnings or book value recover to their peak — with a nine-scenario fan chart and matrix around that base case.</div>
-      <button class="tl-gate-btn" id="pj-gate-btn">Upgrade to Plus</button>
+      <button class="tl-gate-btn" id="pj-gate-btn">Sign in with Google</button>
     </div>
   </div>
 </div>
@@ -1676,7 +1672,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <div class="tl-gate-card">
       <div class="tl-gate-title">Timeline <span class="plus-badge">PLUS</span></div>
       <div class="tl-gate-desc">Compare every sector's P/E, P/B, EPS or Price as growth relative to Nifty&nbsp;50, across any date range. Spot which sectors are leading or lagging the index over your chosen window.</div>
-      <button class="tl-gate-btn" id="tl-gate-btn">Upgrade to Plus</button>
+      <button class="tl-gate-btn" id="tl-gate-btn">Sign in with Google</button>
     </div>
   </div>
 </div>
@@ -2557,8 +2553,8 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <div class="hp-p">Plus unlocks seven features layered on top of the free dashboard: the <strong>Timeline tab</strong>, the <strong>Projections tab</strong>, <strong>expanded charts</strong>, <strong>AI sector summaries</strong>, <strong>live index constituents</strong>, <strong>email alerts</strong>, and <strong>vs-Nifty-50 alpha in backtests</strong>. This section walks through each one in the order you're likely to encounter it, with the concrete UI elements you'll see.</div>
 
     <div class="hp-card tip">
-      <div class="hp-card-ttl">Currently free for signed-in users</div>
-      <div class="hp-p" style="margin-bottom:0">SectorScope Plus is in soft launch. Until <strong>31 October 2026</strong>, all seven features are free for any signed-in user — no payment, no subscription required. Just sign in with Google from the top-right corner of any page. After 31 October, Plus moves to a paid tier; existing users will get advance notice and a grandfathered offer.</div>
+      <div class="hp-card-ttl">Free for signed-in users</div>
+      <div class="hp-p" style="margin-bottom:0">All seven Plus features are <strong>free for any signed-in user</strong> — no payment required. Just sign in with Google from the top-right corner of any page. SectorScope is independently built and funded; if it helps your investing, you can chip in via <strong>Support development</strong> in the user menu (☰ next to your name).</div>
     </div>
 
     <div class="hp-sub-h">Expanded chart — full historical view</div>
@@ -2624,7 +2620,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
     <div class="hp-card info">
       <div class="hp-card-ttl">Delivery</div>
-      <div class="hp-p" style="margin-bottom:0">The system checks live NSE data every 15 minutes during market hours (9:15am–3:30pm IST, Mon–Fri) and emails the address you signed in with. <strong>Alerts are one-time</strong> — once an alert fires, it's removed automatically and you'll need to set a new one if you want continued notifications. You can have up to 2 active alerts per sector. Manage or delete existing alerts from the same flipped-card view — saved alerts appear at the top of the form.</div>
+      <div class="hp-p" style="margin-bottom:0">Alerts are evaluated <strong>once per trading day, after NSE publishes the day's official closing P/E and P/B</strong> (typically by 7:00pm IST; occasionally later on days NSE's batch runs late). If the day's close crosses your threshold, an email goes to the address you signed in with. Intraday prices don't trigger alerts — NSE's published P/E and P/B don't update during market hours, so a daily end-of-day check catches every genuine cross without false fires. <strong>Alerts are one-time</strong> — once an alert fires, it's removed automatically and you'll need to set a new one if you want continued notifications. You can have up to 2 active alerts per sector. Manage or delete existing alerts from the same flipped-card view — saved alerts appear at the top of the form.</div>
     </div>
 
     <div class="hp-sub-h">Alpha vs Nifty 50 — in the backtest results table</div>
@@ -2633,7 +2629,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
     <div class="hp-card info">
       <div class="hp-card-ttl">How to enable Plus</div>
-      <div class="hp-p" style="margin-bottom:0">Sign in with Google from the top-right corner. Plus features unlock automatically for all signed-in users until 31 October 2026. After that, Plus becomes a paid tier — sign-in alone won't unlock it.</div>
+      <div class="hp-p" style="margin-bottom:0">Sign in with Google from the top-right corner. Plus features unlock automatically for every signed-in user — nothing to buy, nothing to configure.</div>
     </div>
   </div>
 
@@ -6185,7 +6181,7 @@ function renderShpGate(sector){
   var body=document.getElementById('sd-shp-body');
   if(!wrap||!body) return;
   var signedIn = !!(typeof currentUser !== 'undefined' && currentUser);
-  var ctaLabel = signedIn ? 'Upgrade to Plus' : 'Sign in with Google';
+  var ctaLabel = 'Sign in with Google'; /* signed-in users are always Plus — gate only renders signed-out */
   var ctaCall  = signedIn ? 'openPlusPane()' : 'authSignIn()';
   body.innerHTML='<div class="sd-cons-gate">'
     +'<div class="sd-cons-gate-icon">🔒</div>'
@@ -6403,7 +6399,7 @@ function renderConstituentsGate(){
   var body=document.getElementById('sd-cons-body');
   if(!body) return;
   var signedIn = !!(typeof currentUser !== 'undefined' && currentUser);
-  var ctaLabel = signedIn ? 'Upgrade to Plus' : 'Sign in with Google';
+  var ctaLabel = 'Sign in with Google'; /* signed-in users are always Plus — gate only renders signed-out */
   var ctaCall  = signedIn ? 'openPlusPane()' : 'authSignIn()';
   body.innerHTML='<div class="sd-cons-gate">'
     +'<div class="sd-cons-gate-icon">🔒</div>'
@@ -7483,7 +7479,7 @@ function cmRenderChart(){
       +'<div class="cm-paywall-title">Expanded charts <span class="plus-tag">PLUS</span></div>'
       +'<div class="cm-paywall-desc">Multi-metric overlay, custom date ranges, drag-to-measure, hover values, and rolling-median reference. All data already loaded — Plus unlocks the full chart.</div>'
       +(currentUser
-        ? '<button class="cm-paywall-btn" onclick="closeChartModal();openPlusPane();">Upgrade to Plus</button>'
+        ? '<button class="cm-paywall-btn" onclick="closeChartModal();openPlusPane();">SectorScope Plus</button>'
         : '<button class="cm-paywall-btn" onclick="closeChartModal();openSignInPrompt&&openSignInPrompt();">Sign in to continue</button>')
     +'</div>';
     wrap.appendChild(pw);
@@ -8888,16 +8884,15 @@ else _ssAuthInitWhenReady();
    ALERTS
 ════════════════════════════════════════ */
 
-/* Stub — replace with real KV check after Razorpay */
+/* Plus state — informational only now that Plus is free for signed-in users */
 /* Subscription state — loaded from Worker after sign-in */
 var subscriptionState = null; /* null=unknown, 'active'=pro, 'none'=free */
 var subscriptionMeta  = {};   /* { expiresAt, cancelledAt } from /subscription */
 
-/* ── Soft-launch: Plus free for all signed-in users until 31 Oct 2026 ── */
-var PLUS_FOR_ALL_UNTIL = new Date('2026-10-31T23:59:59+05:30');
+/* ── Plus is free for all signed-in users. Razorpay is used for
+   one-time donations only — there is no paid subscription tier. ── */
 function userIsSubscribed(){
-  if(currentUser && new Date() < PLUS_FOR_ALL_UNTIL) return true;
-  return subscriptionState === 'active';
+  return !!currentUser;
 }
 
 async function loadSubscriptionStatus(){
@@ -8922,27 +8917,17 @@ async function loadSubscriptionStatus(){
 }
 
 function renderSubscriptionUI(){
+  /* Plus is free for every signed-in user — the menu just reflects that.
+     No upgrade / cancel states to juggle anymore. */
   var upgradeBtn = document.getElementById('menu-upgrade-btn');
-  var cancelBtn  = document.getElementById('menu-cancel-btn');
   var subStatus  = document.getElementById('user-sub-status');
   var nameEl     = document.getElementById('user-name');
   if(!upgradeBtn||!subStatus) return;
 
   if(userIsSubscribed()){
     upgradeBtn.style.display='none';
-    cancelBtn && (cancelBtn.style.display = subscriptionMeta.cancelledAt ? 'none' : 'flex');
-
-    if(subscriptionMeta.cancelledAt){
-      var expLabel = subscriptionMeta.expiresAt
-        ? 'Plus until '+new Date(subscriptionMeta.expiresAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})
-        : 'Plus (cancelling)';
-      subStatus.textContent = expLabel;
-      subStatus.style.color = 'var(--ghost)';
-    } else {
-      subStatus.textContent = 'Plus member';
-      subStatus.style.color = '#a5b4fc';
-    }
-
+    subStatus.textContent = 'Plus member';
+    subStatus.style.color = '#a5b4fc';
     if(nameEl && !document.getElementById('plus-badge')){
       var badge=document.createElement('span');
       badge.id='plus-badge';
@@ -8951,8 +8936,7 @@ function renderSubscriptionUI(){
       nameEl.parentNode.insertBefore(badge, nameEl.nextSibling);
     }
   } else {
-    upgradeBtn.style.display='flex';
-    cancelBtn && (cancelBtn.style.display='none');
+    upgradeBtn.style.display='none';
     subStatus.textContent='';
     subStatus.style.color='';
     var badge=document.getElementById('plus-badge');
@@ -9279,7 +9263,7 @@ document.addEventListener('keydown',function(e){
 });
 
 /* Lazy-load Razorpay's checkout.js. Removed from <head> because most visits
-   never reach the upgrade flow — saves ~30KB JS download/parse on cold load.
+   never reach the donate flow — saves ~30KB JS download/parse on cold load.
    Idempotent: subsequent calls reuse the same promise (and resolve instantly
    once the script is in the page). */
 function loadRazorpay(){
@@ -9555,70 +9539,14 @@ function closeDonatePaneAfterThanks(){
 }
 
 function showUpgradeFlow(){
+  /* Plus is free for signed-in users — there is nothing to buy.
+     Razorpay is donations-only (see donateProceed). Signed-out users
+     go to sign-in; signed-in users (already Plus) see the Plus pane. */
   if(!currentUser||!currentUser.token){
     authSignIn();
     return;
   }
-
-  /* Step 1 — create a Razorpay subscription order via Worker */
-  fetch(WORKER_BASE+'/create-subscription',{
-    method :'POST',
-    headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
-    body   :JSON.stringify({ email: currentUser.email }),
-  })
-  .then(function(r){ return r.json(); })
-  .then(function(data){
-    if(!data.subscription_id) throw new Error(data.error||'Failed to create subscription');
-
-    /* Step 2 — open Razorpay checkout */
-    var options={
-      key              : data.key_id,
-      subscription_id  : data.subscription_id,
-      name             : 'SectorScope',
-      description      : 'Pro · ₹99/month',
-      image            : 'https://sectorscope.in/assets/favicon.ico',
-      prefill          : { email: currentUser.email },
-      theme            : { color: '#6366f1' },
-      handler          : function(response){
-        /* Payment successful — verify with Worker */
-        fetch(WORKER_BASE+'/verify-payment',{
-          method :'POST',
-          headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
-          body   :JSON.stringify({
-            razorpay_payment_id     : response.razorpay_payment_id,
-            razorpay_subscription_id: response.razorpay_subscription_id,
-            razorpay_signature      : response.razorpay_signature,
-          }),
-        })
-        .then(function(r){ return r.json(); })
-        .then(function(v){
-          if(v.ok){
-            subscriptionState='active';
-            renderSubscriptionUI();
-            /* Refresh all open alert panes */
-            document.querySelectorAll('[data-alert-sector]').forEach(function(pane){
-              var sector=pane.dataset.alertSector;
-              if(sector) renderAlertPane(sector);
-            });
-          }
-        })
-        .catch(function(e){ console.error('Verify failed',e); });
-      },
-      modal: {
-        ondismiss: function(){ console.log('Checkout dismissed'); }
-      }
-    };
-
-    var rzp;
-    return loadRazorpay().then(function(){
-      rzp=new Razorpay(options);
-      rzp.open();
-    });
-  })
-  .catch(function(e){
-    console.error('Upgrade flow error:', e);
-    alert('Could not start checkout. Please try again.');
-  });
+  openPlusPane();
 }
 /* ════════════════════════════════════════
    AI SUMMARY
@@ -10399,11 +10327,11 @@ function buildPlusFreeHTML(){
   h += "<div>";
   h += "<div class='pp-feat-num'>01 &middot; Email Alerts</div>";
   h += "<div class='pp-feat-title'>Never miss a signal</div>";
-  h += "<div class='pp-feat-desc'>Set a threshold on any sector. Get an email the moment the live P/E or P/B crosses it &#8212; no refreshing required.</div>";
+  h += "<div class='pp-feat-desc'>Set a threshold on any sector. Get an email when the day&#39;s closing P/E or P/B crosses it &#8212; no refreshing required.</div>";
   h += "<ul class='pp-bullets'>";
   h += "<li>Tied directly to the <strong>% of reference</strong> framework</li>";
   h += "<li><strong>At or below / At or above</strong> &#8212; trigger when valuation crosses your level</li>";
-  h += "<li>Checked every <strong>15 min</strong> during market hours</li>";
+  h += "<li>Checked <strong>daily at the close</strong>, when NSE publishes the day&#39;s P/E and P/B</li>";
   h += "<li>Up to <strong>2 alerts per sector</strong></li>";
   h += "</ul></div>";
   h += "<div class='pp-mock'>";
@@ -10897,7 +10825,6 @@ async function submitContactForm(){
     <div class="da-warning">
       This permanently removes everything tied to your SectorScope account:
       <ul class="da-list">
-        <li>SectorScope Plus subscription (cancelled immediately, no refund)</li>
         <li>All your saved sector alerts</li>
         <li>Your donation history</li>
         <li>AI summary usage record</li>
