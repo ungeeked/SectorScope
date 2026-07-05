@@ -2313,7 +2313,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
             • <strong style="color:var(--txt)">Energy</strong> — no stock above 10%.<br>
             • <strong style="color:var(--txt)">Infra &amp; Defence</strong> — no stock above 20%.<br>
             • <strong style="color:var(--txt)">All other sectors</strong> — no stock above 33%, top 3 combined ≤62%.</div>
-            <div class="hp-p" style="font-size:.78rem;color:var(--sub);margin-bottom:0">These weights are <em>close to, but not exactly,</em> NSE's official index weights: NSE uses its own investability factors and re-caps only at quarterly rebalances, letting weights drift in between. Per-stock figures carry no such approximation — they're exactly as filed.</div>
+            <div class="hp-p" style="font-size:.78rem;color:var(--sub);margin-bottom:0">The float excludes promoters and <strong style="color:var(--txt)">identifiable strategic holdings</strong> — banks holding stakes in other companies (rescue situations like SBI in Yes Bank), employee trusts, ADR/GDR shares and government-promoted entities — mirroring what NSE's investability factors exclude. Still <em>close to, but not exactly,</em> official weights: NSE additionally excludes strategic anchor investors that file as ordinary institutions (private-equity stakes, for instance), which no filing data can distinguish, and it re-caps only at quarterly rebalances while these weights refresh daily. Per-stock figures carry no approximation — they're exactly as filed.</div>
           </div>
 
           <div class="hp-p" style="margin-bottom:0;font-size:.8rem;color:var(--sub)">Companies file within ~21 days of quarter end, on different dates — so for a few weeks each quarter the newest column fills in gradually. A Sector·weighted cell appears only once stocks covering at least <strong>80% of sector weight</strong> have filed that quarter; until then it shows a dash rather than a misleading partial average. Data updates automatically as filings land.</div>
@@ -6313,14 +6313,19 @@ function renderShpBlock(sector,d){
     }).join('')
   +'</div>';
 
+  var weightNote = d.weightBasis==='official'
+    ? ' Weights are anchored to NSE\u2019s official constituent weightages'
+      +(d.weightAsof?' (factsheet of '+escapeHtml(shpMonthLabel(d.weightAsof))+')':'')
+      +', drifting with prices exactly as the index does.'
+    : ' Weight is a derived free-float share (total shares \u00d7 price, excluding promoter and identifiable strategic holdings \u2014 banks, employee trusts, DR shares), capped per the NSE index rulebook \u2014 close to, but not exactly, official index weights.';
   body.innerHTML='<div class="sd-cons-wrap">'
     +'<div class="sd-shp-title">Shareholding Pattern <small>\u2014 % of shares, by quarter</small></div>'
     +seg
     +'<div class="sd-shp-scroll">'
       +'<table class="sd-cons-table sd-shp-tbl"><thead><tr>'+head+'</tr></thead><tbody>'+rows+'</tbody></table>'
     +'</div>'
-    +'<div class="sd-shp-note">'+SHP_TAB_NOTES[metric]
-      +' Weight is a derived free-float share (total shares \u00d7 price adjusted for promoter holding), capped per the NSE index rulebook \u2014 close to, but not exactly, official index weights. The Sector\u00b7weighted row is approximate and a cell shows only when stocks covering \u226580% of sector weight have filed that quarter.'
+    +'<div class="sd-shp-note">'+SHP_TAB_NOTES[metric]+weightNote
+      +' The Sector\u00b7weighted row shows a cell only when stocks covering \u226580% of sector weight have filed that quarter.'
     +'</div>'
   +'</div>';
 
