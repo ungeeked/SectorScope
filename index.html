@@ -867,9 +867,10 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .sd-shp-title small{font-weight:400;color:var(--ghost);text-transform:none;letter-spacing:0}
 .sd-shp-scroll{overflow-x:auto}
 .sd-shp-tbl thead th{cursor:default}
-.sd-shp-tbl tbody td:first-child,.sd-shp-tbl thead th:first-child{position:sticky;left:0;background:var(--bg2);z-index:1}
+.sd-shp-tbl tbody td:first-child,.sd-shp-tbl thead th:first-child{position:sticky;left:0;background:var(--bg2);z-index:1;min-width:34px;max-width:34px}
+.sd-shp-tbl tbody td:nth-child(2),.sd-shp-tbl thead th:nth-child(2){position:sticky;left:34px;background:var(--bg2);z-index:1}
 .sd-shp-tbl tbody tr.sd-shp-total td{background:var(--bg3);font-weight:700;color:var(--txt);border-top:2px solid var(--bdr)}
-.sd-shp-tbl tbody tr.sd-shp-total td:first-child{background:var(--bg3)}
+.sd-shp-tbl tbody tr.sd-shp-total td:first-child,.sd-shp-tbl tbody tr.sd-shp-total td:nth-child(2){background:var(--bg3)}
 .sd-shp-tbl tbody tr.sd-shp-total:hover td{background:var(--bg3)}
 .sd-cons-state.err{color:var(--exp-c)}
 /* Generic PLUS tag used by section titles outside the AI-summary /
@@ -6257,7 +6258,8 @@ function renderShpBlock(sector,d){
 
   var metric=shpActiveTab;
 
-  var head='<th>Stock</th>'
+  var head='<th title="Rank movement since last quarterly rebalance" style="width:34px;text-align:center">\u21c5</th>'
+    +'<th>Stock</th>'
     +'<th title="Derived free-float weight — share of sector total">Weight</th>'
     +'<th>Trend</th>';
   for(var q=0;q<quarters.length;q++){
@@ -6276,10 +6278,10 @@ function renderShpBlock(sector,d){
      reconstitution entrants absent from the baseline. */
   function shpRankMark(delta){
     if(delta===null||delta===undefined)
-      return ' <span style="font-size:.52rem;font-weight:700;color:#5aa7f0;letter-spacing:.5px" title="New entrant since last rebalance">NEW</span>';
-    if(delta>0) return ' <span style="color:var(--chp-c);font-size:.6rem" title="Up '+delta+' rank'+(delta>1?'s':'')+' since last rebalance">\u25b2'+(delta>1?delta:'')+'</span>';
-    if(delta<0) return ' <span style="color:var(--exp-c);font-size:.6rem" title="Down '+(-delta)+' rank'+(delta<-1?'s':'')+' since last rebalance">\u25bc'+(delta<-1?-delta:'')+'</span>';
-    return ' <span style="color:#5aa7f0;font-size:.6rem" title="Rank unchanged since last rebalance">\u2013</span>';
+      return '<span style="font-size:.5rem;font-weight:700;color:#5aa7f0;letter-spacing:.4px" title="New entrant since last rebalance">NEW</span>';
+    if(delta>0) return '<span style="color:var(--chp-c);font-size:.62rem" title="Up '+delta+' rank'+(delta>1?'s':'')+' since last rebalance">\u25b2'+(delta>1?delta:'')+'</span>';
+    if(delta<0) return '<span style="color:var(--exp-c);font-size:.62rem" title="Down '+(-delta)+' rank'+(delta<-1?'s':'')+' since last rebalance">\u25bc'+(delta<-1?-delta:'')+'</span>';
+    return '<span style="color:#5aa7f0;font-size:.62rem" title="Rank unchanged since last rebalance">\u2013</span>';
   }
   function rowHtml(label,wtxt,vals,isTotal,rankMark){
     var tds='';
@@ -6290,7 +6292,8 @@ function renderShpBlock(sector,d){
       +'</td>';
     }
     return '<tr'+(isTotal?' class="sd-shp-total"':'')+'>'
-      +'<td>'+label+(rankMark||'')+'</td>'
+      +'<td style="text-align:center;padding-left:10px;padding-right:4px">'+(rankMark||'')+'</td>'
+      +'<td>'+label+'</td>'
       +'<td style="color:var(--'+(isTotal?'ghost':'sub')+')">'+wtxt+'</td>'
       +'<td>'+shpSparkline(vals)+'</td>'
       +tds
