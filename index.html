@@ -865,6 +865,7 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .sm-controls .sd-shp-seg{border-bottom:none;padding:0}
 .sm-legend{font-family:var(--mono);font-size:.58rem;color:var(--sub)}
 #sm-app{max-width:960px;margin:0 auto;padding:0 4px}
+.shp-pledge-badge{display:inline-block;font-family:var(--mono);font-size:.5rem;font-weight:700;letter-spacing:.3px;color:var(--exp-c);background:rgba(255,112,67,.13);border:1px solid rgba(255,112,67,.35);border-radius:4px;padding:1px 4px;vertical-align:middle;white-space:nowrap}
 .sd-sm-tbl tbody td.sm-rankcol,.sd-sm-tbl thead th:first-child{position:sticky;left:0;z-index:1;min-width:44px;max-width:44px;background:var(--bg2)}
 .sd-sm-tbl tbody td.sm-namecol,.sd-sm-tbl thead th:nth-child(2){position:sticky;left:44px;z-index:1;min-width:118px;background:var(--bg2)}
 .sd-sm-tbl thead th:first-child,.sd-sm-tbl thead th:nth-child(2){background:var(--bg2)}
@@ -2622,6 +2623,20 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <div class="hp-card info">
       <div class="hp-card-ttl">Why growth, not absolute levels</div>
       <div class="hp-p" style="margin-bottom:0">Plotting raw values across sectors would mislead. Absolute Price levels differ purely by index construction — Nifty Bank sits near 52,000 while Nifty 50 is near 24,000, which says nothing about performance — and absolute EPS is the same story. Even P/E and P/B aren't directly comparable sector to sector, since each trades in its own range. Rebasing everything to growth against Nifty 50 strips out those structural differences and leaves a clean read of relative performance. Newer indices (Defence, Healthcare) rebase from their own first date inside the window rather than faking a value back to the window's edge, so their lines start partway across — expected, not a gap in the data.</div>
+    </div>
+
+    <div class="hp-sub-h">Smart Money — where institutions are moving <span class="plus-tag">PLUS</span></div>
+    <div class="hp-p">The <strong>Smart Money</strong> tab (top nav, between Timeline and Backtest) is the cross-sector view of the same shareholding data that powers each sector's Shareholding Pattern section. Where that per-sector view answers "who owns this sector," Smart Money answers "which way is institutional money rotating across <em>all</em> sectors at once." It's a heatmap: every sector is a row, every recent quarter a column, and each cell is that sector's weighted institutional holding for the quarter — coloured <span style="color:var(--chp-c)">green</span> where the holding rose from the prior quarter and <span style="color:var(--exp-c)">orange</span> where it fell. Read a row left-to-right for one sector's trajectory; read a column top-to-bottom to see where money moved that quarter.</div>
+    <dl class="hp-kv">
+      <dt>FII / DII toggle</dt><dd>Switch between <strong>foreign</strong> institutional investors (FII) and <strong>domestic</strong> institutions (DII — mutual funds, insurance, banks, pensions). The two often move in opposite directions — foreigners selling into domestic buying, or vice versa — so the toggle is where the interesting disagreements show up.</dd>
+      <dt>Ranking (# column)</dt><dd>Sectors are ranked by the <em>latest quarter-on-quarter change</em> in holding — biggest inflow at the top, biggest outflow at the bottom — so the rotation story reads top-to-bottom. The number is that rank; the small arrow beside it shows how the rank moved versus the previous quarter (<span style="color:var(--chp-c)">▲</span> climbing the accumulation table, <span style="color:var(--exp-c)">▼</span> sliding, blue dash unchanged). A sector that jumps several ranks is one institutions turned toward sharply that quarter.</dd>
+      <dt>Nifty 50 benchmark</dt><dd>Nifty 50 is included as the <strong>market</strong> reference (highlighted row, "market" tag), ranked in place like any sector rather than pinned. It's the baseline the sectors move around: FIIs trimming the market by 0.5pp while cutting Banks by 3pp means Banks were sold <em>harder than the market</em>, not just sold. Because Nifty 50 overlaps the sectors heavily, treat it as a reference line, not an independent row to sum against.</dd>
+      <dt>Coverage &amp; weighting</dt><dd>Each cell uses the same NSE-rulebook-capped, strategic-adjusted free-float weighting as the per-sector view, and a cell appears only once constituents covering at least <strong>80%</strong> of sector weight have filed that quarter — so the newest column fills in gradually through filing season rather than showing a misleading partial average.</dd>
+    </dl>
+
+    <div class="hp-card info">
+      <div class="hp-card-ttl">What Smart Money is and isn't</div>
+      <div class="hp-p" style="margin-bottom:0">It's a factual record of what institutions <em>did</em> — holdings reported to the exchange each quarter, nothing predictive. Rising FII holding at a cheap valuation and rising FII holding at an expensive one are very different situations; Smart Money tells you the flow, the sector cards tell you the valuation, and reading them together is the point. It does not interpret, forecast, or recommend, and quarterly holdings say nothing about intra-quarter timing.</div>
     </div>
 
     <div class="hp-sub-h">AI sector summary — plain-language read</div>
@@ -6314,7 +6329,12 @@ function renderShpBlock(sector,d){
     if(delta<0) return '<span style="color:var(--exp-c);font-size:.62rem" title="Down '+(-delta)+' rank'+(delta<-1?'s':'')+' since last rebalance">\u25bc'+(delta<-1?-delta:'')+'</span>';
     return '<span style="color:#5aa7f0;font-size:.62rem" title="Rank unchanged since last rebalance">\u2013</span>';
   }
-  function rowHtml(label,wtxt,vals,isTotal,rankMark){
+  function pledgeMark(pledge){
+    if(pledge==null||isNaN(pledge)) return '';
+    if(pledge<30) return '';
+    return ' <span class="shp-pledge-badge" title="'+pledge.toFixed(1)+'% of shares pledged by promoters \u2014 elevated risk">\u26a0 '+Math.round(pledge)+'%</span>';
+  }
+  function rowHtml(label,wtxt,vals,isTotal,rankMark,pledge){
     var tds='';
     for(var i=0;i<vals.length;i++){
       var v=vals[i];
@@ -6322,9 +6342,11 @@ function renderShpBlock(sector,d){
         +((v==null||isNaN(v))?'<span style="color:var(--ghost)">\u2014</span>':v.toFixed(1))
       +'</td>';
     }
+    var nameTitle=(!isTotal&&pledge!=null&&!isNaN(pledge))
+      ? ' title="Promoter pledge: '+pledge.toFixed(1)+'% of total shares'+(pledge>=30?' \u2014 elevated risk':'')+'"' : '';
     return '<tr'+(isTotal?' class="sd-shp-total"':'')+'>'
       +'<td style="text-align:center;padding-left:10px;padding-right:4px">'+(rankMark||'')+'</td>'
-      +'<td>'+label+'</td>'
+      +'<td'+nameTitle+'>'+label+pledgeMark(pledge)+'</td>'
       +'<td style="color:var(--'+(isTotal?'ghost':'sub')+')">'+wtxt+'</td>'
       +'<td>'+shpSparkline(vals)+'</td>'
       +tds
@@ -6341,7 +6363,7 @@ function renderShpBlock(sector,d){
     }
     rows+=rowHtml(escapeHtml(r.symbol),
       (r.weightPct==null||isNaN(r.weightPct))?'\u2014':r.weightPct.toFixed(1)+'%',
-      vals,false,shpRankMark(r.rankDelta));
+      vals,false,shpRankMark(r.rankDelta),(r.pledgePct!=null?r.pledgePct:null));
   }
   if(!rows){ wrap.style.display='none'; return; }
 
