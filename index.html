@@ -868,7 +868,11 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .sd-shp-scroll{overflow-x:auto}
 .sd-shp-tbl thead th{cursor:default}
 .sd-shp-tbl tbody td:first-child,.sd-shp-tbl thead th:first-child{position:sticky;left:0;background:var(--bg2);z-index:1;min-width:34px;max-width:34px}
-.sd-shp-tbl tbody td:nth-child(2),.sd-shp-tbl thead th:nth-child(2){position:sticky;left:34px;background:var(--bg2);z-index:1}
+.sd-shp-tbl tbody td:nth-child(2),.sd-shp-tbl thead th:nth-child(2){position:sticky;left:34px;background:var(--bg2);z-index:1;text-align:left;padding-left:2px}
+.sd-shp-tbl tbody td:nth-child(2){font-family:var(--cond);font-weight:700;font-size:.84rem;letter-spacing:-.2px}
+/* first column is the narrow rank marker now — center it, drop the
+   symbol typography it inherits from the cons first-child rule */
+.sd-shp-tbl tbody td:first-child,.sd-shp-tbl thead th:first-child{text-align:center;padding-left:8px;font-family:var(--mono);font-size:.68rem;font-weight:400;letter-spacing:0}
 .sd-shp-tbl tbody tr.sd-shp-total td{background:var(--bg3);font-weight:700;color:var(--txt);border-top:2px solid var(--bdr)}
 .sd-shp-tbl tbody tr.sd-shp-total td:first-child,.sd-shp-tbl tbody tr.sd-shp-total td:nth-child(2){background:var(--bg3)}
 .sd-shp-tbl tbody tr.sd-shp-total:hover td{background:var(--bg3)}
@@ -8906,10 +8910,13 @@ else _ssAuthInitWhenReady();
 var subscriptionState = null; /* null=unknown, 'active'=pro, 'none'=free */
 var subscriptionMeta  = {};   /* { expiresAt, cancelledAt } from /subscription */
 
-/* ── Soft-launch: Plus free for all signed-in users until 31 Oct 2026 ── */
-var PLUS_FOR_ALL_UNTIL = new Date('2026-10-31T23:59:59+05:30');
+/* ── Plus is free for all signed-in users (permanent policy; the old
+   dated soft-launch would have locked every Plus feature on 1 Nov 2026).
+   subscriptionState still tracked — Razorpay endpoints remain live for
+   a possible future paid model, and active subscribers keep their
+   status meaningful. ── */
 function userIsSubscribed(){
-  if(currentUser && new Date() < PLUS_FOR_ALL_UNTIL) return true;
+  if(currentUser) return true;
   return subscriptionState === 'active';
 }
 
