@@ -861,6 +861,14 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
    highlighted Sector·weighted total row. */
 .sd-shp-title{padding:10px 14px 8px;border-bottom:1px solid var(--bdr);font-family:var(--mono);font-size:.55rem;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--sub)}
 .sd-shp-seg{display:flex;gap:4px;padding:10px 14px;border-bottom:1px solid var(--bdr2)}
+.sm-controls{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:4px 0 12px}
+.sm-controls .sd-shp-seg{border-bottom:none;padding:0}
+.sm-legend{font-family:var(--mono);font-size:.58rem;color:var(--sub)}
+#sm-app{max-width:960px;margin:0 auto;padding:0 4px}
+.sd-sm-tbl tbody td.sm-rankcol,.sd-sm-tbl thead th:first-child{position:sticky;left:0;z-index:1;min-width:44px;max-width:44px;background:var(--bg2)}
+.sd-sm-tbl tbody td.sm-namecol,.sd-sm-tbl thead th:nth-child(2){position:sticky;left:44px;z-index:1;min-width:118px;background:var(--bg2)}
+.sd-sm-tbl thead th:first-child,.sd-sm-tbl thead th:nth-child(2){background:var(--bg2)}
+.sd-sm-tbl tbody tr:hover td.sm-rankcol,.sd-sm-tbl tbody tr:hover td.sm-namecol{background:var(--bg3)}
 .sd-shp-seg button{font-family:var(--mono);font-size:.58rem;letter-spacing:.6px;text-transform:uppercase;background:none;border:1px solid var(--bdr);color:var(--sub);border-radius:6px;padding:5px 12px;cursor:pointer}
 .sd-shp-seg button.on{background:var(--bg3);color:var(--txt);border-color:var(--sub)}
 .sd-shp-note{color:var(--ghost);font-size:.62rem;line-height:1.55;padding:10px 14px 12px;border-top:1px solid var(--bdr2)}
@@ -1327,6 +1335,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   <nav class="page-tabs" role="tablist" aria-label="Page navigation">
     <button id="tab-dash" class="ptab active" role="tab" aria-selected="true" onclick="showPage('dashboard')">Dashboard</button>
     <button id="tab-tl" class="ptab" role="tab" aria-selected="false" onclick="showPage('timeline')">Timeline</button>
+    <button id="tab-sm" class="ptab" role="tab" aria-selected="false" onclick="showPage('smartmoney')">Smart Money</button>
     <button id="tab-bt" class="ptab" role="tab" aria-selected="false" onclick="showPage('backtest')">Backtest</button>
     <button id="tab-pj" class="ptab" role="tab" aria-selected="false" onclick="showPage('projections')">Projections</button>
     <button id="tab-help" class="ptab" role="tab" aria-selected="false" onclick="showPage('help')">Help</button>
@@ -1404,6 +1413,24 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     </div>
   </div>
   <div class="dash-grid" id="grid"></div>
+</div>
+
+<div id="page-sm" style="display:none">
+  <div id="sm-app">
+    <div class="pj-intro">
+      <div class="pj-intro-ttl">Smart Money — Institutional Flow</div>
+      <div class="pj-intro-txt">How foreign (FII) and domestic (DII) institutions have shifted their holdings across every sector, quarter by quarter. Each cell is the sector's weighted holding that quarter; colour shows the change from the previous quarter — <span style="color:var(--chp-c)">green</span> accumulation, <span style="color:var(--exp-c)">orange</span> reduction. Read a row left-to-right for a sector's trajectory; read a column to see where the money moved that quarter.</div>
+    </div>
+    <div class="sm-controls">
+      <div class="sd-shp-seg" id="sm-seg">
+        <button class="on" data-smtab="fii">FII</button>
+        <button data-smtab="dii">DII</button>
+      </div>
+      <div class="sm-legend" id="sm-legend"></div>
+    </div>
+    <div id="sm-body"><div class="sd-cons-state">Loading…</div></div>
+    <div class="sd-shp-note" id="sm-note"></div>
+  </div>
 </div>
 
 <div id="page-bt" style="display:none">
@@ -8593,6 +8620,168 @@ async function tlEnsureData(){
 }
 
 /* ── entry (called from showPage) ────────────────────────────────── */
+/* ════════════════════════════════════════
+   SMART MONEY — cross-sector institutional flow heatmap
+   Data: /smart-money (15 sectors × up-to-8 quarters of weighted FII/DII
+   holding %). Cells coloured by QoQ change; Plus-gated. Toggle FII|DII.
+════════════════════════════════════════ */
+var smData=null, smTab='fii', smLoaded=false;
+function smEnter(){
+  var body=document.getElementById('sm-body');
+  if(typeof userIsSubscribed==='function' && !userIsSubscribed()){
+    smRenderGate(); return;
+  }
+  if(!smEnter._wired){
+    var segEl=document.getElementById('sm-seg');
+    if(segEl){ segEl.addEventListener('click',function(e){
+      var b=e.target.closest('button'); if(!b||!b.dataset.smtab||b.dataset.smtab===smTab) return;
+      smTab=b.dataset.smtab;
+      segEl.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b);});
+      smRender();
+    }); }
+    smEnter._wired=true;
+  }
+  if(smLoaded){ smRender(); return; }
+  if(body) body.innerHTML='<div class="sd-cons-state">Loading\u2026</div>';
+  fetch(WORKER_BASE+'/smart-money',{redirect:'follow'})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(j){ smData=j; smLoaded=true; smRender(); })
+    .catch(function(e){
+      console.warn('[smart-money]',e&&e.message);
+      if(body) body.innerHTML='<div class="sd-cons-state">Institutional flow data is temporarily unavailable.</div>';
+    });
+}
+function smRenderGate(){
+  var body=document.getElementById('sm-body');
+  var note=document.getElementById('sm-note');
+  var seg=document.getElementById('sm-seg');
+  if(seg) seg.style.visibility='hidden';
+  if(note) note.textContent='';
+  if(!body) return;
+  var signedIn = !!(typeof currentUser !== 'undefined' && currentUser);
+  var ctaLabel = signedIn ? 'Upgrade to Plus' : 'Sign in with Google';
+  var ctaCall  = signedIn ? 'openPlusPane()' : 'authSignIn()';
+  body.innerHTML='<div class="sd-cons-gate">'
+    +'<div class="sd-cons-gate-icon">\ud83d\udd12</div>'
+    +'<div class="sd-cons-gate-title">Smart Money <span class="plus-tag">PLUS</span></div>'
+    +'<div class="sd-cons-gate-desc">See where foreign and domestic institutions are moving \u2014 FII and DII holdings across all 15 sectors, quarter by quarter, in one heatmap.</div>'
+    +'<button class="sd-cons-gate-btn" onclick="'+ctaCall+'">'+ctaLabel+'</button>'
+  +'</div>';
+}
+function smQLabel(iso){
+  if(!iso) return '';
+  var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return M[parseInt(iso.slice(5,7),10)-1]+" '"+iso.slice(2,4);
+}
+/* diverging colour: green for rise, orange for fall, magnitude by |delta|
+   capped at ~3pp. Neutral/absent = faint. Returns a background style. */
+function smCellBg(delta){
+  if(delta==null||isNaN(delta)) return '';
+  var mag=Math.min(1, Math.abs(delta)/3);
+  var a=(0.12+0.5*mag).toFixed(2);
+  if(delta>0.05)  return 'background:rgba(105,240,174,'+a+')';   /* --chp-c rgb */
+  if(delta<-0.05) return 'background:rgba(255,112,67,'+a+')';    /* --exp-c rgb */
+  return 'background:rgba(122,143,176,.10)';
+}
+function smRender(){
+  var body=document.getElementById('sm-body');
+  var seg=document.getElementById('sm-seg');
+  var note=document.getElementById('sm-note');
+  var legend=document.getElementById('sm-legend');
+  if(seg) seg.style.visibility='';
+  if(!smData||!Array.isArray(smData.sectors)||!body) return;
+
+  /* union quarter axis across sectors (ascending, cap 8) */
+  var qset={};
+  smData.sectors.forEach(function(s){ (s.quarters||[]).forEach(function(q){ qset[q]=1; }); });
+  var quarters=Object.keys(qset).sort().slice(-8);
+  if(!quarters.length){ body.innerHTML='<div class="sd-cons-state">No institutional data yet.</div>'; return; }
+
+  function toRow(s){
+    var vAll=s[smTab]||[];
+    var byQ={};
+    (s.quarters||[]).forEach(function(q,i){ byQ[q]=vAll[i]; });
+    var vals=quarters.map(function(q){ var v=byQ[q]; return (v==null||isNaN(v))?null:v; });
+    var nn=[]; for(var i=vals.length-1;i>=0&&nn.length<3;i--){ if(vals[i]!=null) nn.push(vals[i]); }
+    var lastD=(nn.length>=2)?nn[0]-nn[1]:null;   /* latest QoQ change (the flow) */
+    var prevD=(nn.length>=3)?nn[1]-nn[2]:null;   /* prior QoQ change, for rank movement */
+    return { sector:s.sector, vals:vals, lastD:lastD, prevD:prevD, benchmark:!!s.benchmark };
+  }
+  var rows=smData.sectors.map(toRow).filter(function(r){ return r.vals.some(function(v){return v!=null;}); });
+
+  /* Rank by the latest quarter-on-quarter FLOW (biggest inflow = #1);
+     rank CHANGE = how that rank differs from ranking on the PRIOR
+     quarter's flow. Both deltas come from the payload's quarterly
+     series, so no persistence needed. Nifty 50 ranks in-place like any
+     row — highlighted, not pinned. */
+  function rankMap(key){
+    var withV=rows.filter(function(r){return r[key]!=null;})
+                  .slice().sort(function(a,b){return b[key]-a[key];});
+    var m={}; withV.forEach(function(r,i){ m[r.sector]=i+1; }); return m;
+  }
+  var curRank=rankMap('lastD'), prevRank=rankMap('prevD');
+  rows.forEach(function(r){
+    r.rank=curRank[r.sector]||null;
+    r.rankDelta=(r.rank!=null&&prevRank[r.sector]!=null)?prevRank[r.sector]-r.rank:null;
+  });
+  rows.sort(function(a,b){
+    if(a.rank==null) return 1; if(b.rank==null) return -1;
+    return a.rank-b.rank;
+  });
+
+  var head='<th title="Rank by quarter-on-quarter flow, with change vs previous quarter" style="text-align:center;padding-left:12px">#</th>'
+    +'<th style="text-align:left">Sector</th>'
+    +'<th title="Change vs previous quarter" style="text-align:center">QoQ</th>';
+  for(var q=0;q<quarters.length;q++){
+    head+='<th'+(q===quarters.length-1?' style="color:var(--txt)"':'')+'>'+smQLabel(quarters[q])+'</th>';
+  }
+
+  function rankChangeMark(delta){
+    if(delta==null) return '';
+    if(delta>0) return '<span style="color:var(--chp-c);font-size:.55rem" title="Up '+delta+' since last quarter">\u25b2'+(delta>1?delta:'')+'</span>';
+    if(delta<0) return '<span style="color:var(--exp-c);font-size:.55rem" title="Down '+(-delta)+' since last quarter">\u25bc'+(delta<-1?-delta:'')+'</span>';
+    return '<span style="color:#5aa7f0;font-size:.55rem" title="Rank unchanged">\u2013</span>';
+  }
+
+  var trs='';
+  for(var i=0;i<rows.length;i++){
+    var r=rows[i], tds='';
+    for(var c=0;c<r.vals.length;c++){
+      var v=r.vals[c];
+      var prev=c>0?r.vals[c-1]:null;
+      var d=(v!=null&&prev!=null)?v-prev:null;
+      var bg=r.benchmark?(smCellBg(d)||'background:var(--bg3)'):smCellBg(d);
+      var title=r.sector+' '+smQLabel(quarters[c])+(v!=null?': '+v.toFixed(1)+'%'+(d!=null?' ('+(d>=0?'+':'')+d.toFixed(2)+'pp)':''):'');
+      tds+='<td style="text-align:right;padding:7px 9px;white-space:nowrap;'+bg+(c===r.vals.length-1?';font-weight:700':'')+'" title="'+title.replace(/"/g,'&quot;')+'">'
+        +((v==null||isNaN(v))?'<span style="color:var(--ghost)">\u2014</span>':v.toFixed(1))
+      +'</td>';
+    }
+    var dCell=r.lastD==null?'<span style="color:var(--ghost)">\u2014</span>'
+      :'<span style="color:'+(r.lastD>0.05?'var(--chp-c)':r.lastD<-0.05?'var(--exp-c)':'var(--sub)')+'">'+(r.lastD>=0?'\u25b2':'\u25bc')+' '+Math.abs(r.lastD).toFixed(2)+'</span>';
+
+    var isB=r.benchmark;
+    var lblBg=isB?'var(--bg3)':'var(--bg2)';
+    var rankCell='<td class="sm-rankcol" style="text-align:center;padding:7px 4px;background:'+lblBg+'">'
+      +'<span style="font-family:var(--mono);font-weight:700;font-size:.72rem">'+(r.rank!=null?r.rank:'\u2014')+'</span> '
+      +rankChangeMark(r.rankDelta)
+    +'</td>';
+    var nameCell='<td class="sm-namecol" style="text-align:left;padding:7px 10px 7px 12px;font-family:var(--cond);font-weight:700;font-size:.86rem;background:'+lblBg+(isB?';color:var(--sub)':'')+'">'
+      +escapeHtml(r.sector)
+      +(isB?' <span style="font-family:var(--mono);font-size:.5rem;font-weight:400;letter-spacing:.5px;text-transform:uppercase;color:var(--ghost)">market</span>':'')
+    +'</td>';
+    trs+='<tr'+(isB?' style="background:var(--bg3)"':'')+'>'
+      +rankCell+nameCell
+      +'<td style="text-align:center;padding:7px 6px'+(isB?';background:var(--bg3)':'')+'">'+dCell+'</td>'
+      +tds
+    +'</tr>';
+  }
+  body.innerHTML='<div class="sd-cons-wrap"><div class="sd-shp-scroll">'
+    +'<table class="sd-cons-table sd-sm-tbl"><thead><tr>'+head+'</tr></thead><tbody>'+trs+'</tbody></table>'
+  +'</div></div>';
+
+  if(legend) legend.innerHTML='<span style="color:var(--chp-c)">\u25a0</span> accumulating &nbsp; <span style="color:var(--exp-c)">\u25a0</span> reducing &nbsp;\u00b7&nbsp; ranked by '+(smTab==='fii'?'FII':'DII')+' change this quarter';
+  if(note) note.textContent='Ranked by the latest quarter-on-quarter change in weighted '+(smTab==='fii'?'FII':'DII')+' holding \u2014 biggest inflow first; the # column shows that rank and how it moved since the previous quarter. Cells are the holding level each quarter (weighted by NSE-rulebook-capped free-float), coloured by change; shown only when constituents covering \u226580% of sector weight have filed. Nifty 50 is the market benchmark. Same methodology as each sector\u2019s Shareholding Pattern view.';
+}
 function tlEnter(){
   var app=document.getElementById('tl-app'), gate=document.getElementById('tl-gate');
   if(!userIsSubscribed()){ app.style.display='none'; gate.style.display='flex'; tlBindOnce(); return; }
@@ -8623,16 +8812,18 @@ new MutationObserver(tlRenderIfVisible).observe(document.documentElement,{attrib
 function showPage(p){
   document.getElementById('page-dashboard').style.display = p==='dashboard' ? '' : 'none';
   document.getElementById('page-tl').style.display        = p==='timeline'  ? '' : 'none';
+  document.getElementById('page-sm').style.display        = p==='smartmoney' ? '' : 'none';
   document.getElementById('page-bt').style.display        = p==='backtest'  ? '' : 'none';
   document.getElementById('page-pj').style.display        = p==='projections' ? '' : 'none';
   document.getElementById('page-help').style.display      = p==='help'      ? '' : 'none';
-  [['dash','dashboard'],['tl','timeline'],['bt','backtest'],['pj','projections'],['help','help']].forEach(function(pair){
+  [['dash','dashboard'],['tl','timeline'],['sm','smartmoney'],['bt','backtest'],['pj','projections'],['help','help']].forEach(function(pair){
     var tab=document.getElementById('tab-'+pair[0]); if(!tab) return;
     var active=(p===pair[1]);
     tab.classList.toggle('active',active);
     tab.setAttribute('aria-selected',active?'true':'false');
   });
   if(p==='timeline') tlEnter();
+  if(p==='smartmoney') smEnter();
   if(p==='projections') pjEnter();
   if(p==='help') window.scrollTo({top:0,behavior:'instant'});
 }
