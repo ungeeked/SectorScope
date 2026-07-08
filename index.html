@@ -1682,6 +1682,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="tl-seg" id="tl-baseline">
         <button data-b="none">None</button>
         <button data-b="nifty" class="active">Nifty 50</button>
+        <button data-b="gold" title="Gold spot (NSE, INR/10g) — Price metric only">Gold</button>
       </div>
       <div class="tl-pills" id="tl-pills"></div>
       <div class="tl-dates">
@@ -5011,6 +5012,29 @@ async function _ensureNifty50Loaded(){
   return dataCache['Nifty 50'];
 }
 
+/* Gold spot series for the Timeline (NSE polled, INR per 10g). The /gold
+   payload is [['Date','INR10g'],[date,price],...]; we map INR10g into the
+   `price` field so gold rides the same row shape as sectors (only the
+   Price metric is meaningful — gold has no PE/PB/EPS). The COVID-2020
+   data gap needs no special handling: tlIdxAtOrBefore is carry-forward,
+   so a lookup inside the gap returns the last pre-gap value. */
+async function _ensureGoldLoaded(){
+  if(dataCache['Gold']) return dataCache['Gold'];
+  try{
+    var raw=await fetchWithRetry(WORKER_BASE+'/gold');
+    var arr=Array.isArray(raw)?raw:(raw&&raw.data?raw.data:[]);
+    if(arr.length && Array.isArray(arr[0]) && typeof arr[0][0]==='string' && isNaN(arr[0][0])) arr=arr.slice(1); // drop header
+    dataCache['Gold']=arr.map(function(r){
+      var p=+r[1];
+      return { date:String(r[0]||''), price:(isFinite(p)&&p>0)?p:NaN, pe:NaN, pb:NaN, eps:NaN };
+    }).filter(function(r){ return r.date && isFinite(r.price); });
+  }catch(e){
+    console.warn('[gold] data unavailable:', e);
+    dataCache['Gold']=[];
+  }
+  return dataCache['Gold'];
+}
+
 /* Nifty 50 forward return for the same period — used for alpha (sector
    minus Nifty). Returns CAGR or null. Matches the open-trade
    extrapolation behavior the inline btRun copy used to do: if no closed
@@ -8334,7 +8358,7 @@ window.addEventListener('resize',function(){
      openPlusPane, openSignInPrompt (optional)
 ════════════════════════════════════════════════════════════════════ */
 
-var TL = { metric:'pe', baseline:'nifty', range:'3Y', from:null, to:null, hidden:{}, _entered:false, _bound:false, _plot:null };
+var TL = { metric:'pe', baseline:'nifty', range:'3Y', from:null, to:null, hidden:{'Gold':true}, _entered:false, _bound:false, _plot:null };
 var TL_RANGES   = ['1W','1M','3M','1Y','3Y','5Y','All'];   // mirrors CM_RANGES
 var TL_RANGE_DAYS = {'1W':7,'1M':30,'3M':91,'1Y':365,'3Y':1095,'5Y':1825};
 var TL_HOVER_MS = null;
@@ -8362,8 +8386,21 @@ function tlNiftyValAt(target,m){
   var v=rows[i][m];
   return (isFinite(v)&&v>0) ? v : NaN;
 }
+/* Gold benchmark value at a timestamp — carry-forward via tlIdxAtOrBefore,
+   which also transparently bridges the COVID-2020 data gap. Gold only has
+   a price, so this returns NaN for non-price metrics (gold baseline is
+   gated to Price in the UI, but this is the belt-and-braces guard). */
+function tlGoldValAt(target,m){
+  if(m!=='price') return NaN;
+  var rows=tlRows('Gold'); if(!rows.length) return NaN;
+  var ts=tlTs('Gold'); var i=tlIdxAtOrBefore(ts,target);
+  if(i<0) i=0;
+  var v=rows[i].price;
+  return (isFinite(v)&&v>0) ? v : NaN;
+}
 function tlColor(name){
   if(name==='Nifty 50') return getComputedStyle(document.documentElement).getPropertyValue('--txt').trim();
+  if(name==='Gold') return '#d4a017';  /* amber — distinct from every sector hue */
   var s=SECTORS.find(function(x){return x.name===name;}); return s?s.color:'#888';
 }
 
@@ -8385,11 +8422,25 @@ function tlWindow(){
 /* ── build plotted series ────────────────────────────────────────── */
 function tlBuildPlot(plotW){
   var m=TL.metric, w=tlWindow(), out=[];
-  var vsNifty = (TL.baseline==='nifty');
-  if(vsNifty && !tlRows('Nifty 50').length) return {series:out, from:w.from, to:w.to, noNifty:true};
+  /* Baseline can be Nifty 50 or Gold. Gold only exists for the Price
+     metric, so a gold baseline on PE/PB/EPS degrades to no-baseline
+     (each line its own growth) rather than blanking the chart. */
+  var benchName = (TL.baseline==='nifty') ? 'Nifty 50'
+                : (TL.baseline==='gold' && m==='price') ? 'Gold'
+                : null;
+  var valAt = benchName==='Gold' ? tlGoldValAt : tlNiftyValAt;
+  if(benchName && !tlRows(benchName).length){
+    return {series:out, from:w.from, to:w.to, noNifty:(benchName==='Nifty 50'), noGold:(benchName==='Gold')};
+  }
 
   var items = SECTORS.map(function(s){ return {name:s.name, color:s.color}; });
-  if(!vsNifty) items.push({name:'Nifty 50', color:tlColor('Nifty 50')});  // benchmark becomes a normal line
+  /* A series that's the active benchmark is the flat 0 line and isn't
+     drawn; otherwise it joins as a normal toggleable line. Nifty 50 and
+     Gold are both available as lines. Gold has only a price, so on
+     non-price metrics it yields zero points and silently doesn't draw —
+     same behaviour as a sector missing a metric. */
+  if(benchName!=='Nifty 50') items.push({name:'Nifty 50', color:tlColor('Nifty 50')});
+  if(benchName!=='Gold')     items.push({name:'Gold',     color:tlColor('Gold')});
 
   items.forEach(function(it){
     var name=it.name;
@@ -8405,21 +8456,21 @@ function tlBuildPlot(plotW){
     for(var i=lo;i<=hi;i++){ var v=rows[i][m]; if(isFinite(v)&&v>0){baseS=v;baseMs=ts[i];bi=i;break;} }
     if(bi<0) return;
     var baseN=NaN;
-    if(vsNifty){ baseN=tlNiftyValAt(baseMs,m); if(!isFinite(baseN)) return; }
+    if(benchName){ baseN=valAt(baseMs,m); if(!isFinite(baseN)) return; }
 
     var stride=Math.max(1, Math.ceil((hi-bi)/(plotW*2)));   // ~2 pts/px  // PORT: LTTB for cleaner long ranges
     var pts=[];
     for(var i=bi;i<=hi;i+=stride){
       var v=rows[i][m]; if(!(isFinite(v)&&v>0)) continue;
       var y=(v/baseS-1)*100;
-      if(vsNifty){ var nN=tlNiftyValAt(ts[i],m); if(!isFinite(nN)) continue; y -= (nN/baseN-1)*100; }
+      if(benchName){ var nN=valAt(ts[i],m); if(!isFinite(nN)) continue; y -= (nN/baseN-1)*100; }
       pts.push({ms:ts[i], v:y});
     }
     if(pts.length && pts[pts.length-1].ms < ts[hi]){       // pin last point
       var v=rows[hi][m];
       if(isFinite(v)&&v>0){
         var y=(v/baseS-1)*100;
-        if(vsNifty){ var nN=tlNiftyValAt(ts[hi],m); if(isFinite(nN)){ pts.push({ms:ts[hi], v:y-(nN/baseN-1)*100}); } }
+        if(benchName){ var nN=valAt(ts[hi],m); if(isFinite(nN)){ pts.push({ms:ts[hi], v:y-(nN/baseN-1)*100}); } }
         else pts.push({ms:ts[hi], v:y});
       }
     }
@@ -8457,9 +8508,11 @@ function tlRender(){
   var P=tlBuildPlot(plotW);
 
   var emptyEl=document.getElementById('tl-empty');
-  if(P.noNifty || !P.series.length){
+  if(P.noNifty || P.noGold || !P.series.length){
     emptyEl.textContent = P.noNifty
       ? 'Nifty 50 history unavailable — cannot compute the benchmark.'
+      : P.noGold
+      ? 'Gold history unavailable — cannot compute the benchmark.'
       : ('No '+tlMetricLabel(TL.metric)+' history for the selected sectors in this window.');
     emptyEl.style.display='flex';
   } else emptyEl.style.display='none';
@@ -8498,7 +8551,7 @@ function tlRender(){
   // baseline label
   ctx.fillStyle=cTxt; ctx.textAlign='left'; ctx.textBaseline='bottom';
   ctx.font="9px 'JetBrains Mono', monospace";
-  ctx.fillText(TL.baseline==='nifty' ? 'Nifty 50 baseline' : 'Window start', PAD.l+4, yOf(0)-3);
+  ctx.fillText(TL.baseline==='nifty' ? 'Nifty 50 baseline' : (TL.baseline==='gold' && TL.metric==='price') ? 'Gold baseline' : 'Window start', PAD.l+4, yOf(0)-3);
 
   // lines
   P.series.forEach(function(s){
@@ -8560,7 +8613,7 @@ function tlBuildLegend(){
   var all=document.createElement('button'); all.className='tl-legend-ctl'; all.textContent='ALL';
   all.onclick=function(){ TL.hidden={}; tlBuildLegend(); tlRender(); };
   var none=document.createElement('button'); none.className='tl-legend-ctl'; none.textContent='NONE';
-  none.onclick=function(){ SECTORS.forEach(function(s){TL.hidden[s.name]=true;}); TL.hidden['Nifty 50']=true; tlBuildLegend(); tlRender(); };
+  none.onclick=function(){ SECTORS.forEach(function(s){TL.hidden[s.name]=true;}); TL.hidden['Nifty 50']=true; TL.hidden['Gold']=true; tlBuildLegend(); tlRender(); };
   el.appendChild(all); el.appendChild(none);
 
   // Nifty 50 chip — dashed baseline in 'nifty' mode, ordinary toggleable line in 'none' mode
@@ -8576,6 +8629,31 @@ function tlBuildLegend(){
     nchip.innerHTML='<span class="swatch" style="background:'+tlColor('Nifty 50')+'"></span>Nifty 50';
     nchip.onclick=function(){ TL.hidden['Nifty 50']=!TL.hidden['Nifty 50']; tlBuildLegend(); tlRender(); };
     el.appendChild(nchip);
+  }
+
+  // Gold chip — dashed baseline when it's the active baseline; otherwise a
+  // toggleable line. Greyed on non-price metrics (gold has only a price),
+  // mirroring how sector chips grey out for metrics they lack.
+  if(TL.baseline==='gold' && TL.metric==='price'){
+    var gbase=document.createElement('div');
+    gbase.className='cm-checkbox tl-baseline';
+    gbase.innerHTML='<span class="swatch" style="background:'+tlColor('Gold')+'"></span>Gold · baseline';
+    el.appendChild(gbase);
+  } else {
+    var gOk=(TL.metric==='price');
+    var gOn=gOk && !TL.hidden['Gold'];
+    var gchip=document.createElement('div');
+    gchip.className='cm-checkbox'+(gOn?' checked':'')+(gOk?'':' disabled');
+    gchip.innerHTML='<span class="swatch" style="background:'+tlColor('Gold')+'"></span>Gold';
+    if(gOk){
+      gchip.onclick=function(){
+        if(!dataCache['Gold']){ _ensureGoldLoaded().then(function(){ tlBuildLegend(); tlRender(); }); }
+        TL.hidden['Gold']=!TL.hidden['Gold']; tlBuildLegend(); tlRender();
+      };
+    } else {
+      gchip.title='Gold has a price only — switch the metric to Price to plot it';
+    }
+    el.appendChild(gchip);
   }
 
   SECTORS.forEach(function(s){
@@ -8612,13 +8690,30 @@ function tlBindOnce(){
   document.getElementById('tl-metric').addEventListener('click',function(e){
     var b=e.target.closest('button'); if(!b) return;
     this.querySelectorAll('button').forEach(function(x){x.classList.toggle('active',x===b);});
-    TL.metric=b.dataset.m; tlBuildLegend(); tlRender();
+    TL.metric=b.dataset.m; tlSyncGoldBtn(); tlBuildLegend(); tlRender();
   });
   document.getElementById('tl-baseline').addEventListener('click',function(e){
-    var b=e.target.closest('button'); if(!b) return;
+    var b=e.target.closest('button'); if(!b || b.disabled) return;
     this.querySelectorAll('button').forEach(function(x){x.classList.toggle('active',x===b);});
-    TL.baseline=b.dataset.b; tlBuildLegend(); tlRender();
+    TL.baseline=b.dataset.b; tlBuildLegend();
+    if(b.dataset.b==='gold' && !dataCache['Gold']){
+      tlRender(); /* draw immediately (falls back to window-start until loaded) */
+      _ensureGoldLoaded().then(function(){ tlRender(); });
+    } else tlRender();
   });
+  /* Gold baseline only applies to the Price metric; grey it out otherwise.
+     If gold is active when the user switches away from Price, fall back to
+     Nifty 50 so the chart stays meaningful. */
+  function tlSyncGoldBtn(){
+    var gb=document.querySelector('#tl-baseline button[data-b="gold"]');
+    if(!gb) return;
+    var ok=(TL.metric==='price');
+    gb.disabled=!ok; gb.style.opacity=ok?'':'0.4'; gb.style.cursor=ok?'':'not-allowed';
+    if(!ok && TL.baseline==='gold'){
+      TL.baseline='nifty';
+      document.querySelectorAll('#tl-baseline button').forEach(function(x){x.classList.toggle('active',x.dataset.b==='nifty');});
+    }
+  }
   document.getElementById('tl-from').addEventListener('change',tlOnDateEdit);
   document.getElementById('tl-to').addEventListener('change',tlOnDateEdit);
   var cv=document.getElementById('tl-canvas');
@@ -8810,6 +8905,8 @@ function tlEnter(){
   gate.style.display='none'; app.style.display='';
   tlBindOnce();
   if(!TL._entered){ tlBuildPills(); tlBuildLegend(); TL._entered=true; }
+  tlSyncGoldBtn();                       /* grey the Gold baseline unless metric is Price */
+  _ensureGoldLoaded().catch(function(){}); /* warm gold in background; harmless if unused */
   var load=document.getElementById('tl-loading');
   var needLoad = !tlRows('Nifty 50').length || SECTORS.some(function(s){return !dataCache[s.name];});
   if(needLoad){ if(load) load.style.display='flex'; }
