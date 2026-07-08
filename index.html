@@ -8701,19 +8701,6 @@ function tlBindOnce(){
       _ensureGoldLoaded().then(function(){ tlRender(); });
     } else tlRender();
   });
-  /* Gold baseline only applies to the Price metric; grey it out otherwise.
-     If gold is active when the user switches away from Price, fall back to
-     Nifty 50 so the chart stays meaningful. */
-  function tlSyncGoldBtn(){
-    var gb=document.querySelector('#tl-baseline button[data-b="gold"]');
-    if(!gb) return;
-    var ok=(TL.metric==='price');
-    gb.disabled=!ok; gb.style.opacity=ok?'':'0.4'; gb.style.cursor=ok?'':'not-allowed';
-    if(!ok && TL.baseline==='gold'){
-      TL.baseline='nifty';
-      document.querySelectorAll('#tl-baseline button').forEach(function(x){x.classList.toggle('active',x.dataset.b==='nifty');});
-    }
-  }
   document.getElementById('tl-from').addEventListener('change',tlOnDateEdit);
   document.getElementById('tl-to').addEventListener('change',tlOnDateEdit);
   var cv=document.getElementById('tl-canvas');
@@ -8899,14 +8886,27 @@ function smRender(){
   if(legend) legend.innerHTML='<span style="color:var(--chp-c)">\u25a0</span> accumulating &nbsp; <span style="color:var(--exp-c)">\u25a0</span> reducing &nbsp;\u00b7&nbsp; ranked by '+(smTab==='fii'?'FII':'DII')+' change this quarter';
   if(note) note.textContent='Ranked by the latest quarter-on-quarter change in weighted '+(smTab==='fii'?'FII':'DII')+' holding \u2014 biggest inflow first; the # column shows that rank and how it moved since the previous quarter. Cells are the holding level each quarter (weighted by NSE-rulebook-capped free-float), coloured by change; shown only when constituents covering \u226580% of sector weight have filed. Nifty 50 is the market benchmark. Same methodology as each sector\u2019s Shareholding Pattern view.';
 }
+/* Gold baseline only applies to the Price metric; grey it out otherwise.
+   If gold is active when the user switches away from Price, fall back to
+   Nifty 50 so the chart stays meaningful. Module-scoped so both tlEnter
+   and the tlBindOnce handlers can call it. */
+function tlSyncGoldBtn(){
+  var gb=document.querySelector('#tl-baseline button[data-b="gold"]');
+  if(!gb) return;
+  var ok=(TL.metric==='price');
+  gb.disabled=!ok; gb.style.opacity=ok?'':'0.4'; gb.style.cursor=ok?'':'not-allowed';
+  if(!ok && TL.baseline==='gold'){
+    TL.baseline='nifty';
+    document.querySelectorAll('#tl-baseline button').forEach(function(x){x.classList.toggle('active',x.dataset.b==='nifty');});
+  }
+}
 function tlEnter(){
   var app=document.getElementById('tl-app'), gate=document.getElementById('tl-gate');
   if(!userIsSubscribed()){ app.style.display='none'; gate.style.display='flex'; tlBindOnce(); return; }
   gate.style.display='none'; app.style.display='';
   tlBindOnce();
   if(!TL._entered){ tlBuildPills(); tlBuildLegend(); TL._entered=true; }
-  tlSyncGoldBtn();                       /* grey the Gold baseline unless metric is Price */
-  _ensureGoldLoaded().catch(function(){}); /* warm gold in background; harmless if unused */
+  tlSyncGoldBtn();  /* grey the Gold baseline unless metric is Price (DOM only, no fetch) */
   var load=document.getElementById('tl-loading');
   var needLoad = !tlRows('Nifty 50').length || SECTORS.some(function(s){return !dataCache[s.name];});
   if(needLoad){ if(load) load.style.display='flex'; }
