@@ -498,6 +498,19 @@ html.light .ma-header{background:rgba(238,241,248,.96)}
 .ma-empty{text-align:center;padding:48px 20px;font-family:var(--mono);font-size:.72rem;color:var(--ghost)}
 .ma-loading{text-align:center;padding:48px 20px;font-family:var(--mono);font-size:.68rem;color:var(--ghost)}
 .ma-list{display:flex;flex-direction:column;gap:10px}
+/* Weekly-digest switch row (lives at the top of My Alerts — the email-
+   preferences surface). dg- namespace. */
+.dg-row{background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.dg-info{flex:1;min-width:0}
+.dg-name{font-size:.78rem;font-weight:700;color:var(--txt)}
+.dg-desc{font-family:var(--mono);font-size:.6rem;color:var(--ghost);margin-top:2px;line-height:1.5}
+.dg-switch{position:relative;width:38px;height:22px;flex-shrink:0;cursor:pointer;display:inline-block}
+.dg-switch input{opacity:0;width:0;height:0}
+.dg-slider{position:absolute;inset:0;background:var(--bdr);border-radius:22px;transition:background .2s}
+.dg-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s}
+.dg-switch input:checked+.dg-slider{background:#6366f1}
+.dg-switch input:checked+.dg-slider:before{transform:translateX(16px)}
+.dg-switch input:disabled+.dg-slider{opacity:.5}
 .ma-item{background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:14px}
 .ma-item-color{width:4px;height:36px;border-radius:2px;flex-shrink:0}
 .ma-item-info{flex:1;min-width:0}
@@ -9547,19 +9560,44 @@ async function openMyAlerts(){
 
   body.innerHTML='<div class="ma-loading">Loading your alerts…</div>';
   try{
-    var res=await fetch(WORKER_BASE+'/alerts/all',{
-      headers:{'Authorization':'Bearer '+currentUser.token},
-    });
+    /* Alerts + weekly-digest preference in parallel — My Alerts doubles
+       as the email-preferences surface, so the digest switch lives here.
+       A pref-fetch failure hides the switch rather than failing the
+       whole pane. */
+    var results=await Promise.all([
+      fetch(WORKER_BASE+'/alerts/all',{
+        headers:{'Authorization':'Bearer '+currentUser.token},
+      }),
+      fetch(WORKER_BASE+'/digest-pref',{
+        headers:{'Authorization':'Bearer '+currentUser.token},
+      }).catch(function(){ return null; }),
+    ]);
+    var res=results[0], prefRes=results[1];
     if(!res.ok) throw new Error('Server error');
     var data=await res.json();
     var alerts=data.alerts||[];
 
+    var digestEnabled=null;
+    if(prefRes&&prefRes.ok){
+      try{ digestEnabled=!!(await prefRes.json()).enabled; }catch(e){}
+    }
+    var prefHtml='';
+    if(digestEnabled!=null){
+      prefHtml='<div class="dg-row">'
+        +'<div class="dg-info">'
+          +'<div class="dg-name">📧 Weekly digest</div>'
+          +'<div class="dg-desc">Sunday email: sector moves, valuation band changes, EPS &amp; book-value trends</div>'
+        +'</div>'
+        +'<label class="dg-switch"><input type="checkbox" id="dg-toggle"'+(digestEnabled?' checked':'')+' onchange="dgToggleDigest(this)"><span class="dg-slider"></span></label>'
+      +'</div>';
+    }
+
     if(!alerts.length){
-      body.innerHTML='<div class="ma-empty">No active alerts.<br><span style="font-size:.6rem">Flip any sector card and set a threshold to create one.</span></div>';
+      body.innerHTML=prefHtml+'<div class="ma-empty">No active alerts.<br><span style="font-size:.6rem">Flip any sector card and set a threshold to create one.</span></div>';
       return;
     }
 
-    var html='<div class="ma-list">';
+    var html=prefHtml+'<div class="ma-list">';
     alerts.forEach(function(a){
       var sec=SECTORS.find(function(s){ return s.name===a.sector; });
       var color=sec?sec.color:'#6366f1';
@@ -9585,6 +9623,26 @@ async function openMyAlerts(){
 function closeMyAlerts(){
   document.getElementById('my-alerts-overlay').classList.remove('open');
   document.body.style.overflow='';
+}
+
+/* Weekly-digest switch: POST the new state; revert the checkbox if the
+   write fails so the UI never lies about server state. Disabled while
+   in flight to stop double-toggles racing each other. */
+async function dgToggleDigest(el){
+  if(!currentUser||!currentUser.token) return;
+  var want=el.checked;
+  el.disabled=true;
+  try{
+    var res=await fetch(WORKER_BASE+'/digest-pref',{
+      method:'POST',
+      headers:{'Authorization':'Bearer '+currentUser.token,'Content-Type':'application/json'},
+      body:JSON.stringify({enabled:want}),
+    });
+    if(!res.ok) throw new Error('Server error');
+  }catch(e){
+    el.checked=!want;
+  }
+  el.disabled=false;
 }
 
 async function myAlertDelete(sector,alertId,btn){
@@ -9720,6 +9778,24 @@ function openDonatePane(){
   donateResetForm();
   pane.classList.add('dn-visible');
 }
+
+/* Deep link from the weekly digest email: sectorscope.in/#donate opens
+   the donate pane directly (bypasses the snooze gate, same as the
+   user-menu entry). The 1.5s settle delay matches the site's other
+   boot-time timers and lets the session restore complete first. Hash is
+   cleared so a refresh doesn't re-open the pane. */
+(function(){
+  function dnHashCheck(){
+    if(location.hash!=='#donate') return;
+    try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){}
+    setTimeout(openDonatePane,1500);
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',dnHashCheck,{once:true});
+  } else {
+    dnHashCheck();
+  }
+})();
 
 function donateSelectAmount(amount,btn){
   dnSelectedAmount=amount;
