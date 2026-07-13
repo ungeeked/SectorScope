@@ -883,6 +883,14 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .sd-sm-tbl tbody td.sm-namecol,.sd-sm-tbl thead th:nth-child(2){position:sticky;left:44px;z-index:1;min-width:118px;background:var(--bg2)}
 .sd-sm-tbl thead th:first-child,.sd-sm-tbl thead th:nth-child(2){background:var(--bg2)}
 .sd-sm-tbl tbody tr:hover td.sm-rankcol,.sd-sm-tbl tbody tr:hover td.sm-namecol{background:var(--bg3)}
+.sm-mv-head{font-family:var(--cond);font-weight:700;font-size:1rem;margin:24px 2px 10px;color:var(--txt)}
+.sm-mv-head span{font-family:var(--mono);font-weight:400;font-size:.58rem;color:var(--sub);letter-spacing:.5px;text-transform:uppercase;margin-left:8px}
+.sm-movers{display:grid;grid-template-columns:repeat(auto-fit,minmax(310px,1fr));gap:14px}
+.sm-mv-card{background:var(--bg2);border:1px solid var(--bdr2);border-radius:10px;overflow:hidden}
+.sm-mv-ttl{font-family:var(--mono);font-size:.62rem;letter-spacing:.8px;text-transform:uppercase;padding:10px 12px;border-bottom:1px solid var(--bdr2)}
+.sm-mv-scroll{max-height:360px;overflow-y:auto}
+.sm-mv-ctl{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin:0 2px 12px}
+.sm-mv-ctl .sd-shp-seg{border-bottom:none;padding:0}
 .sd-shp-seg button{font-family:var(--mono);font-size:.58rem;letter-spacing:.6px;text-transform:uppercase;background:none;border:1px solid var(--bdr);color:var(--sub);border-radius:6px;padding:5px 12px;cursor:pointer}
 .sd-shp-seg button.on{background:var(--bg3);color:var(--txt);border-color:var(--sub)}
 .sd-shp-note{color:var(--ghost);font-size:.62rem;line-height:1.55;padding:10px 14px 12px;border-top:1px solid var(--bdr2)}
@@ -2352,6 +2360,8 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
           <div class="hp-p" style="font-size:.82rem">Each row is one stock: its index weight, a trend sparkline, then the exact filed percentage for each quarter. Cells are coloured by their quarter-on-quarter move — <span style="color:var(--chp-c)">green</span> means the holding rose from the previous quarter, <span style="color:var(--exp-c)">orange</span> means it fell. The bottom <strong>Sector · weighted</strong> row rolls all constituents into one sector-level number per quarter.</div>
 
+          <div class="hp-p" style="font-size:.82rem"><strong>Promoter pledge badge</strong> — a <span class="shp-pledge-badge">⚠ 34%</span> badge appears next to a stock's name when promoters have pledged <strong>30% or more</strong> of the company's total shares as loan collateral. Pledging means the promoters have borrowed against their own stock: if the share price falls far enough, lenders can force-sell the pledged shares, which pushes the price down further — a self-reinforcing risk that has burned investors in past cycles. High pledge levels alongside falling institutional holdings are a combination worth treating with extra caution. Hover any stock's name to see its exact pledge percentage, including sub-30% levels that don't earn the badge.</div>
+
           <div class="hp-card info" style="margin:12px 0">
             <div class="hp-card-ttl">How the weights work</div>
             <div class="hp-p" style="font-size:.8rem;margin-bottom:8px">Each stock's weight starts from its <strong>derived free-float market cap</strong>: total shares (from the filing itself) × last price × (1 − promoter holding). Weights are then <strong>capped per the NSE index rulebook</strong>, the same rules NSE applies to the indices themselves:</div>
@@ -2601,11 +2611,11 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   <!-- ══ 8. SECTORSCOPE PLUS ══ -->
   <div class="hp-sec" id="h-plus">
     <div class="hp-sec-h">8 · SectorScope Plus</div>
-    <div class="hp-p">Plus unlocks seven features layered on top of the free dashboard: the <strong>Timeline tab</strong>, the <strong>Projections tab</strong>, <strong>expanded charts</strong>, <strong>AI sector summaries</strong>, <strong>live index constituents</strong>, <strong>email alerts</strong>, and <strong>vs-Nifty-50 alpha in backtests</strong>. This section walks through each one in the order you're likely to encounter it, with the concrete UI elements you'll see.</div>
+    <div class="hp-p">Plus unlocks nine features layered on top of the free dashboard: the <strong>Timeline tab</strong>, the <strong>Smart Money tab</strong>, the <strong>Projections tab</strong>, <strong>expanded charts</strong>, <strong>AI sector summaries</strong>, <strong>live index constituents</strong>, <strong>email alerts</strong>, the <strong>weekly digest email</strong>, and <strong>vs-Nifty-50 alpha in backtests</strong>. This section walks through each one in the order you're likely to encounter it, with the concrete UI elements you'll see.</div>
 
     <div class="hp-card tip">
       <div class="hp-card-ttl">Currently free for signed-in users</div>
-      <div class="hp-p" style="margin-bottom:0">SectorScope Plus is in soft launch. Until <strong>31 October 2026</strong>, all seven features are free for any signed-in user — no payment, no subscription required. Just sign in with Google from the top-right corner of any page. After 31 October, Plus moves to a paid tier; existing users will get advance notice and a grandfathered offer.</div>
+      <div class="hp-p" style="margin-bottom:0">SectorScope Plus is in soft launch. Until <strong>31 October 2026</strong>, all nine features are free for any signed-in user — no payment, no subscription required. Just sign in with Google from the top-right corner of any page. After 31 October, Plus moves to a paid tier; existing users will get advance notice and a grandfathered offer.</div>
     </div>
 
     <div class="hp-sub-h">Expanded chart — full historical view</div>
@@ -2625,10 +2635,10 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
     <div class="hp-sub-h">Timeline — every sector vs Nifty 50</div>
     <div class="hp-p">The <strong>Timeline</strong> tab (top nav, between Dashboard and Backtest) is the cross-sector counterpart to the expanded chart. Where the expanded chart shows many metrics for one sector, Timeline shows <em>one</em> metric for every sector at once — plotted as <strong>growth relative to Nifty 50</strong>. It answers a different question from the dashboard: not "is this sector cheap versus its own history," but "which sectors have been leading or lagging the broad market over this window."</div>
-    <div class="hp-p">Every line is read against the same baseline: each sector's percentage change since the start of the window, <em>minus</em> Nifty 50's percentage change over that same window. Nifty 50 is therefore the flat <strong>0</strong> line. A line above 0 means the sector's chosen metric grew faster than Nifty 50's since the window opened; below 0 means it lagged. The vertical axis is always in percentage points. That's the default; a <strong>Baseline</strong> control above the chart switches it to <strong>None</strong>, which drops the Nifty 50 subtraction so each line shows only its own growth since the window start (and Nifty 50 joins as an ordinary, toggleable line). In that mode the 0 line marks the window's start rather than the benchmark.</div>
+    <div class="hp-p">Every line is read against the same baseline: each sector's percentage change since the start of the window, <em>minus</em> Nifty 50's percentage change over that same window. Nifty 50 is therefore the flat <strong>0</strong> line. A line above 0 means the sector's chosen metric grew faster than Nifty 50's since the window opened; below 0 means it lagged. The vertical axis is always in percentage points. That's the default; a <strong>Baseline</strong> control above the chart offers two alternatives — <strong>Gold</strong> and <strong>None</strong> — described under the controls below.</div>
     <dl class="hp-kv">
       <dt>Metric selector</dt><dd>Pick one of <strong>P/E, P/B, EPS, Price</strong>; the whole chart re-plots that single metric across every sector. Each sector chip stays selectable for <em>every</em> metric — Timeline isn't limited to a sector's "primary" metric the way the dashboard cards are, so you can view P/B for a sector normally shown on P/E and vice-versa. Where the underlying NSE history doesn't carry the chosen metric for a sector, that sector simply draws no line until you switch to a metric it does have; its chip never greys out.</dd>
-      <dt>Baseline</dt><dd>Choose what the flat <strong>0</strong> line represents. <strong>Nifty 50</strong> (default) subtracts the benchmark's growth from every sector, so the chart reads as pure out- or under-performance versus the index. <strong>None</strong> removes the subtraction — each line is its own rebased growth since the window start, and Nifty 50 appears as a normal toggleable line — useful when you want the raw trajectories rather than the spread against the market.</dd>
+      <dt>Baseline</dt><dd>Choose what the flat <strong>0</strong> line represents. <strong>Nifty 50</strong> (default) subtracts the benchmark's growth from every sector, so the chart reads as pure out- or under-performance versus the index. <strong>Gold</strong> subtracts the growth of NSE gold spot (₹ per 10g) instead — every line becomes that sector's performance <em>in gold terms</em>, answering "did equities actually beat holding gold over this window?" Gold is a <strong>Price-metric-only</strong> baseline: comparing P/E, P/B, or EPS growth against a metal's price is meaningless, so the Gold button greys out on those metrics and the baseline falls back to Nifty 50 if it was active. When Gold is <em>not</em> the baseline, it's available as an ordinary toggleable amber line via its legend chip (off by default) — useful for eyeballing gold's own trajectory alongside the sectors. <strong>None</strong> removes the subtraction entirely — each line is its own rebased growth since the window start, and Nifty 50 appears as a normal toggleable line — useful when you want the raw trajectories rather than the spread against a benchmark.</dd>
       <dt>Date range</dt><dd>The same quick presets as the expanded chart — <strong>1W · 1M · 3M · 1Y · 3Y · 5Y · All</strong> — plus From/To pickers for a custom window. Editing a date deactivates the presets. Because every line is rebased to the start of whatever window you pick, the range <em>is</em> the reference point: a sector can lead over five years yet lag over the last three months, and Timeline shows both honestly depending on the window.</dd>
       <dt>Legend &amp; toggles</dt><dd>All sectors are drawn by default, each in its dashboard colour, with Nifty 50 marked as the baseline. Click any chip to hide or show that line — handy for isolating two or three sectors against the benchmark. <strong>ALL</strong> and <strong>NONE</strong> reset the selection in one tap.</dd>
       <dt>Hover readout</dt><dd>Move the cursor (or drag a finger) across the chart to drop a vertical guide. A panel lists every visible sector's value at that date, sorted from most outperforming to most lagging — green above the line, red below — a quick leaderboard for any point in time.</dd>
@@ -2640,12 +2650,13 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     </div>
 
     <div class="hp-sub-h">Smart Money — where institutions are moving <span class="plus-tag">PLUS</span></div>
-    <div class="hp-p">The <strong>Smart Money</strong> tab (top nav, between Timeline and Backtest) is the cross-sector view of the same shareholding data that powers each sector's Shareholding Pattern section. Where that per-sector view answers "who owns this sector," Smart Money answers "which way is institutional money rotating across <em>all</em> sectors at once." It's a heatmap: every sector is a row, every recent quarter a column, and each cell is that sector's weighted institutional holding for the quarter — coloured <span style="color:var(--chp-c)">green</span> where the holding rose from the prior quarter and <span style="color:var(--exp-c)">orange</span> where it fell. Read a row left-to-right for one sector's trajectory; read a column top-to-bottom to see where money moved that quarter.</div>
+    <div class="hp-p">The <strong>Smart Money</strong> tab (top nav, between Timeline and Backtest) is the cross-sector view of the same shareholding data that powers each sector's Shareholding Pattern section. Where that per-sector view answers "who owns this sector," Smart Money answers "which way is institutional money rotating across <em>all</em> sectors at once." It's a heatmap: every sector is a row, every recent quarter a column, and each cell is that sector's weighted institutional holding for the quarter — coloured <span style="color:var(--chp-c)">green</span> where the holding rose from the prior quarter and <span style="color:var(--exp-c)">orange</span> where it fell. Read a row left-to-right for one sector's trajectory; read a column top-to-bottom to see where money moved that quarter. Below the heatmap, two <strong>stock activity tables</strong> name the individual stocks behind the moves — covered in detail below.</div>
     <dl class="hp-kv">
       <dt>FII / DII toggle</dt><dd>Switch between <strong>foreign</strong> institutional investors (FII) and <strong>domestic</strong> institutions (DII — mutual funds, insurance, banks, pensions). The two often move in opposite directions — foreigners selling into domestic buying, or vice versa — so the toggle is where the interesting disagreements show up.</dd>
       <dt>Ranking (# column)</dt><dd>Sectors are ranked by the <em>latest quarter-on-quarter change</em> in holding — biggest inflow at the top, biggest outflow at the bottom — so the rotation story reads top-to-bottom. The number is that rank; the small arrow beside it shows how the rank moved versus the previous quarter (<span style="color:var(--chp-c)">▲</span> climbing the accumulation table, <span style="color:var(--exp-c)">▼</span> sliding, blue dash unchanged). A sector that jumps several ranks is one institutions turned toward sharply that quarter.</dd>
       <dt>Nifty 50 benchmark</dt><dd>Nifty 50 is included as the <strong>market</strong> reference (highlighted row, "market" tag), ranked in place like any sector rather than pinned. It's the baseline the sectors move around: FIIs trimming the market by 0.5pp while cutting Banks by 3pp means Banks were sold <em>harder than the market</em>, not just sold. Because Nifty 50 overlaps the sectors heavily, treat it as a reference line, not an independent row to sum against.</dd>
       <dt>Coverage &amp; weighting</dt><dd>Each cell uses the same NSE-rulebook-capped, strategic-adjusted free-float weighting as the per-sector view, and a cell appears only once constituents covering at least <strong>80%</strong> of sector weight have filed that quarter — so the newest column fills in gradually through filing season rather than showing a misleading partial average.</dd>
+      <dt>Stock activity tables</dt><dd>Below the heatmap, two tables answer "which stocks, exactly": <span style="color:var(--chp-c)">▲ Increased</span> and <span style="color:var(--exp-c)">▼ Decreased</span> allocation, listing every constituent whose holding moved by at least <strong>0.25 percentage points</strong> in the latest filed quarter versus its previous filing. They have their <strong>own FII/DII toggle</strong>, independent of the heatmap's — so the heatmap can show FII rotation while the tables show DII names. A sort control orders both tables by <strong>High → Low</strong> (biggest move first), <strong>Low → High</strong>, or <strong>Latest filed</strong> (most recently filed first, with the filing date shown next to each move). Each row shows the change in percentage points plus the actual before → after holding level. Unlike the heatmap cells, these figures are <em>unweighted</em> — exactly as filed, no index-weight math — and a stock that hasn't filed for the latest quarter yet is simply excluded rather than shown with a stale number, so the tables grow through filing season just like the newest heatmap column. A move above the threshold on FII only appears under the FII tab only.</dd>
     </dl>
 
     <div class="hp-card info">
@@ -2686,6 +2697,20 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <div class="hp-card info">
       <div class="hp-card-ttl">Delivery</div>
       <div class="hp-p" style="margin-bottom:0">The system checks live NSE data every 15 minutes during market hours (9:15am–3:30pm IST, Mon–Fri) and emails the address you signed in with. <strong>Alerts are one-time</strong> — once an alert fires, it's removed automatically and you'll need to set a new one if you want continued notifications. You can have up to 2 active alerts per sector. Manage or delete existing alerts from the same flipped-card view — saved alerts appear at the top of the form.</div>
+    </div>
+
+    <div class="hp-sub-h">Weekly digest — Sunday evening email</div>
+    <div class="hp-p">Where alerts watch one threshold you chose, the <strong>weekly digest</strong> is the standing summary: one email every <strong>Sunday at 8pm IST</strong> recapping the week across the whole dashboard, so Monday starts with the lay of the land already in your inbox. Each edition covers five things, in order:</div>
+    <dl class="hp-kv">
+      <dt>Best &amp; worst sectors</dt><dd>The week's top and bottom three sectors by price move, each with its current valuation band — so a big up-move in an already-expensive sector reads differently from the same move in a cheap one.</dd>
+      <dt>Macro strip</dt><dd>Week-over-week readings for <strong>Gold</strong> (NSE spot, ₹/10g), <strong>USD/INR</strong>, the <strong>RBI repo rate</strong>, and the <strong>10-year G-Sec yield</strong> — the four backdrop numbers that frame everything else.</dd>
+      <dt>Valuation band changes</dt><dd>Any sector that crossed a band boundary during the week — Cheap to Neutral, Expensive to Very Expensive, and so on. These are the week's genuine signal changes, the same transitions the dashboard colours would have shown you day by day.</dd>
+      <dt>Earnings growth</dt><dd>Implied EPS, week over week — which sectors' underlying earnings moved, separate from what their prices did.</dd>
+      <dt>Book-value growth</dt><dd>Implied book value, week over week — the same read for the balance-sheet metric, most meaningful for the P/B-driven sectors.</dd>
+    </dl>
+    <div class="hp-card info">
+      <div class="hp-card-ttl">Who gets it, and how to stop</div>
+      <div class="hp-p" style="margin-bottom:0">The digest goes to every signed-in user, alert subscriber, and donor — on by default, no setup needed. To switch it off (or back on), use the <strong>📧 Weekly digest</strong> toggle at the top of the <em>My Alerts</em> panel, or tap the one-click <strong>unsubscribe link</strong> in the footer of any digest email — both control the same preference. If the data pipeline ever falls behind, the digest is skipped for that week rather than sent with stale numbers.</div>
     </div>
 
     <div class="hp-sub-h">Alpha vs Nifty 50 — in the backtest results table</div>
@@ -8800,6 +8825,99 @@ function smCellBg(delta){
   if(delta<-0.05) return 'background:rgba(255,112,67,'+a+')';    /* --exp-c rgb */
   return 'background:rgba(122,143,176,.10)';
 }
+/* Stock-level movers: two tables (increased / decreased allocation)
+   with their OWN FII|DII tab — independent of the heatmap toggle — and
+   a sort control (biggest move / smallest move / latest filed). Server
+   sends every stock with |QoQ delta| >= 0.25pp on EITHER metric, plus
+   `filed` (ingest date of the latest filing); filtering per tab at the
+   same threshold happens here, so a stock that moved on FII only
+   appears only under FII. Old cached payloads (pre-movers) render
+   nothing. */
+var smMvTab='fii', smMvSort='hi';
+function smMvSet(kind,val){
+  if(kind==='tab'){ if(val===smMvTab) return; smMvTab=val; }
+  else            { if(val===smMvSort) return; smMvSort=val; }
+  var el=document.getElementById('sm-mv-sec');
+  if(!el) return;
+  var t=document.createElement('div');
+  t.innerHTML=smMoversHTML();
+  if(t.firstChild) el.parentNode.replaceChild(t.firstChild, el);
+}
+function smMoversHTML(){
+  var mv=smData&&smData.movers;
+  if(!mv||!Array.isArray(mv.stocks)||!mv.stocks.length) return '';
+  var key=smMvTab==='fii'?'fiiD':'diiD';
+  var inc=[],dec=[];
+  mv.stocks.forEach(function(s){
+    var d=s[key]; if(d==null||isNaN(d)) return;
+    if(d>=0.25) inc.push(s); else if(d<=-0.25) dec.push(s);
+  });
+  function srt(list){
+    var l=list.slice();
+    if(smMvSort==='filed'){
+      l.sort(function(a,b){
+        var fa=a.filed||'', fb=b.filed||'';
+        if(fa!==fb) return fa<fb?1:-1;                    /* latest first; undated sink */
+        return Math.abs(b[key])-Math.abs(a[key]);         /* tie-break: bigger move first */
+      });
+    }else if(smMvSort==='lo'){
+      l.sort(function(a,b){return Math.abs(a[key])-Math.abs(b[key]);});
+    }else{
+      l.sort(function(a,b){return Math.abs(b[key])-Math.abs(a[key]);});
+    }
+    return l;
+  }
+  function seg(id,kind,cur,pairs){
+    var b='';
+    pairs.forEach(function(p){
+      b+='<button class="'+(p[0]===cur?'on':'')+'" onclick="smMvSet(\''+kind+'\',\''+p[0]+'\')">'+p[1]+'</button>';
+    });
+    return '<div class="sd-shp-seg" id="'+id+'">'+b+'</div>';
+  }
+  function tbl(list,up){
+    var col=up?'var(--chp-c)':'var(--exp-c)';
+    var ttl=(up?'\u25b2 Increased':'\u25bc Decreased')+' allocation \u00b7 '+list.length+(list.length===1?' stock':' stocks');
+    var rows='';
+    if(!list.length){
+      rows='<tr><td colspan="4" style="padding:14px;color:var(--ghost);text-align:center;font-size:.72rem">No stocks with a '+(up?'rise':'fall')+' \u2265 0.25pp this quarter</td></tr>';
+    }
+    list.forEach(function(s,i){
+      var lv=s[smMvTab]||[];
+      var pv=lv[0], nv=lv[1];
+      var ghost=smMvSort==='filed'
+        ? (s.filed?('filed '+s.filed):'')
+        : ((pv!=null&&nv!=null)?(pv.toFixed(1)+'\u2192'+nv.toFixed(1)+'%'):'');
+      var title=escapeHtml(s.symbol)+' '+(smMvTab==='fii'?'FII':'DII')
+        +((pv!=null&&nv!=null)?(': '+pv.toFixed(2)+'% \u2192 '+nv.toFixed(2)+'%'):'')
+        +(s.filed?(' \u00b7 filed '+s.filed):'');
+      rows+='<tr>'
+        +'<td style="text-align:center;padding:6px 4px;font-family:var(--mono);font-size:.66rem;color:var(--sub)">'+(i+1)+'</td>'
+        +'<td style="text-align:left;padding:6px 8px;font-family:var(--cond);font-weight:700;font-size:.84rem">'+escapeHtml(s.symbol)+'</td>'
+        +'<td style="text-align:left;padding:6px 8px;font-size:.7rem;color:var(--sub);white-space:nowrap">'+escapeHtml(s.sector||'')+'</td>'
+        +'<td title="'+title.replace(/"/g,'&quot;')+'" style="text-align:right;padding:6px 10px;white-space:nowrap;font-family:var(--mono);font-size:.74rem">'
+          +'<span style="color:'+col+';font-weight:700">'+(s[key]>=0?'+':'')+s[key].toFixed(2)+'</span>'
+          +(ghost?' <span style="color:var(--ghost);font-size:.6rem">'+ghost+'</span>':'')
+        +'</td>'
+      +'</tr>';
+    });
+    return '<div class="sm-mv-card">'
+      +'<div class="sm-mv-ttl" style="color:'+col+'">'+ttl+'</div>'
+      +'<div class="sm-mv-scroll"><table class="sd-cons-table"><thead><tr>'
+        +'<th style="text-align:center">#</th><th style="text-align:left">Stock</th>'
+        +'<th style="text-align:left">Sector</th><th style="text-align:right" title="Change in '+(smMvTab==='fii'?'FII':'DII')+' holding vs the previous filing, percentage points">\u0394 pp</th>'
+      +'</tr></thead><tbody>'+rows+'</tbody></table></div>'
+    +'</div>';
+  }
+  return '<div id="sm-mv-sec">'
+    +'<div class="sm-mv-head">Stock activity this quarter'
+      +'<span>'+smQLabel(mv.quarter)+' vs prior filing \u00b7 moves \u2265 0.25pp</span></div>'
+    +'<div class="sm-mv-ctl">'
+      +seg('sm-mv-seg','tab',smMvTab,[['fii','FII'],['dii','DII']])
+      +seg('sm-mv-sort','sort',smMvSort,[['hi','High \u2192 Low'],['lo','Low \u2192 High'],['filed','Latest filed']])
+    +'</div>'
+    +'<div class="sm-movers">'+tbl(srt(inc),true)+tbl(srt(dec),false)+'</div>'
+  +'</div>';
+}
 function smRender(){
   var body=document.getElementById('sm-body');
   var seg=document.getElementById('sm-seg');
@@ -8894,10 +9012,11 @@ function smRender(){
   }
   body.innerHTML='<div class="sd-cons-wrap"><div class="sd-shp-scroll">'
     +'<table class="sd-cons-table sd-sm-tbl"><thead><tr>'+head+'</tr></thead><tbody>'+trs+'</tbody></table>'
-  +'</div></div>';
+  +'</div></div>'
+  +smMoversHTML();
 
   if(legend) legend.innerHTML='<span style="color:var(--chp-c)">\u25a0</span> accumulating &nbsp; <span style="color:var(--exp-c)">\u25a0</span> reducing &nbsp;\u00b7&nbsp; ranked by '+(smTab==='fii'?'FII':'DII')+' change this quarter';
-  if(note) note.textContent='Ranked by the latest quarter-on-quarter change in weighted '+(smTab==='fii'?'FII':'DII')+' holding \u2014 biggest inflow first; the # column shows that rank and how it moved since the previous quarter. Cells are the holding level each quarter (weighted by NSE-rulebook-capped free-float), coloured by change; shown only when constituents covering \u226580% of sector weight have filed. Nifty 50 is the market benchmark. Same methodology as each sector\u2019s Shareholding Pattern view.';
+  if(note) note.textContent='Ranked by the latest quarter-on-quarter change in weighted '+(smTab==='fii'?'FII':'DII')+' holding \u2014 biggest inflow first; the # column shows that rank and how it moved since the previous quarter. Cells are the holding level each quarter (weighted by NSE-rulebook-capped free-float), coloured by change; shown only when constituents covering \u226580% of sector weight have filed. Nifty 50 is the market benchmark. Same methodology as each sector\u2019s Shareholding Pattern view. The stock tables below have their own FII/DII toggle and list every constituent whose holding moved \u2265 0.25 percentage points in the latest filed quarter versus its previous filing (unweighted, straight from exchange filings); stocks that haven\u2019t filed for the latest quarter yet are excluded rather than shown with stale data. \u201cLatest filed\u201d sorts by the date each filing was picked up.';
 }
 /* Gold baseline only applies to the Price metric; grey it out otherwise.
    If gold is active when the user switches away from Price, fall back to
