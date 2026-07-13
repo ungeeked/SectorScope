@@ -2700,13 +2700,14 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     </div>
 
     <div class="hp-sub-h">Weekly digest — Sunday evening email</div>
-    <div class="hp-p">Where alerts watch one threshold you chose, the <strong>weekly digest</strong> is the standing summary: one email every <strong>Sunday at 8pm IST</strong> recapping the week across the whole dashboard, so Monday starts with the lay of the land already in your inbox. Each edition covers five things, in order:</div>
+    <div class="hp-p">Where alerts watch one threshold you chose, the <strong>weekly digest</strong> is the standing summary: one email every <strong>Sunday at 8pm IST</strong> recapping the week across the whole dashboard, so Monday starts with the lay of the land already in your inbox. Each edition covers six things, in order:</div>
     <dl class="hp-kv">
       <dt>Best &amp; worst sectors</dt><dd>The week's top and bottom three sectors by price move, each with its current valuation band — so a big up-move in an already-expensive sector reads differently from the same move in a cheap one.</dd>
       <dt>Macro strip</dt><dd>Week-over-week readings for <strong>Gold</strong> (NSE spot, ₹/10g), <strong>USD/INR</strong>, the <strong>RBI repo rate</strong>, and the <strong>10-year G-Sec yield</strong> — the four backdrop numbers that frame everything else.</dd>
       <dt>Valuation band changes</dt><dd>Any sector that crossed a band boundary during the week — Cheap to Neutral, Expensive to Very Expensive, and so on. These are the week's genuine signal changes, the same transitions the dashboard colours would have shown you day by day.</dd>
       <dt>Earnings growth</dt><dd>Implied EPS, week over week — which sectors' underlying earnings moved, separate from what their prices did.</dd>
       <dt>Book-value growth</dt><dd>Implied book value, week over week — the same read for the balance-sheet metric, most meaningful for the P/B-driven sectors.</dd>
+      <dt>Smart-money filings</dt><dd>Every company that filed its quarterly shareholding pattern during the week, with the biggest institutional moves called out — up to six stocks where <strong>FII+DII combined added</strong> and six where they <strong>trimmed</strong>, each showing its FII and DII change in percentage points (0.25pp minimum, exactly as filed). During filing season this is where the week's fresh institutional signal lands first; the full list is always on the Smart Money tab.</dd>
     </dl>
     <div class="hp-card info">
       <div class="hp-card-ttl">Who gets it, and how to stop</div>
@@ -9705,7 +9706,7 @@ async function openMyAlerts(){
       prefHtml='<div class="dg-row">'
         +'<div class="dg-info">'
           +'<div class="dg-name">📧 Weekly digest</div>'
-          +'<div class="dg-desc">Sunday email: sector moves, valuation band changes, EPS &amp; book-value trends</div>'
+          +'<div class="dg-desc">Sunday email: sector moves, valuation band changes, EPS &amp; book-value trends, FII/DII filings</div>'
         +'</div>'
         +'<label class="dg-switch"><input type="checkbox" id="dg-toggle"'+(digestEnabled?' checked':'')+' onchange="dgToggleDigest(this)"><span class="dg-slider"></span></label>'
       +'</div>';
