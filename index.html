@@ -702,6 +702,33 @@ html.light .bt-tbl tbody tr:hover{background:rgba(0,0,0,.022)}
 .pj-chart-legend .pj-lg-swatch{width:11px;height:11px;border-radius:2px;flex-shrink:0}
 .pj-chart-legend .pj-lg-line{width:16px;height:0;border-top-width:2px;border-top-style:solid;flex-shrink:0}
 
+/* ══════════════ ADMIN PAGE ══════════════ */
+#page-admin{position:relative;z-index:1;padding:20px 32px 56px;max-width:1100px;margin:0 auto}
+@media(max-width:680px){#page-admin{padding:10px}}
+.adm-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.adm-tile{background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;padding:12px 14px}
+.adm-tile-num{font-family:var(--cond);font-size:1.6rem;font-weight:700;color:var(--txt);line-height:1;font-variant-numeric:tabular-nums}
+.adm-tile-lbl{font-family:var(--mono);font-size:.5rem;color:var(--ghost);text-transform:uppercase;letter-spacing:1px;margin-top:5px}
+.adm-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;margin-bottom:16px;overflow:hidden}
+.adm-card-head{padding:10px 14px;border-bottom:1px solid var(--bdr);font-family:var(--mono);font-size:.55rem;font-weight:700;color:var(--txt);text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.adm-tbl-wrap{overflow-x:auto}
+.adm-tbl{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.66rem}
+.adm-tbl th{text-align:left;font-weight:500;font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ghost);padding:8px 12px 6px;border-bottom:1px solid var(--bdr);white-space:nowrap}
+.adm-tbl td{padding:8px 12px;border-bottom:1px solid var(--bdr2);white-space:nowrap;color:var(--txt)}
+.adm-tbl tr:last-child td{border-bottom:0}
+.adm-ok{color:#4ade80}
+html.light .adm-ok{color:#15803d}
+.adm-warn{color:#fbbf24}
+html.light .adm-warn{color:#b45309}
+.adm-dim{color:var(--ghost)}
+.adm-fail{color:#f87171}
+html.light .adm-fail{color:#b91c1c}
+.adm-append-msg{display:none;padding:8px 14px;border-top:1px solid var(--bdr);font-family:var(--mono);font-size:.6rem;line-height:1.5}
+.adm-btn{font-family:var(--body);font-size:.68rem;font-weight:600;color:var(--txt);background:var(--bg3);border:1px solid var(--bdr);border-radius:7px;padding:4px 10px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.adm-btn:hover{background:var(--sur)}
+.adm-btn:disabled{opacity:.5;cursor:default}
+.adm-state{padding:18px;text-align:center;font-family:var(--mono);font-size:.62rem;color:var(--ghost)}
+
 /* ══════════════ HELP PAGE ══════════════ */
 #page-help{position:relative;z-index:1;padding:24px 32px 60px;max-width:860px;margin:0 auto;font-family:var(--body)}
 @media(max-width:680px){#page-help{padding:16px 14px 40px}}
@@ -1371,6 +1398,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <button id="tab-bt" class="ptab" role="tab" aria-selected="false" onclick="showPage('backtest')">Backtest</button>
     <button id="tab-pj" class="ptab" role="tab" aria-selected="false" onclick="showPage('projections')">Projections</button>
     <button id="tab-help" class="ptab" role="tab" aria-selected="false" onclick="showPage('help')">Help</button>
+    <button id="tab-admin" class="ptab" role="tab" aria-selected="false" onclick="showPage('admin')" style="display:none">Admin</button>
   </nav>
   <div class="h-right">
     <div id="live-chip" title="Live intraday data · refreshes every 2 min">LIVE</div>
@@ -1386,6 +1414,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
         <div class="nav-menu-item" role="menuitem" data-page="backtest" onclick="navGo('backtest')">Backtest</div>
         <div class="nav-menu-item" role="menuitem" data-page="projections" onclick="navGo('projections')">Projections</div>
         <div class="nav-menu-item" role="menuitem" data-page="help" onclick="navGo('help')">Help</div>
+        <div class="nav-menu-item" role="menuitem" id="nav-admin" data-page="admin" onclick="navGo('admin')" style="display:none">Admin</div>
       </div>
     </div>
     <!-- Auth -->
@@ -1760,6 +1789,41 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="tl-gate-desc">Compare every sector's P/E, P/B, EPS or Price as growth relative to Nifty&nbsp;50, across any date range. Spot which sectors are leading or lagging the index over your chosen window.</div>
       <button class="tl-gate-btn" id="tl-gate-btn">Upgrade to Plus</button>
     </div>
+  </div>
+</div>
+
+<div id="page-admin" style="display:none">
+  <div class="page-hero">
+    <div class="page-hero-ttl">Admin</div>
+    <div class="page-hero-sub">Operator console — users, revenue, alerts, digest and data-pipeline health. Visible only to allow-listed accounts; every API call is re-verified server-side.</div>
+  </div>
+
+  <div class="adm-tiles" id="adm-tiles"><div class="adm-state">Loading…</div></div>
+
+  <div class="adm-card">
+    <div class="adm-card-head"><span>Data freshness — today's append status</span><button class="adm-btn" onclick="admLoadOverview()">Refresh</button></div>
+    <div class="adm-tbl-wrap" id="adm-fresh"><div class="adm-state">Loading…</div></div>
+    <div class="adm-append-msg" id="adm-append-msg"></div>
+  </div>
+
+  <div class="adm-card">
+    <div class="adm-card-head">Weekly digest</div>
+    <div class="adm-tbl-wrap" id="adm-digest"><div class="adm-state">Loading…</div></div>
+  </div>
+
+  <div class="adm-card">
+    <div class="adm-card-head">Donations</div>
+    <div class="adm-tbl-wrap" id="adm-donors"><div class="adm-state">Loading…</div></div>
+  </div>
+
+  <div class="adm-card">
+    <div class="adm-card-head">Users</div>
+    <div class="adm-tbl-wrap" id="adm-users"><div class="adm-state">Loading…</div></div>
+  </div>
+
+  <div class="adm-card">
+    <div class="adm-card-head">Live alerts</div>
+    <div class="adm-tbl-wrap" id="adm-alerts"><div class="adm-state">Loading…</div></div>
   </div>
 </div>
 
@@ -9115,7 +9179,8 @@ function showPage(p){
   document.getElementById('page-bt').style.display        = p==='backtest'  ? '' : 'none';
   document.getElementById('page-pj').style.display        = p==='projections' ? '' : 'none';
   document.getElementById('page-help').style.display      = p==='help'      ? '' : 'none';
-  [['dash','dashboard'],['tl','timeline'],['sm','smartmoney'],['bt','backtest'],['pj','projections'],['help','help']].forEach(function(pair){
+  document.getElementById('page-admin').style.display     = p==='admin'     ? '' : 'none';
+  [['dash','dashboard'],['tl','timeline'],['sm','smartmoney'],['bt','backtest'],['pj','projections'],['help','help'],['admin','admin']].forEach(function(pair){
     var tab=document.getElementById('tab-'+pair[0]); if(!tab) return;
     var active=(p===pair[1]);
     tab.classList.toggle('active',active);
@@ -9127,6 +9192,7 @@ function showPage(p){
   if(p==='timeline') tlEnter();
   if(p==='smartmoney') smEnter();
   if(p==='projections') pjEnter();
+  if(p==='admin') admEnter();
   if(p==='help') window.scrollTo({top:0,behavior:'instant'});
 }
 function toggleTheme(){
@@ -9237,6 +9303,7 @@ function _persistSession(sess){
     expiresAt: sess.expiresAt,
   };
   authRender();
+  adminProbe();
   try{ localStorage.setItem('ss_user', JSON.stringify(currentUser)); }catch(e){}
 }
 
@@ -9307,8 +9374,176 @@ function authSignIn(){
   });
 }
 
+/* ══════════════ ADMIN TAB ══════════════
+   Tab visibility is decided by GET /admin/check (session-JWT + server-
+   side ADMIN_EMAILS allowlist). Hiding the tab is purely cosmetic —
+   every /admin/* data route re-verifies the allowlist, so a non-admin
+   forcing the tab open just sees five 403s. */
+var admLoaded=false;
+
+function adminSetVisible(v){
+  var t=document.getElementById('tab-admin'); if(t) t.style.display=v?'':'none';
+  var n=document.getElementById('nav-admin'); if(n) n.style.display=v?'':'none';
+  if(!v){
+    admLoaded=false;
+    var pg=document.getElementById('page-admin');
+    if(pg && pg.style.display!=='none') showPage('dashboard');
+  }
+}
+
+async function adminProbe(){
+  if(!currentUser){ adminSetVisible(false); return; }
+  try{
+    var r=await fetch(WORKER_BASE+'/admin/check',{headers:{'Authorization':'Bearer '+currentUser.token}});
+    adminSetVisible(r.ok);
+  }catch(e){ adminSetVisible(false); }
+}
+
+function admFetch(p){
+  return fetch(WORKER_BASE+p,{headers:{'Authorization':'Bearer '+currentUser.token}}).then(function(r){
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    return r.json();
+  });
+}
+function admEsc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+function admDate(iso){ return iso?String(iso).slice(0,10):'—'; }
+
+function admEnter(){
+  if(admLoaded) return;
+  admLoaded=true;
+  admLoadOverview();
+  admLoadDigest();
+  admLoadDonors();
+  admLoadUsers();
+  admLoadAlerts();
+}
+
+async function admLoadOverview(){
+  var tiles=document.getElementById('adm-tiles'), fresh=document.getElementById('adm-fresh');
+  try{
+    var d=await admFetch('/admin/overview');
+    var c=d.counts||{};
+    tiles.innerHTML=[['users','Users'],['plusActive','Plus active'],['donors','Donors'],['alertRecords','Alert records'],['digestUnsubs','Digest unsubs']]
+      .map(function(p){return '<div class="adm-tile"><div class="adm-tile-num">'+(c[p[0]]!=null?c[p[0]]:'—')+'</div><div class="adm-tile-lbl">'+p[1]+'</div></div>';}).join('');
+    var mk=d.market||{};
+    var blockNote=mk.weekend?'Weekend — market closed':(mk.open?'Market open until 15:30 IST':null);
+    var rows=['sectors','gsec','fx','gold','repo'].map(function(id){
+      var f=(d.feeds||{})[id]||{};
+      var status=f.error
+        ? '<span class="adm-warn">error: '+admEsc(f.error)+'</span>'
+        : f.updatedToday
+          ? '<span class="adm-ok">✓ today'+(f.rowsToday!=null?' · '+f.rowsToday+' rows':'')+'</span>'
+          : '<span class="adm-warn">stale — last '+admEsc(f.latest||'never')+'</span>';
+      /* repo is exempt from the market guard (policy number, not a
+         market print) — mirror the server rule so the button state
+         never lies about what a click would do. */
+      var blocked=(id!=='repo')&&blockNote;
+      var btn=blocked
+        ? '<button class="adm-btn" disabled title="'+admEsc(blockNote)+'">'+admEsc(mk.weekend?'Weekend':'Mkt open')+'</button>'
+        : '<button class="adm-btn" id="adm-ap-'+id+'" onclick="admAppend(\''+id+'\')">Append</button>';
+      return '<tr><td>'+admEsc(f.label||id)+'</td><td>'+admEsc(f.latest||'—')+'</td><td>'+status+'</td>'
+        +'<td style="text-align:right">'+btn+'</td></tr>';
+    }).join('');
+    var mktChip=mk.weekend?'weekend':(mk.open?'<span class="adm-warn">market open</span>':'<span class="adm-ok">market closed</span>');
+    fresh.innerHTML='<table class="adm-tbl"><thead><tr><th>Series</th><th>Latest row</th><th>Status · today = '+admEsc(d.today)+' · '+mktChip+'</th><th></th></tr></thead><tbody>'+rows+'</tbody></table>';
+  }catch(e){
+    tiles.innerHTML='<div class="adm-state">Failed: '+admEsc(e.message)+'</div>';
+    fresh.innerHTML='<div class="adm-state">Failed: '+admEsc(e.message)+'</div>';
+  }
+}
+
+/* Manual append — same backend handlers as the 19:00 IST cron. The
+   server returns a normalized { status, detail }: success (rows
+   written / no-op), blocked (weekend, market hours, NSE holiday), or
+   failed (with the cron's error/reason). The result line lives outside
+   #adm-fresh so the overview reload doesn't wipe it. */
+async function admAppend(target){
+  var btn=document.getElementById('adm-ap-'+target);
+  var msg=document.getElementById('adm-append-msg');
+  if(btn){ btn.disabled=true; btn.textContent='Running…'; }
+  if(msg){ msg.style.display='block'; msg.className='adm-append-msg adm-dim'; msg.textContent='['+target+'] running…'; }
+  var status='failed', detail='';
+  try{
+    var r=await fetch(WORKER_BASE+'/admin/append',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+currentUser.token},
+      body:JSON.stringify({target:target}),
+    });
+    var d=null;
+    try{ d=await r.json(); }catch(e){}
+    if(!r.ok) throw new Error((d&&d.error)||('HTTP '+r.status));
+    status=(d&&d.status)||'failed';
+    detail=(d&&d.detail)||'';
+  }catch(e){
+    detail=e.message;
+  }
+  await admLoadOverview();
+  if(msg){
+    msg.style.display='block';
+    msg.className='adm-append-msg '+(status==='success'?'adm-ok':status==='blocked'?'adm-warn':'adm-fail');
+    msg.textContent='['+target+'] '+status+(detail?' — '+detail:'');
+  }
+}
+
+async function admLoadDigest(){
+  var el=document.getElementById('adm-digest');
+  try{
+    var d=await admFetch('/admin/digest');
+    var un=(d.unsubscribed||[]).map(function(u){
+      return '<tr><td>'+admEsc(u.email)+'</td><td class="adm-warn">unsubscribed</td><td class="adm-dim">'+admDate(u.at)+'</td></tr>';
+    }).join('');
+    var subs=(d.subscribers||[]).map(function(e){
+      return '<tr><td>'+admEsc(e)+'</td><td class="adm-ok">subscribed</td><td class="adm-dim">—</td></tr>';
+    }).join('');
+    el.innerHTML='<table class="adm-tbl"><thead><tr><th>Email · '+d.counts.subscribers+' in / '+d.counts.unsubscribed+' out</th><th>Status</th><th>Opted out</th></tr></thead><tbody>'+un+subs+'</tbody></table>';
+  }catch(e){ el.innerHTML='<div class="adm-state">Failed: '+admEsc(e.message)+'</div>'; }
+}
+
+async function admLoadDonors(){
+  var el=document.getElementById('adm-donors');
+  try{
+    var d=await admFetch('/admin/donors');
+    var rows=(d.donors||[]).map(function(x){
+      return '<tr><td>'+admEsc(x.email)+'</td><td>₹'+(x.total||0)+'</td><td>'+(x.count||0)+'</td><td>'+admDate(x.lastAt)+'</td><td class="adm-dim">'+admEsc(x.source||'')+'</td></tr>';
+    }).join('');
+    el.innerHTML='<table class="adm-tbl"><thead><tr><th>Email · total ₹'+(d.grandTotal||0)+'</th><th>Amount</th><th>Count</th><th>Last</th><th>Source</th></tr></thead><tbody>'
+      +(rows||'<tr><td colspan="5" class="adm-state">No donors yet</td></tr>')+'</tbody></table>';
+  }catch(e){ el.innerHTML='<div class="adm-state">Failed: '+admEsc(e.message)+'</div>'; }
+}
+
+async function admLoadUsers(){
+  var el=document.getElementById('adm-users');
+  try{
+    var d=await admFetch('/admin/users');
+    var rows=(d.users||[]).map(function(u){
+      var plus=u.plus
+        ? (u.plus.status==='active'
+            ? '<span class="adm-ok">active · '+admEsc(u.plus.source)+'</span>'
+            : '<span class="adm-dim">'+admEsc(u.plus.status)+'</span>')
+        : '<span class="adm-dim">—</span>';
+      return '<tr><td>'+admEsc(u.email)+'</td><td>'+admDate(u.firstSeen)+'</td><td>'+admDate(u.lastSeen)+'</td><td>'+plus+'</td></tr>';
+    }).join('');
+    el.innerHTML='<table class="adm-tbl"><thead><tr><th>Email · '+(d.count||0)+' users</th><th>First seen</th><th>Last seen</th><th>Plus</th></tr></thead><tbody>'
+      +(rows||'<tr><td colspan="4" class="adm-state">No users registered yet</td></tr>')+'</tbody></table>';
+  }catch(e){ el.innerHTML='<div class="adm-state">Failed: '+admEsc(e.message)+'</div>'; }
+}
+
+async function admLoadAlerts(){
+  var el=document.getElementById('adm-alerts');
+  try{
+    var d=await admFetch('/admin/alerts');
+    var rows=(d.alerts||[]).map(function(a){
+      var rule=admEsc((a.metric||'').toUpperCase())+' '+(a.direction==='above'?'≥':'≤')+' '+admEsc(a.threshold)+'% of median';
+      return '<tr><td>'+admEsc(a.email)+'</td><td>'+admEsc(a.sector)+'</td><td>'+rule+'</td><td class="adm-dim">'+admDate(a.createdAt)+'</td></tr>';
+    }).join('');
+    el.innerHTML='<table class="adm-tbl"><thead><tr><th>Email · '+(d.count||0)+' live</th><th>Sector</th><th>Rule</th><th>Set on</th></tr></thead><tbody>'
+      +(rows||'<tr><td colspan="4" class="adm-state">No live alerts</td></tr>')+'</tbody></table>';
+  }catch(e){ el.innerHTML='<div class="adm-state">Failed: '+admEsc(e.message)+'</div>'; }
+}
+
 function authSignOut(){
   currentUser=null;
+  adminSetVisible(false);
   subscriptionState=null;
   subscriptionMeta={};
   donorLastAt=null;
@@ -9366,6 +9601,7 @@ document.addEventListener('click',function(e){
       expiresAt: u.expiresAt,
     };
     authRender();
+    adminProbe();
     /* Restore cached Plus status instantly — re-validated by loadSubscriptionStatus */
     var savedSub=localStorage.getItem('ss_sub');
     if(savedSub){
