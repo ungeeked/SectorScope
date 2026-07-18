@@ -123,12 +123,24 @@ html.light #live-chip{color:#15803d;border-color:rgba(21,128,61,.3);background:r
 .theme-pill{width:50px;height:26px;background:var(--bg3);border:1px solid var(--bdr);border-radius:26px;cursor:pointer;position:relative;transition:background .3s;flex-shrink:0;padding:0}
 .theme-pip{position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:var(--sub);display:flex;align-items:center;justify-content:center;font-size:.62rem;transition:transform .32s cubic-bezier(.34,1.56,.64,1),background .3s}
 html.light .theme-pip{transform:translateX(22px);background:#f59e0b}
-/* mobile: brand + right on row 1, tabs wrap to row 2 full-width */
+/* ── MOBILE NAV (hamburger) ──
+   ≤680px: the tab capsule can't fit 6 nowrap labels even at flex:1,
+   so it's replaced by a burger button in .h-right that opens a
+   dropdown styled like .user-menu. Active page syncs in showPage(). */
+.nav-burger-wrap{position:relative;display:none;flex-shrink:0}
+.nav-menu{position:absolute;top:calc(100% + 8px);right:0;background:var(--bg2);border:1px solid var(--bdr);border-radius:10px;padding:6px;min-width:172px;z-index:300;box-shadow:0 8px 24px rgba(0,0,0,.3);display:none}
+.nav-menu.open{display:block}
+.nav-menu-item{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:6px;font-family:var(--body);font-size:.8rem;font-weight:600;color:var(--sub);cursor:pointer;transition:background .15s,color .15s}
+.nav-menu-item:hover{background:var(--sur);color:var(--txt)}
+.nav-menu-item.active{background:var(--sur);color:var(--txt)}
+.nav-menu-item.active::before{content:'';width:5px;height:5px;border-radius:50%;background:#6366f1;flex-shrink:0}
+
+/* mobile: brand + right on row 1, hamburger replaces the tab capsule */
 @media(max-width:680px){
-  header{padding:10px 14px;row-gap:10px}
+  header{padding:10px 14px}
   .h-brandmark{height:1.5rem}
-  .page-tabs{order:3;flex:1 1 100%;justify-content:stretch}
-  .ptab{flex:1;text-align:center;padding:6px 8px}
+  .page-tabs{display:none}
+  .nav-burger-wrap{display:block}
 }
 
 /* ── GRID ── */
@@ -630,10 +642,14 @@ html.light .bt-tbl tbody tr:hover{background:rgba(0,0,0,.022)}
 
 /* ══════════════ PROJECTIONS PAGE ══════════════ */
 .pj-empty{padding:34px 18px;text-align:center;font-family:var(--mono);font-size:.72rem;color:var(--ghost)}
-/* Intro + disclaimer banner */
-.pj-intro{padding:14px 18px;border-radius:12px;background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(16,185,129,.04));border:1px solid var(--bdr);margin-bottom:16px}
-.pj-intro-ttl{font-family:var(--cond);font-size:1.05rem;font-weight:700;color:var(--txt);letter-spacing:.3px;margin-bottom:5px}
-.pj-intro-txt{font-family:var(--body);font-size:.82rem;color:var(--sub);line-height:1.55}
+/* ── PAGE HERO — shared title card for Timeline / Smart Money /
+   Backtest / Projections / Help. One visual system across all tabs:
+   gradient card chrome + display-font title + body sub. Replaces the
+   former .tl-head/.tl-title/.tl-sub, .pj-intro* and .hp-hero*
+   per-page variants. .pj-disc (below) nests inside it on Projections. */
+.page-hero{margin-bottom:16px;padding:16px 20px;border-radius:14px;background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(16,185,129,.04));border:1px solid var(--bdr)}
+.page-hero-ttl{font-family:var(--ttl);font-size:clamp(1.5rem,4vw,1.9rem);letter-spacing:2px;line-height:1;color:var(--txt);margin-bottom:6px}
+.page-hero-sub{font-family:var(--body);font-size:.84rem;color:var(--sub);line-height:1.55}
 .pj-disc{font-family:var(--mono);font-size:.58rem;color:var(--ghost);line-height:1.5;margin-top:9px;padding-top:9px;border-top:1px solid var(--bdr2)}
 .pj-disc b{color:var(--exp-c)}
 /* PE / PB segmented toggle */
@@ -689,9 +705,6 @@ html.light .bt-tbl tbody tr:hover{background:rgba(0,0,0,.022)}
 /* ══════════════ HELP PAGE ══════════════ */
 #page-help{position:relative;z-index:1;padding:24px 32px 60px;max-width:860px;margin:0 auto;font-family:var(--body)}
 @media(max-width:680px){#page-help{padding:16px 14px 40px}}
-.hp-hero{margin-bottom:22px;padding:22px 24px;border-radius:14px;background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(16,185,129,.04));border:1px solid var(--bdr)}
-.hp-hero-ttl{font-family:var(--ttl);font-size:2.1rem;letter-spacing:2px;line-height:1;color:var(--txt);margin-bottom:6px}
-.hp-hero-sub{font-family:var(--body);font-size:.86rem;color:var(--sub);line-height:1.55}
 .hp-toc{margin-bottom:24px;padding:14px 18px;border-radius:10px;background:var(--bg2);border:1px solid var(--bdr)}
 .hp-toc-ttl{font-family:var(--mono);font-size:.58rem;color:var(--ghost);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
 .hp-toc-list{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--body);font-size:.82rem}
@@ -1297,9 +1310,6 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 #page-tl{position:relative;z-index:1;padding:18px 20px 40px;max-width:1180px;margin:0 auto}
 @media(max-width:680px){#page-tl{padding:12px 12px 32px}}
 
-.tl-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:2px}
-.tl-title{font-family:var(--ttl);font-size:2rem;letter-spacing:2px;line-height:1;margin:0}
-.tl-sub{font-family:var(--body);font-size:.82rem;color:var(--sub);margin:2px 0 14px}
 
 .tl-tools{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-bottom:10px}
 .tl-seg{display:flex;gap:2px;background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;padding:3px}
@@ -1364,6 +1374,20 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   </nav>
   <div class="h-right">
     <div id="live-chip" title="Live intraday data · refreshes every 2 min">LIVE</div>
+    <!-- Mobile hamburger nav (visible ≤680px; replaces .page-tabs) -->
+    <div class="nav-burger-wrap">
+      <button class="icon-btn" id="nav-burger" aria-label="Page navigation menu" aria-expanded="false" aria-haspopup="true" onclick="toggleNavMenu(event)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="nav-menu" id="nav-menu" role="menu">
+        <div class="nav-menu-item active" role="menuitem" data-page="dashboard" onclick="navGo('dashboard')">Dashboard</div>
+        <div class="nav-menu-item" role="menuitem" data-page="timeline" onclick="navGo('timeline')">Timeline</div>
+        <div class="nav-menu-item" role="menuitem" data-page="smartmoney" onclick="navGo('smartmoney')">Smart Money</div>
+        <div class="nav-menu-item" role="menuitem" data-page="backtest" onclick="navGo('backtest')">Backtest</div>
+        <div class="nav-menu-item" role="menuitem" data-page="projections" onclick="navGo('projections')">Projections</div>
+        <div class="nav-menu-item" role="menuitem" data-page="help" onclick="navGo('help')">Help</div>
+      </div>
+    </div>
     <!-- Auth -->
     <button class="auth-btn" id="auth-signin-btn" onclick="authSignIn()">
       <svg width="14" height="14" viewBox="0 0 48 48"><path fill="#4285F4" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#34A853" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.6 26.8 36.5 24 36.5c-5.2 0-9.6-3.1-11.3-7.5l-6.6 4.9C9.6 39.6 16.3 44 24 44z"/><path fill="#EA4335" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.2 5.2C41.3 36.3 44 30.6 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
@@ -1439,9 +1463,9 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
 <div id="page-sm" style="display:none">
   <div id="sm-app">
-    <div class="pj-intro">
-      <div class="pj-intro-ttl">Smart Money — Institutional Flow</div>
-      <div class="pj-intro-txt">How foreign (FII) and domestic (DII) institutions have shifted their holdings across every sector, quarter by quarter. Each cell is the sector's weighted holding that quarter; colour shows the change from the previous quarter — <span style="color:var(--chp-c)">green</span> accumulation, <span style="color:var(--exp-c)">orange</span> reduction. Read a row left-to-right for a sector's trajectory; read a column to see where the money moved that quarter.</div>
+    <div class="page-hero">
+      <div class="page-hero-ttl">Smart Money</div>
+      <div class="page-hero-sub">How foreign (FII) and domestic (DII) institutions have shifted their holdings across every sector, quarter by quarter. Each cell is the sector's weighted holding that quarter; colour shows the change from the previous quarter — <span style="color:var(--chp-c)">green</span> accumulation, <span style="color:var(--exp-c)">orange</span> reduction. Read a row left-to-right for a sector's trajectory; read a column to see where the money moved that quarter.</div>
     </div>
     <div class="sm-controls">
       <div class="sd-shp-seg" id="sm-seg">
@@ -1456,6 +1480,10 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 </div>
 
 <div id="page-bt" style="display:none">
+  <div class="page-hero">
+    <div class="page-hero-ttl">Backtest</div>
+    <div class="page-hero-sub">Test how the valuation signals would have played out historically — pick a sector, a period and a sell rule, and see every trade the model would have taken along with its return versus buy-and-hold.</div>
+  </div>
   <div class="bt-card">
     <div class="bt-card-head">
       <div class="bt-card-title">Backtest Configuration</div>
@@ -1607,9 +1635,9 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 <!-- ══════════════ PROJECTIONS PAGE ══════════════ -->
 <div id="page-pj" style="display:none">
   <div id="pj-app">
-  <div class="pj-intro">
-    <div class="pj-intro-ttl">Sector Price Projections</div>
-    <div class="pj-intro-txt">Estimates where a sector's index could trade if its valuation multiple reverts to its weighted historical median <em>and</em> earnings (or book value) recover to their historical max. The headline figure is that base case; the chart and matrix flex each lever around it — multiple at 90 / 100 / 110% of median, fundamental at 90 / 100 / 110% of max.</div>
+  <div class="page-hero">
+    <div class="page-hero-ttl">Projections</div>
+    <div class="page-hero-sub">Estimates where a sector's index could trade if its valuation multiple reverts to its weighted historical median <em>and</em> earnings (or book value) recover to their historical max. The headline figure is that base case; the chart and matrix flex each lever around it — multiple at 90 / 100 / 110% of median, fundamental at 90 / 100 / 110% of max.</div>
     <div class="pj-disc"><b>⚠ Educational use only — not investment advice.</b> These are mechanical what-if estimates, not forecasts. Real prices depend on growth, interest rates, sentiment and other factors not modelled here. Past medians and peaks may never repeat. Do your own research.</div>
   </div>
 
@@ -1684,11 +1712,10 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 <!-- ══════════════ HELP PAGE ══════════════ -->
 <!-- ===== TIMELINE PAGE ===== -->
 <div id="page-tl" style="display:none">
-  <div class="tl-head">
-    <h1 class="tl-title">Timeline</h1>
-    <span class="plus-badge">PLUS</span>
+  <div class="page-hero">
+    <h1 class="page-hero-ttl">Timeline <span class="plus-badge">PLUS</span></h1>
+    <p class="page-hero-sub" style="margin:0">One metric across every sector, measured as growth relative to Nifty&nbsp;50. The benchmark is the flat 0 line; sectors sit above (outperforming) or below (lagging) it.</p>
   </div>
-  <p class="tl-sub">One metric across every sector, measured as growth relative to Nifty&nbsp;50. The benchmark is the flat 0 line; sectors sit above (outperforming) or below (lagging) it.</p>
 
   <!-- App (subscribed) -->
   <div id="tl-app">
@@ -1738,9 +1765,9 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
 <div id="page-help" style="display:none">
 
-  <div class="hp-hero">
-    <div class="hp-hero-ttl">How this works</div>
-    <div class="hp-hero-sub">A friendly walkthrough — no jargon assumed. We'll start with what each number on a card means, then build up to how the signals are calculated and how to use the Backtest page to sanity-check today's call against history. Takes about ten minutes start to finish.</div>
+  <div class="page-hero">
+    <div class="page-hero-ttl">Help</div>
+    <div class="page-hero-sub">How this works — a friendly walkthrough, no jargon assumed. We'll start with what each number on a card means, then build up to how the signals are calculated and how to use the Backtest page to sanity-check today's call against history. Takes about ten minutes start to finish.</div>
   </div>
 
   <div class="hp-toc">
@@ -9061,6 +9088,26 @@ new MutationObserver(tlRenderIfVisible).observe(document.documentElement,{attrib
    showPage — REPLACE the existing function with this version.
    Adds 'timeline' / #page-tl / #tab-tl and calls tlEnter() on open.
 ════════════════════════════════════════════════════════════════════ */
+/* ── mobile hamburger nav ── */
+function toggleNavMenu(e){
+  e.stopPropagation();
+  var m=document.getElementById('nav-menu');
+  var open=m.classList.toggle('open');
+  document.getElementById('nav-burger').setAttribute('aria-expanded',open?'true':'false');
+}
+function closeNavMenu(){
+  var m=document.getElementById('nav-menu');
+  if(m&&m.classList.contains('open')){
+    m.classList.remove('open');
+    document.getElementById('nav-burger').setAttribute('aria-expanded','false');
+  }
+}
+function navGo(p){closeNavMenu();showPage(p);}
+document.addEventListener('click',function(e){
+  var w=document.querySelector('.nav-burger-wrap');
+  if(w&&!w.contains(e.target))closeNavMenu();
+});
+
 function showPage(p){
   document.getElementById('page-dashboard').style.display = p==='dashboard' ? '' : 'none';
   document.getElementById('page-tl').style.display        = p==='timeline'  ? '' : 'none';
@@ -9073,6 +9120,9 @@ function showPage(p){
     var active=(p===pair[1]);
     tab.classList.toggle('active',active);
     tab.setAttribute('aria-selected',active?'true':'false');
+  });
+  document.querySelectorAll('.nav-menu-item[data-page]').forEach(function(it){
+    it.classList.toggle('active',it.dataset.page===p);
   });
   if(p==='timeline') tlEnter();
   if(p==='smartmoney') smEnter();
