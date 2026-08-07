@@ -163,6 +163,9 @@ html.light .theme-pip{transform:translateX(22px);background:#f59e0b}
 .nav-menu-item:hover{background:var(--sur);color:var(--txt)}
 .nav-menu-item.active{background:var(--sur);color:var(--txt)}
 .nav-menu-item.active::before{content:'';width:5px;height:5px;border-radius:50%;background:#6366f1;flex-shrink:0}
+.nav-menu-divider{height:1px;background:var(--bdr);margin:4px 4px}
+/* The theme item has no page association, so suppress the active dot slot. */
+#nav-theme-item{color:var(--sub)}
 
 /* mobile: brand + right on row 1, hamburger replaces the tab capsule */
 @media(max-width:680px){
@@ -170,6 +173,9 @@ html.light .theme-pip{transform:translateX(22px);background:#f59e0b}
   .h-brandmark{height:1.5rem}
   .page-tabs{display:none}
   .nav-burger-wrap{display:block}
+  /* Six controls overflow to a second row once the burger appears. The
+     theme pill moves into the nav menu below 680px; everything else stays. */
+  #theme-pill-btn{display:none}
 }
 
 /* ── GRID ── */
@@ -1431,21 +1437,6 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   </nav>
   <div class="h-right">
     <div id="live-chip" title="Live intraday data · refreshes every 2 min">LIVE</div>
-    <!-- Mobile hamburger nav (visible ≤680px; replaces .page-tabs) -->
-    <div class="nav-burger-wrap">
-      <button class="icon-btn" id="nav-burger" aria-label="Page navigation menu" aria-expanded="false" aria-haspopup="true" onclick="toggleNavMenu(event)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-      <div class="nav-menu" id="nav-menu" role="menu">
-        <div class="nav-menu-item active" role="menuitem" data-page="dashboard" onclick="navGo('dashboard')">Dashboard</div>
-        <div class="nav-menu-item" role="menuitem" data-page="timeline" onclick="navGo('timeline')">Timeline</div>
-        <div class="nav-menu-item" role="menuitem" data-page="smartmoney" onclick="navGo('smartmoney')">Smart Money</div>
-        <div class="nav-menu-item" role="menuitem" data-page="backtest" onclick="navGo('backtest')">Backtest</div>
-        <div class="nav-menu-item" role="menuitem" data-page="projections" onclick="navGo('projections')">Projections</div>
-        <div class="nav-menu-item" role="menuitem" data-page="help" onclick="navGo('help')">Help</div>
-        <div class="nav-menu-item" role="menuitem" id="nav-admin" data-page="admin" onclick="navGo('admin')" style="display:none">Admin</div>
-      </div>
-    </div>
     <!-- SS-PWA: install app. Revealed by the beforeinstallprompt handler. -->
     <button class="icon-btn" id="pwa-install-btn" title="Install SectorScope" aria-label="Install SectorScope">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -1508,6 +1499,25 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="theme-pip" id="theme-pip">🌙</div>
     </button>
     <button class="icon-btn" onclick="reloadAll()" aria-label="Refresh all sector data" title="Refresh">↻</button>
+    <!-- Mobile hamburger nav (visible ≤680px; replaces .page-tabs) -->
+    <div class="nav-burger-wrap">
+      <button class="icon-btn" id="nav-burger" aria-label="Page navigation menu" aria-expanded="false" aria-haspopup="true" onclick="toggleNavMenu(event)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="nav-menu" id="nav-menu" role="menu">
+        <div class="nav-menu-item active" role="menuitem" data-page="dashboard" onclick="navGo('dashboard')">Dashboard</div>
+        <div class="nav-menu-item" role="menuitem" data-page="timeline" onclick="navGo('timeline')">Timeline</div>
+        <div class="nav-menu-item" role="menuitem" data-page="smartmoney" onclick="navGo('smartmoney')">Smart Money</div>
+        <div class="nav-menu-item" role="menuitem" data-page="backtest" onclick="navGo('backtest')">Backtest</div>
+        <div class="nav-menu-item" role="menuitem" data-page="projections" onclick="navGo('projections')">Projections</div>
+        <div class="nav-menu-item" role="menuitem" data-page="help" onclick="navGo('help')">Help</div>
+        <div class="nav-menu-item" role="menuitem" id="nav-admin" data-page="admin" onclick="navGo('admin')" style="display:none">Admin</div>
+        <div class="nav-menu-divider"></div>
+        <div class="nav-menu-item" role="menuitem" id="nav-theme-item" onclick="toggleTheme();closeNavMenu()">
+          <span id="nav-theme-icon" aria-hidden="true">🌙</span><span id="nav-theme-label">Dark mode</span>
+        </div>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -9237,6 +9247,11 @@ function toggleTheme(){
   /* SS-PWA: keep the installed-app chrome tint in step with the theme */
   var _tc=document.getElementById('ss-theme-color');
   if(_tc) _tc.setAttribute('content',light?'#eef1f8':'#080b12');
+  /* Mobile nav-menu theme row: label names the mode you switch TO. */
+  var _ni=document.getElementById('nav-theme-icon');
+  var _nl=document.getElementById('nav-theme-label');
+  if(_ni) _ni.textContent=light?'\u{1F319}':'\u2600\uFE0F';
+  if(_nl) _nl.textContent=light?'Dark mode':'Light mode';
   SECTORS.forEach(function(s){
     var el=document.getElementById('c-'+s.name);
     if(!el||!el.dataset.rendered) return;
@@ -9257,6 +9272,12 @@ function toggleTheme(){
     var p=document.getElementById('theme-pip');if(p) p.textContent='☀️';
     var _pb=document.getElementById('theme-pill-btn');
     if(_pb) _pb.setAttribute('aria-pressed','true');
+  } else {
+    /* Markup ships in the light-default state; flip the nav row for dark. */
+    var _ni=document.getElementById('nav-theme-icon');
+    var _nl=document.getElementById('nav-theme-label');
+    if(_ni) _ni.textContent='\u2600\uFE0F';
+    if(_nl) _nl.textContent='Light mode';
   }
 })();
 initPlaceholders();
