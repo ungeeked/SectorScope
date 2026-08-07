@@ -107,6 +107,24 @@ html.light #live-chip{color:#15803d;border-color:rgba(21,128,61,.3);background:r
 @media(max-width:600px){.user-name{display:none}.user-pill{padding-right:6px}}
 .icon-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--bdr);border-radius:8px;color:var(--sub);font-size:.9rem;cursor:pointer;transition:all .18s;flex-shrink:0}
 .icon-btn:hover{background:var(--sur);color:var(--txt)}
+/* SS-PWA install button. Hidden until the browser confirms the app is
+   installable (beforeinstallprompt), or until we detect iOS Safari, which
+   never fires that event and needs manual instructions instead. */
+#pwa-install-btn{display:none}
+#pwa-install-btn.show{display:flex}
+#pwa-ios-sheet{position:fixed;inset:0;z-index:900;display:none;align-items:flex-end;
+  justify-content:center;background:rgba(0,0,0,.45);padding:16px}
+#pwa-ios-sheet.show{display:flex}
+.pwa-ios-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:16px;
+  padding:22px 20px;max-width:400px;width:100%;text-align:center}
+.pwa-ios-card h4{font-family:var(--cond);font-size:1.15rem;font-weight:700;
+  color:var(--txt);margin-bottom:8px}
+.pwa-ios-card p{font-family:var(--body);font-size:.85rem;color:var(--sub);
+  line-height:1.55;margin-bottom:16px}
+.pwa-ios-card b{color:var(--txt);font-weight:600}
+.pwa-ios-card button{font-family:var(--body);font-size:.82rem;font-weight:600;
+  color:var(--txt);background:var(--bg3);border:1px solid var(--bdr);
+  border-radius:9px;padding:9px 20px;cursor:pointer}
 /* ── AUTH ── */
 .auth-btn{display:flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;border:1px solid var(--bdr);background:var(--bg3);color:var(--txt);font-family:var(--body);font-size:.72rem;font-weight:600;cursor:pointer;transition:all .18s;white-space:nowrap;flex-shrink:0}
 .auth-btn:hover{background:var(--sur);border-color:rgba(99,102,241,.4)}
@@ -1428,6 +1446,10 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
         <div class="nav-menu-item" role="menuitem" id="nav-admin" data-page="admin" onclick="navGo('admin')" style="display:none">Admin</div>
       </div>
     </div>
+    <!-- SS-PWA: install app. Revealed by the beforeinstallprompt handler. -->
+    <button class="icon-btn" id="pwa-install-btn" title="Install SectorScope" aria-label="Install SectorScope">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    </button>
     <!-- Auth -->
     <button class="auth-btn" id="auth-signin-btn" onclick="authSignIn()">
       <svg width="14" height="14" viewBox="0 0 48 48"><path fill="#4285F4" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z"/><path fill="#34A853" d="M6.3 14.7l6.6 4.8C14.7 16 19 13 24 13c3.1 0 5.8 1.1 7.9 3l5.7-5.7C34.1 6.5 29.3 4 24 4 16.3 4 9.7 8.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.2 0 9.9-1.9 13.5-5l-6.2-5.2C29.4 35.6 26.8 36.5 24 36.5c-5.2 0-9.6-3.1-11.3-7.5l-6.6 4.9C9.6 39.6 16.3 44 24 44z"/><path fill="#EA4335" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.2 5.4l6.2 5.2C41.3 36.3 44 30.6 44 24c0-1.2-.1-2.4-.4-3.5z"/></svg>
@@ -12025,6 +12047,71 @@ async function submitDeleteAccount(){
     showPage(p);
     history.replaceState(null,'',location.pathname+location.hash);
   }catch(e){}
+})();
+
+/* Install affordance.
+
+   Chrome stopped auto-showing the install mini-infobar; beforeinstallprompt
+   still fires but nothing is displayed unless we call prompt() ourselves, and
+   that call must originate from a user gesture. So: capture the event, reveal
+   a header button, and fire the real prompt on click.
+
+   iOS Safari never fires the event at all — Add to Home Screen is manual —
+   so it gets a short instruction sheet instead. */
+(function(){
+  var deferred=null;
+  var btn=document.getElementById('pwa-install-btn');
+  if(!btn) return;
+
+  var standalone=window.matchMedia('(display-mode: standalone)').matches
+                 || navigator.standalone===true;
+  if(standalone) return;                       /* already installed */
+
+  var isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent)
+            || (navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+
+  window.addEventListener('beforeinstallprompt',function(e){
+    e.preventDefault();
+    deferred=e;
+    btn.classList.add('show');
+  });
+
+  window.addEventListener('appinstalled',function(){
+    deferred=null;
+    btn.classList.remove('show');
+  });
+
+  btn.onclick=function(){
+    if(deferred){
+      deferred.prompt();
+      deferred.userChoice.then(function(){
+        deferred=null;
+        btn.classList.remove('show');
+      });
+      return;
+    }
+    if(isIOS) iosSheet();
+  };
+
+  if(isIOS) btn.classList.add('show');
+
+  function iosSheet(){
+    var el=document.getElementById('pwa-ios-sheet');
+    if(!el){
+      el=document.createElement('div');
+      el.id='pwa-ios-sheet';
+      el.innerHTML='<div class="pwa-ios-card">'+
+        '<h4>Add to Home Screen</h4>'+
+        '<p>Tap the <b>Share</b> button in Safari\u2019s toolbar, then choose '+
+        '<b>Add to Home Screen</b>. SectorScope will open full-screen, without browser chrome.</p>'+
+        '<button type="button">Got it</button></div>';
+      el.addEventListener('click',function(e){
+        if(e.target===el||e.target.tagName==='BUTTON') el.classList.remove('show');
+      });
+      document.body.appendChild(el);
+    }
+    el.classList.add('show');
+  }
 })();
 
 /* Service worker. Registers only over https (or localhost), so file:// and
