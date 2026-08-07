@@ -1,0 +1,58 @@
+# Cloudflare Pages header rules — sectorscope.in
+# Lives at the repo root, alongside index.html. Filename is exactly "_headers",
+# no extension. Rules apply top to bottom; a later rule wins for the same
+# header name, so the /* block below sets defaults and the specific paths
+# override where needed.
+
+# ── Defaults for everything ──
+# Deliberately no Cache-Control here: Pages already serves HTML with a
+# revalidating default, and setting one globally would leak onto document
+# responses in ways that are easy to get wrong.
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), usb=()
+
+# ── The document ──
+# no-cache means "revalidate before reuse", not "never store". A deploy is
+# picked up on the next navigation, and an unchanged file still 304s.
+/
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/offline.html
+  Cache-Control: no-cache
+
+# ── Service worker ──
+# Browsers cap SW script caching at 24h on their own, but an intermediary
+# cache can still hide a deployed update. no-cache removes that window.
+/sw.js
+  Cache-Control: no-cache
+  Service-Worker-Allowed: /
+
+# ── Manifest ──
+# Pages usually infers the type from the extension; stated explicitly because
+# a wrong Content-Type here makes Chrome silently ignore the manifest.
+/manifest.webmanifest
+  Cache-Control: no-cache
+  Content-Type: application/manifest+json
+
+# ── Static assets ──
+# index.html references these by bare path with no ?v= fingerprint, so they
+# cannot be immutable — replacing og-image.png would otherwise go unseen for
+# up to a year. One day fresh, then served stale while revalidating in the
+# background, so an updated file lands within a day at zero latency cost.
+#
+# If you ever add ?v= fingerprinting to these paths, change this to:
+#   Cache-Control: public, max-age=31536000, immutable
+/assets/*
+  Cache-Control: public, max-age=86400, stale-while-revalidate=604800
+
+# ── Optional: HSTS ──
+# Only uncomment once you are certain every subdomain is https-only. It is
+# hard to walk back, since browsers honour max-age even after you remove it.
+# /*
+#   Strict-Transport-Security: max-age=31536000; includeSubDomains

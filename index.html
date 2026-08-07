@@ -24,6 +24,17 @@
 <meta name="twitter:card" content="summary_large_image">
 <!-- Set theme class before any CSS is parsed to kill the dark→light flash on cold load. -->
 <script>(function(){try{var t=localStorage.getItem('theme');if(t!=='dark') document.documentElement.classList.add('light');}catch(e){}})();</script>
+<!-- ── SS-PWA: installable app metadata ── -->
+<link rel="manifest" href="/manifest.webmanifest">
+<meta name="theme-color" id="ss-theme-color" content="#eef1f8">
+<script>(function(){try{var m=document.getElementById('ss-theme-color');
+if(m) m.setAttribute('content',document.documentElement.classList.contains('light')?'#eef1f8':'#080b12');}catch(e){}})();</script>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="SectorScope">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SectorScope">
+<!-- ── /SS-PWA ── -->
 <!-- Warm TCP+TLS to the origins we hit on cold load so the handshakes overlap with HTML/CSS parse. -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -9201,6 +9212,9 @@ function toggleTheme(){
   var pill=document.getElementById('theme-pill-btn');
   if(pill) pill.setAttribute('aria-pressed',light?'true':'false');
   localStorage.setItem('theme',light?'light':'dark');
+  /* SS-PWA: keep the installed-app chrome tint in step with the theme */
+  var _tc=document.getElementById('ss-theme-color');
+  if(_tc) _tc.setAttribute('content',light?'#eef1f8':'#080b12');
   SECTORS.forEach(function(s){
     var el=document.getElementById('c-'+s.name);
     if(!el||!el.dataset.rendered) return;
@@ -11992,6 +12006,65 @@ async function submitDeleteAccount(){
     setTimeout(function(){pane.style.display='none';},320);
   };
   window.addEventListener('load',showWhatsNew);
+})();
+</script>
+<!-- ══════════════════════════════════════
+     SS-PWA  service worker + deep link
+     ══════════════════════════════════════ -->
+<script>
+/* Manifest shortcuts land on /?page=timeline etc. showPage() is a global
+   function declaration from the main script block, so it exists by now.
+   Strip the param afterwards so a refresh doesn't re-trigger the jump —
+   same pattern as the #donate handler. */
+(function(){
+  try{
+    var p=new URLSearchParams(location.search).get('page');
+    var ok={dashboard:1,timeline:1,smartmoney:1,backtest:1,projections:1,help:1};
+    if(!p||!ok[p]) return;
+    if(typeof showPage!=='function') return;
+    showPage(p);
+    history.replaceState(null,'',location.pathname+location.hash);
+  }catch(e){}
+})();
+
+/* Service worker. Registers only over https (or localhost), so file:// and
+   any http preview are unaffected. */
+(function(){
+  if(!('serviceWorker' in navigator)) return;
+  if(location.protocol!=='https:'&&location.hostname!=='localhost') return;
+
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('/sw.js',{scope:'/'}).then(function(reg){
+      reg.addEventListener('updatefound',function(){
+        var inc=reg.installing; if(!inc) return;
+        inc.addEventListener('statechange',function(){
+          if(inc.state==='installed'&&navigator.serviceWorker.controller) toast(reg);
+        });
+      });
+    }).catch(function(e){console.warn('SW register failed',e);});
+
+    var reloading=false;
+    navigator.serviceWorker.addEventListener('controllerchange',function(){
+      if(reloading) return; reloading=true; location.reload();
+    });
+  });
+
+  function toast(reg){
+    if(document.getElementById('ss-update-toast')) return;
+    var el=document.createElement('div');
+    el.id='ss-update-toast';
+    el.style.cssText='position:fixed;left:50%;transform:translateX(-50%);bottom:20px;'+
+      'z-index:9999;background:var(--sur);color:var(--txt);border:1px solid var(--bdr);'+
+      'padding:10px 14px;border-radius:10px;font-family:var(--body);font-size:14px;'+
+      'display:flex;gap:12px;align-items:center;box-shadow:0 8px 28px rgba(0,0,0,.35)';
+    el.innerHTML='<span>New version available</span>'+
+      '<button type="button" style="background:var(--chp-c);color:var(--bg);border:0;'+
+      'border-radius:7px;padding:5px 11px;font:inherit;font-weight:600;cursor:pointer">Reload</button>';
+    el.querySelector('button').onclick=function(){
+      if(reg.waiting) reg.waiting.postMessage({type:'SKIP_WAITING'});
+    };
+    document.body.appendChild(el);
+  }
 })();
 </script>
 </body>
