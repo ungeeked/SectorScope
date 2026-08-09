@@ -179,12 +179,12 @@ html.light .theme-pip{transform:translateX(22px);background:#f59e0b}
 }
 
 /* ── GRID ── */
-.dash-grid{position:relative;z-index:1;padding:20px 32px 52px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;max-width:1700px;margin:0 auto;transition:opacity .35s ease}
+.dash-grid{position:relative;z-index:1;padding:20px 20px 56px;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;max-width:1700px;margin:0 auto;transition:opacity .35s ease}
 .dash-grid.fading{opacity:0;pointer-events:none}
-@media(max-width:680px){.dash-grid{padding:10px;gap:10px}}
+@media(max-width:680px){.dash-grid{padding:12px 12px 32px;gap:10px}}
 
 /* ── DASH TOOLBAR (sort selector) ── */
-.dash-toolbar{max-width:1700px;margin:0 auto;padding:14px 32px 0;display:flex;justify-content:flex-end;align-items:center;gap:10px}
+.dash-toolbar{max-width:1700px;margin:0 auto;padding:20px 20px 0;display:flex;justify-content:flex-end;align-items:center;gap:10px}
 .dash-toolbar + .dash-grid{padding-top:10px}
 .sort-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.8px;text-transform:uppercase;color:var(--ghost)}
 .sort-control{display:flex;gap:2px;background:var(--bg3);border:1px solid var(--bdr);border-radius:9px;padding:3px}
@@ -193,7 +193,7 @@ html.light .theme-pip{transform:translateX(22px);background:#f59e0b}
 html.light .sort-btn.active{box-shadow:0 1px 4px rgba(0,0,0,.08)}
 .sort-btn:not(.active):hover{color:var(--txt)}
 @media(max-width:680px){
-  .dash-toolbar{padding:10px 10px 0;justify-content:flex-start}
+  .dash-toolbar{padding:12px 12px 0;justify-content:flex-start}
   .dash-toolbar + .dash-grid{padding-top:6px}
   .sort-label{display:none}
   .sort-btn{padding:5px 10px;font-size:.66rem}
@@ -577,10 +577,10 @@ html.light .sk{background:linear-gradient(90deg,rgba(0,0,0,.04) 0%,rgba(0,0,0,.0
 .retry-btn:hover{background:rgba(248,113,113,.15)}
 
 /* ═══════════════════════ BACKTEST ═══════════════════════ */
-#page-bt{position:relative;z-index:1;padding:20px 32px 56px;max-width:1100px;margin:0 auto}
-@media(max-width:680px){#page-bt{padding:10px}}
-#page-pj{position:relative;z-index:1;padding:20px 32px 56px;max-width:1100px;margin:0 auto}
-@media(max-width:680px){#page-pj{padding:10px}}
+#page-bt{position:relative;z-index:1;padding:20px 20px 56px;max-width:1100px;margin:0 auto}
+@media(max-width:680px){#page-bt{padding:12px 12px 32px}}
+#page-pj{position:relative;z-index:1;padding:20px 20px 56px;max-width:1100px;margin:0 auto}
+@media(max-width:680px){#page-pj{padding:12px 12px 32px}}
 .bt-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;margin-bottom:16px}
 .bt-card-head{padding:12px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 .bt-card-title{font-family:var(--cond);font-size:.98rem;font-weight:700;color:var(--txt);letter-spacing:.3px}
@@ -683,7 +683,13 @@ html.light .bt-tbl tbody tr:hover{background:rgba(0,0,0,.022)}
    former .tl-head/.tl-title/.tl-sub, .pj-intro* and .hp-hero*
    per-page variants. .pj-disc (below) nests inside it on Projections. */
 .page-hero{margin-bottom:16px;padding:16px 20px;border-radius:14px;background:linear-gradient(135deg,rgba(99,102,241,.08),rgba(16,185,129,.04));border:1px solid var(--bdr)}
-.page-hero-ttl{font-family:var(--ttl);font-size:clamp(1.5rem,4vw,1.9rem);letter-spacing:2px;line-height:1;color:var(--txt);margin-bottom:6px}
+/* SS-LAYOUT-UNIFIED: font-weight and the full margin shorthand are both
+   explicit so plain DIV and H1 headings render identically. Without the
+   weight the lone H1 (Timeline) inherited the UA bold — and since Bebas Neue ships
+   one weight, that bold is synthesised by the browser. We keep that look
+   and give it to every page. The margin shorthand kills the UA
+   margin-top:0.67em that was pushing the Timeline title down. */
+.page-hero-ttl{font-family:var(--ttl);font-size:clamp(1.5rem,4vw,1.9rem);font-weight:700;letter-spacing:2px;line-height:1;color:var(--txt);margin:0 0 6px}
 .page-hero-sub{font-family:var(--body);font-size:.84rem;color:var(--sub);line-height:1.55}
 .pj-disc{font-family:var(--mono);font-size:.58rem;color:var(--ghost);line-height:1.5;margin-top:9px;padding-top:9px;border-top:1px solid var(--bdr2)}
 .pj-disc b{color:var(--exp-c)}
@@ -738,8 +744,14 @@ html.light .bt-tbl tbody tr:hover{background:rgba(0,0,0,.022)}
 .pj-chart-legend .pj-lg-line{width:16px;height:0;border-top-width:2px;border-top-style:solid;flex-shrink:0}
 
 /* ══════════════ ADMIN PAGE ══════════════ */
-#page-admin{position:relative;z-index:1;padding:20px 32px 56px;max-width:1100px;margin:0 auto}
-@media(max-width:680px){#page-admin{padding:10px}}
+#page-admin{position:relative;z-index:1;padding:20px 20px 56px;max-width:1100px;margin:0 auto}
+@media(max-width:680px){#page-admin{padding:12px 12px 32px}}
+/* Smart Money and Videos previously had no container rule at all — both
+   rendered full-bleed with no vertical padding. */
+#page-sm{position:relative;z-index:1;padding:20px 20px 56px;max-width:1100px;margin:0 auto}
+@media(max-width:680px){#page-sm{padding:12px 12px 32px}}
+#page-vd{position:relative;z-index:1;padding:20px 20px 56px;max-width:1100px;margin:0 auto}
+@media(max-width:680px){#page-vd{padding:12px 12px 32px}}
 .adm-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:16px}
 .adm-tile{background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;padding:12px 14px}
 .adm-tile-num{font-family:var(--cond);font-size:1.6rem;font-weight:700;color:var(--txt);line-height:1;font-variant-numeric:tabular-nums}
@@ -765,8 +777,8 @@ html.light .adm-fail{color:#b91c1c}
 .adm-state{padding:18px;text-align:center;font-family:var(--mono);font-size:.62rem;color:var(--ghost)}
 
 /* ══════════════ HELP PAGE ══════════════ */
-#page-help{position:relative;z-index:1;padding:24px 32px 60px;max-width:860px;margin:0 auto;font-family:var(--body)}
-@media(max-width:680px){#page-help{padding:16px 14px 40px}}
+#page-help{position:relative;z-index:1;padding:20px 20px 56px;max-width:860px;margin:0 auto;font-family:var(--body)}
+@media(max-width:680px){#page-help{padding:12px 12px 32px}}
 .hp-toc{margin-bottom:24px;padding:14px 18px;border-radius:10px;background:var(--bg2);border:1px solid var(--bdr)}
 .hp-toc-ttl{font-family:var(--mono);font-size:.58rem;color:var(--ghost);text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px}
 .hp-toc-list{display:flex;flex-wrap:wrap;gap:6px 14px;font-family:var(--body);font-size:.82rem}
@@ -952,7 +964,9 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .sm-controls{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:4px 0 12px}
 .sm-controls .sd-shp-seg{border-bottom:none;padding:0}
 .sm-legend{font-family:var(--mono);font-size:.58rem;color:var(--sub)}
-#sm-app{max-width:960px;margin:0 auto;padding:0 4px}
+/* Width and gutter now come from #page-sm; this stays only as a
+   grouping element for the gate swap. */
+#sm-app{margin:0 auto}
 .shp-pledge-badge{display:inline-block;font-family:var(--mono);font-size:.5rem;font-weight:700;letter-spacing:.3px;color:var(--exp-c);background:rgba(255,112,67,.13);border:1px solid rgba(255,112,67,.35);border-radius:4px;padding:1px 4px;vertical-align:middle;white-space:nowrap}
 .sd-sm-tbl tbody td.sm-rankcol,.sd-sm-tbl thead th:first-child{position:sticky;left:0;z-index:1;min-width:44px;max-width:44px;background:var(--bg2)}
 .sd-sm-tbl tbody td.sm-namecol,.sd-sm-tbl thead th:nth-child(2){position:sticky;left:44px;z-index:1;min-width:118px;background:var(--bg2)}
@@ -1369,7 +1383,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
    Reuses existing .cm-pill and .cm-checkbox chrome; only adds the
    page-level layout, canvas wrap, hover readout, and the Plus gate.
 ════════════════════════════════════════════════════════════════════ */
-#page-tl{position:relative;z-index:1;padding:18px 20px 40px;max-width:1180px;margin:0 auto}
+#page-tl{position:relative;z-index:1;padding:20px 20px 56px;max-width:1100px;margin:0 auto}
 @media(max-width:680px){#page-tl{padding:12px 12px 32px}}
 
 
