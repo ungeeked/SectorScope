@@ -1411,6 +1411,28 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 .tl-gate-title{font-family:var(--cond);font-size:1.3rem;font-weight:700;color:var(--txt);display:flex;align-items:center;gap:8px;justify-content:center;margin-bottom:8px}
 .tl-gate-desc{font-family:var(--body);font-size:.84rem;color:var(--sub);line-height:1.5;margin-bottom:16px}
 .tl-gate-btn{font-family:var(--body);font-size:.8rem;font-weight:600;color:#fff;background:linear-gradient(135deg,#6366f1,#8b5cf6);border:none;border-radius:9px;padding:9px 18px;cursor:pointer}
+
+/* ── VIDEOS (vd) ──
+   Thumbnails are a click-to-load facade: we render YouTube's static
+   hqdefault.jpg and only swap in the iframe on click. Twelve embedded
+   players would each pull ~1MB of YouTube JS on page open; this way the
+   cost is paid per video actually watched, and nothing is requested from
+   YouTube's cookie domain until the user opts in by pressing play. */
+.vd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.vd-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.vd-thumb{position:relative;width:100%;aspect-ratio:16/9;background:#0b0f18;cursor:pointer;border:none;padding:0;display:block;overflow:hidden}
+.vd-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.vd-thumb iframe{width:100%;height:100%;border:0;display:block}
+.vd-play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.26);transition:background .15s}
+.vd-thumb:hover .vd-play{background:rgba(0,0,0,.10)}
+.vd-play-i{width:52px;height:52px;border-radius:50%;background:rgba(17,17,17,.82);display:flex;align-items:center;justify-content:center}
+.vd-dur{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.8);color:#fff;font-family:var(--mono);font-size:.6rem;padding:2px 5px;border-radius:4px;letter-spacing:.3px}
+.vd-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:5px}
+.vd-ttl{font-family:var(--cond);font-size:.98rem;font-weight:700;color:var(--txt);line-height:1.3}
+.vd-desc{font-family:var(--body);font-size:.78rem;color:var(--sub);line-height:1.5}
+.vd-meta{font-family:var(--mono);font-size:.58rem;color:var(--ghost);margin-top:2px;letter-spacing:.3px}
+.vd-state{font-family:var(--body);font-size:.84rem;color:var(--sub);padding:28px 4px;text-align:center}
+.adm-vid-ta{width:100%;box-sizing:border-box;min-height:180px;resize:vertical;background:var(--bg3);color:var(--txt);border:none;border-radius:0;padding:12px 14px;font-family:var(--mono);font-size:.62rem;line-height:1.6;outline:none}
 </style>
 </head>
 <body>
@@ -1432,6 +1454,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <button id="tab-sm" class="ptab" role="tab" aria-selected="false" onclick="showPage('smartmoney')">Smart Money</button>
     <button id="tab-bt" class="ptab" role="tab" aria-selected="false" onclick="showPage('backtest')">Backtest</button>
     <button id="tab-pj" class="ptab" role="tab" aria-selected="false" onclick="showPage('projections')">Projections</button>
+    <button id="tab-vd" class="ptab" role="tab" aria-selected="false" onclick="showPage('videos')">Videos</button>
     <button id="tab-help" class="ptab" role="tab" aria-selected="false" onclick="showPage('help')">Help</button>
     <button id="tab-admin" class="ptab" role="tab" aria-selected="false" onclick="showPage('admin')" style="display:none">Admin</button>
   </nav>
@@ -1510,6 +1533,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
         <div class="nav-menu-item" role="menuitem" data-page="smartmoney" onclick="navGo('smartmoney')">Smart Money</div>
         <div class="nav-menu-item" role="menuitem" data-page="backtest" onclick="navGo('backtest')">Backtest</div>
         <div class="nav-menu-item" role="menuitem" data-page="projections" onclick="navGo('projections')">Projections</div>
+        <div class="nav-menu-item" role="menuitem" data-page="videos" onclick="navGo('videos')">Videos</div>
         <div class="nav-menu-item" role="menuitem" data-page="help" onclick="navGo('help')">Help</div>
         <div class="nav-menu-item" role="menuitem" id="nav-admin" data-page="admin" onclick="navGo('admin')" style="display:none">Admin</div>
         <div class="nav-menu-divider"></div>
@@ -1835,6 +1859,30 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   </div>
 </div>
 
+<div id="page-vd" style="display:none">
+  <div class="page-hero">
+    <div class="page-hero-ttl">Videos</div>
+    <div class="page-hero-sub">Walkthroughs and method explainers &mdash; how the valuation bands are built, what each signal actually claims, and how to read a sector before acting on it. Open to everyone who has supported SectorScope with a donation.</div>
+  </div>
+
+  <!-- Unlocked: library. Populated only from GET /videos, never from
+       markup — the IDs must not ship in this file. -->
+  <div id="vd-app" style="display:none">
+    <div class="vd-grid" id="vd-grid"></div>
+    <div class="vd-state" id="vd-state">Loading&hellip;</div>
+  </div>
+
+  <!-- Gate: signed out, or signed in but not yet a donor. Copy and the
+       button action are both set by vdShowGate(). -->
+  <div class="tl-gate" id="vd-gate">
+    <div class="tl-gate-card">
+      <div class="tl-gate-title">Videos <span class="plus-badge">DONORS</span></div>
+      <div class="tl-gate-desc" id="vd-gate-desc"></div>
+      <button class="tl-gate-btn" id="vd-gate-btn" type="button">Support SectorScope</button>
+    </div>
+  </div>
+</div>
+
 <div id="page-admin" style="display:none">
   <div class="page-hero">
     <div class="page-hero-ttl">Admin</div>
@@ -1857,6 +1905,13 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   <div class="adm-card">
     <div class="adm-card-head">Donations</div>
     <div class="adm-tbl-wrap" id="adm-donors"><div class="adm-state">Loading…</div></div>
+  </div>
+
+  <div class="adm-card">
+    <div class="adm-card-head"><span>Videos &mdash; donor-gated library</span><button class="adm-btn" onclick="admLoadVideos()">Reload</button></div>
+    <textarea id="adm-vid-json" class="adm-vid-ta" spellcheck="false" autocomplete="off" placeholder='[{"title":"Reading the valuation bands","youtubeId":"dQw4w9WgXcQ","desc":"Ten minutes on what the percentile bands do and do not tell you.","duration":"10:24","publishedAt":"2026-08-09"}]'></textarea>
+    <div class="adm-append-msg" id="adm-vid-msg" style="display:block">Paste a JSON array. <strong>youtubeId</strong> accepts a bare ID or any YouTube URL. Saving replaces the whole list.</div>
+    <div style="padding:10px 14px;border-top:1px solid var(--bdr)"><button class="adm-btn" onclick="admSaveVideos()">Save list</button></div>
   </div>
 
   <div class="adm-card">
@@ -9195,6 +9250,140 @@ new MutationObserver(tlRenderIfVisible).observe(document.documentElement,{attrib
    showPage — REPLACE the existing function with this version.
    Adds 'timeline' / #page-tl / #tab-tl and calls tlEnter() on open.
 ════════════════════════════════════════════════════════════════════ */
+/* ════════════════════════════════════════════════════════════════════
+   VIDEOS (vd) — donor-gated library
+   The tab is visible to everyone; only the CONTENT is gated, and it is
+   gated server-side. Nothing about a video reaches this page except
+   through GET /videos, which 403s a non-donor — so there is no video ID
+   in this file to find via view-source.
+
+   State: vdLoaded flips true only on a successful fetch, so a gate hit
+   or a network failure both stay retryable when the user comes back.
+════════════════════════════════════════════════════════════════════ */
+var vdLoaded=false, vdLoading=false;
+
+function vdEsc(s){
+  return String(s==null?'':s).replace(/[&<>"']/g,function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+/* Called on sign-in, sign-out and successful donation — all three change
+   the answer to "is this user a donor?", so the cached library (or
+   cached gate) has to be thrown away and re-decided by the server. */
+function vdReset(){
+  vdLoaded=false; vdLoading=false;
+  var pg=document.getElementById('page-vd');
+  if(pg && pg.style.display!=='none') vdLoad();
+}
+
+function vdShowGate(reason){
+  var app =document.getElementById('vd-app');
+  var gate=document.getElementById('vd-gate');
+  var desc=document.getElementById('vd-gate-desc');
+  var btn =document.getElementById('vd-gate-btn');
+  if(!app||!gate||!desc||!btn) return;
+  app.style.display='none';
+  gate.style.display='flex';
+  if(reason==='signin'){
+    desc.textContent='Sign in to check whether your account has access. The video library is open to everyone who has donated to SectorScope.';
+    btn.textContent='Sign in';
+    btn.onclick=function(){ authSignIn(); };
+  } else {
+    desc.textContent='The video library is a thank-you for SectorScope donors. Any donation, any amount, unlocks it \u2014 permanently, and with no subscription attached.';
+    btn.textContent='Support SectorScope';
+    btn.onclick=function(){ openDonatePane(); };
+  }
+}
+
+function vdEnter(){
+  if(vdLoaded||vdLoading) return;
+  vdLoad();
+}
+
+async function vdLoad(){
+  if(vdLoading) return;
+  var app =document.getElementById('vd-app');
+  var gate=document.getElementById('vd-gate');
+  var st  =document.getElementById('vd-state');
+  if(!currentUser||!currentUser.token){ vdShowGate('signin'); return; }
+
+  vdLoading=true;
+  if(gate) gate.style.display='none';
+  if(app)  app.style.display='';
+  if(st){ st.style.display=''; st.textContent='Loading\u2026'; }
+
+  try{
+    var res=await fetch(WORKER_BASE+'/videos',{
+      headers:{'Authorization':'Bearer '+currentUser.token},
+    });
+    if(res.status===401){ vdLoading=false; vdShowGate('signin'); return; }
+    if(res.status===403){ vdLoading=false; vdShowGate('donate'); return; }
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    var data=await res.json();
+    vdLoaded=true;
+    vdRender(data.videos||[]);
+  }catch(e){
+    if(st){ st.style.display=''; st.textContent='Could not load videos: '+e.message; }
+  }
+  vdLoading=false;
+}
+
+function vdFmtDate(iso){
+  if(!iso) return '';
+  try{
+    var d=new Date(String(iso)+'T00:00:00');
+    if(isNaN(d.getTime())) return vdEsc(iso);
+    return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  }catch(e){ return vdEsc(iso); }
+}
+
+function vdRender(list){
+  var grid=document.getElementById('vd-grid'), st=document.getElementById('vd-state');
+  if(!grid) return;
+  if(!list.length){
+    grid.innerHTML='';
+    if(st){ st.style.display=''; st.textContent='No videos published yet \u2014 check back soon.'; }
+    return;
+  }
+  if(st) st.style.display='none';
+  grid.innerHTML=list.map(function(v){
+    var when=vdFmtDate(v.publishedAt);
+    return '<div class="vd-card">'
+      +'<button class="vd-thumb" type="button" data-yt="'+vdEsc(v.youtubeId)+'" aria-label="Play: '+vdEsc(v.title)+'">'
+        +'<img loading="lazy" src="https://i.ytimg.com/vi/'+vdEsc(v.youtubeId)+'/hqdefault.jpg" alt="">'
+        +'<span class="vd-play"><span class="vd-play-i">'
+          +'<svg width="20" height="20" viewBox="0 0 24 24" fill="#fff" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>'
+        +'</span></span>'
+        +(v.duration?'<span class="vd-dur">'+vdEsc(v.duration)+'</span>':'')
+      +'</button>'
+      +'<div class="vd-body">'
+        +'<div class="vd-ttl">'+vdEsc(v.title)+'</div>'
+        +(v.desc?'<div class="vd-desc">'+vdEsc(v.desc)+'</div>':'')
+        +(when?'<div class="vd-meta">'+vdEsc(when)+'</div>':'')
+      +'</div></div>';
+  }).join('');
+}
+
+/* Click-to-load: swap the static thumbnail for a real player. The ID is
+   re-validated here even though the worker already validated it on
+   write — this string is being interpolated into a src attribute, and
+   the cost of the check is nil. */
+document.addEventListener('click',function(e){
+  var btn=e.target&&e.target.closest?e.target.closest('.vd-thumb'):null;
+  if(!btn||!btn.dataset||!btn.dataset.yt) return;
+  var id=btn.dataset.yt;
+  if(!/^[A-Za-z0-9_-]{11}$/.test(id)) return;
+  var wrap=document.createElement('div');
+  wrap.className='vd-thumb';
+  wrap.style.cursor='default';
+  wrap.innerHTML='<iframe src="https://www.youtube-nocookie.com/embed/'+id
+    +'?autoplay=1&rel=0&modestbranding=1&playsinline=1" title="Video player" '
+    +'allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" '
+    +'referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>';
+  btn.parentNode.replaceChild(wrap,btn);
+});
+
 /* ── mobile hamburger nav ── */
 function toggleNavMenu(e){
   e.stopPropagation();
@@ -9215,15 +9404,33 @@ document.addEventListener('click',function(e){
   if(w&&!w.contains(e.target))closeNavMenu();
 });
 
+/* Set while showPage is being driven BY a popstate event, so the URL
+   sync below doesn't push a second entry for a navigation the browser
+   has already performed (which would make Back a no-op). */
+var _ssNavSuppress=false;
+
 function showPage(p){
+  /* URL sync. Only /videos has a real path; every other page lives at
+     "/". We rewrite exclusively on entering or leaving videos, so the
+     other tabs' URLs — including the #donate hash — are never touched. */
+  if(!_ssNavSuppress){
+    try{
+      if(p==='videos' && location.pathname!=='/videos'){
+        history.pushState({ssPage:'videos'},'','/videos'+location.search);
+      } else if(p!=='videos' && location.pathname==='/videos'){
+        history.pushState({ssPage:p},'','/'+location.search);
+      }
+    }catch(e){}
+  }
   document.getElementById('page-dashboard').style.display = p==='dashboard' ? '' : 'none';
   document.getElementById('page-tl').style.display        = p==='timeline'  ? '' : 'none';
   document.getElementById('page-sm').style.display        = p==='smartmoney' ? '' : 'none';
   document.getElementById('page-bt').style.display        = p==='backtest'  ? '' : 'none';
   document.getElementById('page-pj').style.display        = p==='projections' ? '' : 'none';
   document.getElementById('page-help').style.display      = p==='help'      ? '' : 'none';
+  document.getElementById('page-vd').style.display        = p==='videos'    ? '' : 'none';
   document.getElementById('page-admin').style.display     = p==='admin'     ? '' : 'none';
-  [['dash','dashboard'],['tl','timeline'],['sm','smartmoney'],['bt','backtest'],['pj','projections'],['help','help'],['admin','admin']].forEach(function(pair){
+  [['dash','dashboard'],['tl','timeline'],['sm','smartmoney'],['bt','backtest'],['pj','projections'],['vd','videos'],['help','help'],['admin','admin']].forEach(function(pair){
     var tab=document.getElementById('tab-'+pair[0]); if(!tab) return;
     var active=(p===pair[1]);
     tab.classList.toggle('active',active);
@@ -9235,6 +9442,7 @@ function showPage(p){
   if(p==='timeline') tlEnter();
   if(p==='smartmoney') smEnter();
   if(p==='projections') pjEnter();
+  if(p==='videos') vdEnter();
   if(p==='admin') admEnter();
   if(p==='help') window.scrollTo({top:0,behavior:'instant'});
 }
@@ -9361,6 +9569,7 @@ function _persistSession(sess){
   };
   authRender();
   adminProbe();
+  vdReset();   /* donor status just became knowable — re-decide the video gate */
   try{ localStorage.setItem('ss_user', JSON.stringify(currentUser)); }catch(e){}
 }
 
@@ -9471,8 +9680,54 @@ function admEnter(){
   admLoadOverview();
   admLoadDigest();
   admLoadDonors();
+  admLoadVideos();
   admLoadUsers();
   admLoadAlerts();
+}
+
+/* ── Admin: video list editor ──
+   A textarea over the raw JSON rather than a row-based form. The list is
+   operator-only and edited rarely; a form would be more code and more
+   ways to be wrong. The worker validates every entry and rejects the
+   whole write on the first bad one, so a typo can't half-apply. */
+async function admLoadVideos(){
+  var ta=document.getElementById('adm-vid-json'), msg=document.getElementById('adm-vid-msg');
+  if(!ta) return;
+  try{
+    var d=await admFetch('/admin/videos');
+    var list=d.videos||[];
+    ta.value=JSON.stringify(list,null,2);
+    if(msg) msg.textContent=list.length+' video(s) live.';
+  }catch(e){
+    if(msg) msg.textContent='Load failed: '+e.message;
+  }
+}
+
+async function admSaveVideos(){
+  var ta=document.getElementById('adm-vid-json'), msg=document.getElementById('adm-vid-msg');
+  if(!ta||!msg) return;
+  var parsed;
+  try{ parsed=JSON.parse(ta.value||'[]'); }
+  catch(e){ msg.textContent='Not valid JSON: '+e.message; return; }
+  if(!Array.isArray(parsed)){ msg.textContent='Top level must be an array.'; return; }
+  msg.textContent='Saving…';
+  try{
+    var r=await fetch(WORKER_BASE+'/admin/videos',{
+      method :'POST',
+      headers:{'Authorization':'Bearer '+currentUser.token,'Content-Type':'application/json'},
+      body   :JSON.stringify({videos:parsed}),
+    });
+    var d={};
+    try{ d=await r.json(); }catch(e){}
+    if(!r.ok) throw new Error(d.error||('HTTP '+r.status));
+    /* Echo back the normalised list so the operator sees exactly what was
+       stored — pasted URLs come back as bare IDs, fields get trimmed. */
+    ta.value=JSON.stringify(d.videos||[],null,2);
+    msg.textContent='Saved — '+d.count+' video(s) live.';
+    vdLoaded=false;   /* force the public page to refetch on next visit */
+  }catch(e){
+    msg.textContent='Save failed: '+e.message;
+  }
 }
 
 async function admLoadOverview(){
@@ -9604,6 +9859,7 @@ function authSignOut(){
   subscriptionState=null;
   subscriptionMeta={};
   donorLastAt=null;
+  vdReset();   /* drop the cached library; the gate must come back */
   localStorage.removeItem('ss_user');
   localStorage.removeItem('ss_sub');
   if(typeof google!=='undefined') google.accounts.id.disableAutoSelect();
@@ -9673,6 +9929,30 @@ document.addEventListener('click',function(e){
     try{ localStorage.removeItem('ss_user'); localStorage.removeItem('ss_sub'); }catch(_){}
   }
 })();
+
+/* ── /videos deep link + Back-button support ──
+   Requires Cloudflare Pages to rewrite /videos to /index.html with a 200
+   (see _redirects); without that this file never loads on a cold hit and
+   nothing below runs. restoreSession() above is synchronous, so
+   currentUser is already settled here and vdLoad() can decide
+   gate-vs-library on the first paint rather than flashing one then the
+   other. */
+(function(){
+  try{
+    if(/^\/videos\/?$/.test(location.pathname)) showPage('videos');
+  }catch(e){}
+})();
+
+window.addEventListener('popstate',function(){
+  var onVideos=/^\/videos\/?$/.test(location.pathname);
+  var pg=document.getElementById('page-vd');
+  if(!pg) return;
+  var showing=pg.style.display!=='none';
+  if(onVideos===showing) return;   /* already in the right state */
+  _ssNavSuppress=true;
+  try{ showPage(onVideos?'videos':'dashboard'); }
+  finally{ _ssNavSuppress=false; }
+});
 
 /* Init Google as soon as the DOM is ready. The GSI script is `async defer` so
    it may not yet be parsed; in that case authInit no-ops on the missing
@@ -10396,6 +10676,7 @@ async function verifyDonation(response,amount){
     /* Authoritative server confirmation. Set 6-month suppress locally so we
        don't re-ask even if /subscription returns stale donor info briefly. */
     donorLastAt=data.lastAt||new Date().toISOString();
+    vdReset();   /* they are a donor as of now — unlock Videos without a reload */
     try{ localStorage.setItem(SS_DONATE_SNOOZE_KEY,String(Date.now()+DONATE_SNOOZE_POSTDONO_MS)); }catch(e){}
 
     var body=document.getElementById('dn-body');

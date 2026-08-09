@@ -1,0 +1,13 @@
+# Cloudflare Pages redirects — SectorScope
+#
+# Rewrite (200), not redirect (301/302). A redirect would bounce the URL
+# back to / and the deep link would not survive a refresh or a shared
+# link; a 200 rewrite serves index.html while the address bar keeps
+# /videos, which is what the router in index.html reads on cold load.
+#
+# Only /videos is listed. Every other page lives at / and is switched
+# client-side by showPage(), so no catch-all is needed — and adding one
+# would swallow real 404s for mistyped paths.
+
+/videos     /index.html   200
+/videos/    /index.html   200
