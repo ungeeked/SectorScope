@@ -954,6 +954,65 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .sd-cons-range-bar::after{content:"";position:absolute;top:-2px;left:var(--pos,0%);width:2px;height:7px;background:var(--txt);border-radius:1px;transform:translateX(-1px)}
 .sd-cons-range-bounds{display:flex;justify-content:space-between;font-size:.5rem;color:var(--ghost)}
 .sd-cons-state{padding:30px 16px;text-align:center;color:var(--ghost);font-family:var(--mono);font-size:.62rem}
+/* ── Expandable constituent row → latest annual report ──
+   Whole row is the toggle (better tap target than a chevron on mobile). */
+.sd-cons-table tbody tr.sd-cons-row{cursor:pointer}
+.sd-cons-caret{display:inline-block;width:9px;margin-right:6px;color:var(--ghost);font-size:.6rem;transition:transform .15s}
+.sd-cons-row.is-open .sd-cons-caret{transform:rotate(90deg);color:var(--txt)}
+.sd-ar-row td{padding:10px 14px!important;border-bottom:1px solid var(--bdr2)!important;background:var(--bg3)}
+.sd-ar-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border:1px solid var(--bdr);border-radius:5px;background:var(--card);color:var(--txt);text-decoration:none;font-family:var(--mono);font-size:.62rem;transition:border-color .15s,color .15s}
+.sd-ar-btn:hover{border-color:var(--acc);color:var(--acc)}
+.sd-ar-btn::after{content:"\2197";font-size:.55rem;color:var(--ghost)}
+.sd-ar-note{font-family:var(--mono);font-size:.6rem;color:var(--ghost)}
+.sd-ar-note a{color:var(--acc);text-decoration:underline;cursor:pointer}
+.sd-ar-row td{white-space:normal!important;font-variant-numeric:normal}
+.sd-ar-sum{margin-top:10px;max-height:520px;overflow-y:auto;padding:4px 2px;color:var(--txt)}
+.ar-cards{display:flex;flex-direction:column;gap:7px}
+.ar-card{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--bdr);border-left:3px solid var(--ar);border-radius:7px;background:linear-gradient(90deg,color-mix(in srgb,var(--ar) 7%,transparent),transparent 60%);transition:transform .1s}
+.ar-card:hover{transform:translateX(2px)}
+.ar-ic{width:15px;height:15px;flex-shrink:0;margin-top:1px;color:var(--ar)}
+.ar-tx{font-family:var(--body);font-size:.86rem;line-height:1.55;color:var(--txt);overflow-wrap:anywhere;min-width:0;flex:1}
+.ar-card{cursor:pointer}
+.ar-caret{margin-left:auto;flex-shrink:0;align-self:center;color:var(--ghost);font-size:.6rem;transition:transform .15s}
+.ar-card.open .ar-caret{transform:rotate(90deg);color:var(--ar)}
+.ar-cbody{display:none;flex-basis:100%;margin-top:9px;padding-top:9px;border-top:1px dashed var(--bdr);font-family:var(--body);font-size:.82rem;line-height:1.6;color:var(--sub)}
+.ar-card.open{flex-wrap:wrap}
+.ar-card.open .ar-cbody{display:block}
+.ar-cbody .xq{font-weight:600;color:var(--txt);margin:9px 0 3px}
+.ar-cbody .xq:first-child{margin-top:0}
+.ar-cbody ul{margin:2px 0 6px;padding-left:16px;display:flex;flex-direction:column;gap:3px}
+.ar-cbody .xs{font-size:.6rem;font-family:var(--mono);letter-spacing:.05em;text-transform:uppercase;color:var(--ar);margin:10px 0 5px}
+.ar-cbody .xs:first-child{margin-top:0}
+.ar-cbody .xnf{color:var(--ghost);font-style:italic}
+.ar-cbody .xpg{color:var(--ghost);font-size:.66rem}
+.ar-tx .num{color:var(--ar);font-weight:700;font-variant-numeric:tabular-nums}
+.sd-ar-status{font-family:var(--mono);font-size:.6rem;color:var(--acc);margin-top:8px}
+.sd-ar-sum ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:6px}
+.sd-ar-sum li{white-space:normal}
+.sd-ar-head{color:var(--ghost);margin-bottom:8px;white-space:normal}
+.sd-ar-anim{display:flex;align-items:center;gap:9px;margin-top:10px;font-family:var(--mono);font-size:.6rem;color:var(--ghost)}
+.sd-ar-anim .dots{display:inline-flex;gap:4px}
+.sd-ar-anim .dots span{width:6px;height:6px;border-radius:50%;background:var(--acc);animation:arPulse 1.2s infinite ease-in-out}
+.sd-ar-anim .dots span:nth-child(2){animation-delay:.2s}
+.sd-ar-anim .dots span:nth-child(3){animation-delay:.4s}
+@keyframes arPulse{0%,80%,100%{opacity:.25;transform:scale(.75)}40%{opacity:1;transform:scale(1)}}
+/* Full-page reader, not a floating modal: summaries with expanded sections
+   run long, and a 640px pane made them cramped. */
+.arsum-ovl{position:fixed;inset:0;background:var(--bg);z-index:400;display:flex;justify-content:center;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.arsum-pane{background:transparent;border:none;width:100%;max-width:860px;min-height:100%;padding:0 18px 70px}
+.arsum-pane h3{position:sticky;top:0;z-index:2;background:var(--bg);margin:0 -4px 12px;padding:16px 4px 12px;font-family:var(--mono);font-size:.8rem;color:var(--txt);display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--bdr)}
+.arsum-pane h3 span{cursor:pointer;color:var(--ghost);font-size:1.05rem;line-height:1;padding:4px 8px}
+.arsum-pane h3 span:hover{color:var(--txt)}
+.arsum-item{border:1px solid var(--bdr);border-radius:6px;margin-bottom:8px;overflow:hidden}
+.arsum-item-h{padding:8px 10px;font-family:var(--mono);font-size:.62rem;color:var(--txt);cursor:pointer;display:flex;justify-content:space-between;gap:8px}
+.arsum-item-h:hover{background:var(--sur)}
+.arsum-item-h .when{color:var(--ghost)}
+.arsum-item-b{display:none;padding:10px;border-top:1px solid var(--bdr);color:var(--txt)}
+.arsum-item.open .arsum-item-b{display:block}
+.arsum-empty{font-family:var(--mono);font-size:.62rem;color:var(--ghost);padding:12px 4px}
+.arsum-sec{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);margin:18px 0 8px;display:flex;align-items:baseline;gap:8px}
+.arsum-sec:first-child{margin-top:4px}
+.arsum-sec-n{font-size:.56rem;color:var(--ghost);text-transform:none;letter-spacing:0}
 /* ── Shareholding Pattern tables — same visual system as constituents:
    sd-cons-wrap card + sd-cons-table typography. Additions below cover
    what constituents doesn't need: a sticky symbol column (10+ numeric
@@ -1501,6 +1560,10 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
         <div class="user-menu-item" onclick="openMyAlerts();closeUserMenu()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           My Alerts
+        </div>
+        <div class="user-menu-item" onclick="openArSumPane();closeUserMenu()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          AI Summaries
         </div>
         <div class="user-menu-item" onclick="openDonatePane();closeUserMenu()">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
@@ -6870,8 +6933,9 @@ function renderConstituentsTable(d){
         +'<div class="sd-cons-range-bounds"><span>'+fmtNum(s.low)+'</span><span>'+fmtNum(s.high)+'</span></div>'
       +'</div>';
     }
-    body+='<tr>'
-      +'<td>'+escapeHtml(s.symbol)+'</td>'
+    var arOpen=arState[s.symbol];
+    body+='<tr class="sd-cons-row'+(arOpen?' is-open':'')+'" data-symbol="'+escapeHtml(s.symbol)+'">'
+      +'<td><span class="sd-cons-caret">\u25B8</span>'+escapeHtml(s.symbol)+'</td>'
       +'<td>'+fmtNum(s.lastPrice)+'</td>'
       +'<td class="sd-cons-col-chg-abs sd-cons-num '+dir+'">'+sign+fmtNum(s.change)+'</td>'
       +'<td><span class="sd-cons-chip '+dir+'">'+fmtPct(s.pChange)+'</span></td>'
@@ -6879,6 +6943,9 @@ function renderConstituentsTable(d){
       +'<td class="sd-cons-col-volume">'+fmtCompact(s.tradedVolume)+'</td>'
       +'<td>'+fmtCr(s.tradedValue)+'</td>'
     +'</tr>';
+    /* Re-emit the open panel on every render — this table re-renders on sort
+       and on the 60s poll, so DOM-only state would collapse mid-read. */
+    if(arOpen) body+=arRowHtml(s.symbol);
   }
   body+='</tbody>';
 
@@ -6897,6 +6964,440 @@ function renderConstituentsTable(d){
       renderConstituentsTable(consState.data);
     });
   }
+
+  var trs=bodyEl.querySelectorAll('tbody tr.sd-cons-row');
+  for(var k=0;k<trs.length;k++){
+    trs[k].addEventListener('click',function(ev){
+      toggleAr(ev.currentTarget.getAttribute('data-symbol'));
+    });
+  }
+  var ais=bodyEl.querySelectorAll('.sd-ar-ai');
+  for(var q=0;q<ais.length;q++){
+    ais[q].addEventListener('click',function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      runArSummary(ev.currentTarget.getAttribute('data-symbol'));
+    });
+  }
+  var rts=bodyEl.querySelectorAll('.sd-ar-retry');
+  for(var m=0;m<rts.length;m++){
+    rts[m].addEventListener('click',function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      var sym=ev.currentTarget.getAttribute('data-symbol');
+      delete arCache[sym];
+      renderConstituentsTable(consState.data);
+      fetchAr(sym);
+    });
+  }
+}
+
+/* ════════════════════════════════════════
+   Latest annual report per constituent.
+
+   Straight from the annualreports worker (public, CORS *): one list call to
+   find the newest year, then the button links to the PDF route, which also
+   unzips .zip filings server-side. Browser -> worker directly; no SectorScope
+   route involved. arCache is per-session; expanded state survives the 60s
+   poll re-render because it lives in arState, not the DOM.
+════════════════════════════════════════ */
+var AR_BASE='https://annualreports.prashant-06f.workers.dev';
+var arState={};
+var arCache={};
+
+function arRowHtml(symbol){
+  var d=arCache[symbol];
+  var inner;
+  if(!d){
+    inner='<span class="sd-ar-note">Loading\u2026</span>';
+  } else if(d.error){
+    inner='<span class="sd-ar-note">Couldn\'t reach NSE \u2014 '
+      +'<a class="sd-ar-retry" data-symbol="'+escapeHtml(symbol)+'">retry</a></span>';
+  } else if(!d.year){
+    inner='<span class="sd-ar-note">No annual report on NSE</span>';
+  } else {
+    inner='<a class="sd-ar-btn" href="'+AR_BASE+'/ar?symbol='+encodeURIComponent(symbol)
+      +'&year='+encodeURIComponent(d.year)+'" target="_blank" rel="noopener">'
+      +'Annual Report '+escapeHtml(d.label)+'</a>'
+      +' <a class="sd-ar-btn sd-ar-ai" data-symbol="'+escapeHtml(symbol)+'">AI Summary</a>';
+  }
+  /* The summary block re-renders from arSum state so it survives the 60s
+     poll repaint mid-stream — same lesson as the panel itself. */
+  var sum=arSum[symbol];
+  if(sum){
+    if(sum.running){
+      /* One animation for the whole ~2-minute run. The user can browse away —
+         the run continues, and the finished summary lands in the user-menu
+         history regardless of whether this panel is still open. */
+      inner+='<div class="sd-ar-anim"><span class="dots"><span></span><span></span><span></span></span>'
+        +escapeHtml(sum.stage||'Analysing Annual Report\u2026')
+        +' <span style="color:var(--bdr)">|</span> ~2 min \u2014 free to browse meanwhile, result saved under your menu \u2192 AI Summaries</div>';
+    } else if(sum.status){
+      inner+='<div class="sd-ar-status">'+escapeHtml(sum.status)+'</div>';
+    }
+    if(!sum.running&&sum.text) inner+='<div class="sd-ar-sum">'+arSumFormat(sum.text,symbol)+'</div>';
+  }
+  return '<tr class="sd-ar-row"><td colspan="7">'+inner+'</td></tr>';
+}
+
+/* Bullet lines ("- x", "\u2022 x", "1. x") become a real <ul>; anything else
+   (the one-line header, disclaimers) renders as plain text above it. During
+   the extract stream the text has no bullets, so it falls through to plain —
+   one renderer covers both phases. Everything passes through escapeHtml. */
+/* Themed bullet renderer. The model returns plain "- line" bullets; we don't
+   ask it for structure (costs tokens, and small models tag inconsistently).
+   Instead we CLASSIFY each line client-side by keyword into a theme, and give
+   that theme an icon + colour accent. Numbers get emphasised inline. This is
+   pure presentation over unchanged text — zero extra tokens. */
+var AR_THEMES=[
+  {k:'risk',    re:/\b(risk|danger|threat|worried|worry|concern|challenge|headwind|exposure|volatil|uncertain|slowdown|default|repay)\b/i,
+   ic:'M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z M12 9v4 M12 17h.01', col:'#fb923c'},
+  {k:'audit',   re:/\b(audit|auditor|tax|dispute|litigation|contingent|liabilit|qualif|penalt|notice|unresolved|clean report)\b/i,
+   ic:'M9 12l2 2 4-4 M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z', col:'#f87171'},
+  {k:'owner',   re:/\b(promoter|founder|pledg|shareholding|salary|remuneration|\bpay\b|\bowns?\b|holding)\b/i,
+   ic:'M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2 M12 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8z', col:'#f472b6'},
+  {k:'capital', re:/\b(capex|dividend|buyback|acquisition|acquire|invested|payout|per share|bought no|spent)\b/i,
+   ic:'M12 1v22 M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6', col:'#fbbf24'},
+  {k:'note',    re:/\b(two different|contradict|both \u20b9|shows both|in two places|discrepan)\b/i,
+   ic:'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18z M12 8v4 M12 16h.01', col:'#94a3b8'},
+  {k:'growth',  re:/\b(target|guidance|grow \d|growth of|goal|aim to|plans? to|wants? .* grow|expand)\b/i,
+   ic:'M23 6l-9.5 9.5-5-5L1 18 M17 6h6v6', col:'#38bdf8'},
+  {k:'segment', re:/\b(segment|division|biggest earner|product|customer|client|depend|concentrat|revenue mix|top )\b/i,
+   ic:'M3 3h7v7H3z M14 3h7v7h-7z M14 14h7v7h-7z M3 14h7v7H3z', col:'#a78bfa'},
+  {k:'money',   re:/\b(revenue|sales|profit|pat|income|turnover|earned|margin|ebitda|made \u20b9|crore|million|lakh)\b/i,
+   ic:'M3 3v18h18 M7 14l3-3 3 2 5-6', col:'#4ade80'}
+];
+function arThemeOf(line){
+  for(var i=0;i<AR_THEMES.length;i++) if(AR_THEMES[i].re.test(line)) return AR_THEMES[i];
+  return {k:'plain', ic:'M9 18l6-6-6-6', col:'var(--ghost)'};
+}
+/* Old stored extractions/summaries carry markdown (** bold, ## headers)
+   despite the prompt now banning it — permanent D1 rows can't be re-prompted,
+   so the renderer converts what it can and strips the rest. Runs on ESCAPED
+   text; the tags it emits are its own. */
+function arMdClean(safe){
+  return safe
+    .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>')
+    .replace(/^#{1,4}\s*/,'')
+    .replace(/`([^`]+)`/g,'$1');
+}
+
+/* Emphasise money amounts, percentages and plain numbers so the eye lands on
+   them. escapeHtml FIRST, then wrap — the markup we add is our own and safe. */
+function arEmph(safe){
+  return safe
+    .replace(/(\u20b9\s?[\d,]+(?:\.\d+)?\s?(?:crore|cr|million|mn|lakh|bn|billion)?)/gi,'<b class="num">$1</b>')
+    .replace(/(^|[^\w>])(\d+(?:\.\d+)?%)/g,'$1<b class="num">$2</b>');
+}
+function arSumFormat(text,symbol){
+  var lines=String(text).split('\n');
+  var head=[], items=[];
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i].trim();
+    if(!L) continue;
+    var m=L.match(/^(?:[-\u2022*]|\d{1,2}[.)])\s+(.*)$/);
+    if(m) items.push(m[1]);
+    else if(!items.length) head.push(L);
+    else if(items.length) items[items.length-1]+=' '+L;   /* wrapped line */
+    else head.push(L);
+  }
+  var out='';
+  if(head.length) out+='<div class="sd-ar-head">'+head.map(escapeHtml).join('<br>')+'</div>';
+  if(items.length){
+    out+='<div class="ar-cards">';
+    for(var j=0;j<items.length;j++){
+      var t=arThemeOf(items[j]);
+      var body=arEmph(arMdClean(escapeHtml(items[j])));
+      /* Cards expand into their related SECTION A-G content from the full
+         Gemini extraction. Toggle works on the DOM directly so it also works
+         inside the history pane, which never re-renders. */
+      var clickable=!!symbol;
+      out+='<div class="ar-card ar-'+t.k+'" style="--ar:'+t.col+'"'
+        +(clickable?' data-arsym="'+escapeHtml(symbol)+'" data-artheme="'+t.k+'" onclick="arCardToggle(event)"':'')
+        +'>'
+        +'<svg class="ar-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'
+        +'<path d="'+t.ic+'"/></svg>'
+        +'<div class="ar-tx">'+body+'</div>'
+        +(clickable?'<span class="ar-caret">\u25B8</span><div class="ar-cbody"></div>':'')
+        +'</div>';
+    }
+    out+='</div>';
+  }
+  if(!out) out=escapeHtml(String(text));
+  return out;
+}
+
+
+/* Which extraction sections back each theme. */
+var AR_THEME_SECTIONS={
+  money:['C','B'], growth:['C'], segment:['A','B'], capital:['D'],
+  audit:['E'], owner:['F'], risk:['G'], note:['E'], plain:['A']
+};
+
+/* Parse "SECTION A \u2014 ..." blocks out of the raw extraction. */
+function arExtSections(raw){
+  var out={}, cur=null, title=null, buf=[];
+  var lines=String(raw).split('\n');
+  function flush(){ if(cur) out[cur]={title:title,body:buf.join('\n').trim()}; buf=[]; }
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i];
+    var m=L.match(/^\s*-{0,3}\s*SECTION\s+([A-G])\s*[\u2014\u2013-]+\s*(.+?)\s*$/i);
+    if(m){ flush(); cur=m[1].toUpperCase(); title=m[2]; continue; }
+    if(/^\s*-{0,3}\s*COMPLETENESS CHECK/i.test(L)){ flush(); cur='CHECK'; title='Completeness check'; continue; }
+    if(/^\s*---\s*$/.test(L)) continue;
+    if(cur) buf.push(L);
+  }
+  flush();
+  return out;
+}
+
+/* Format one section body: numbered questions bold, bullets as lists,
+   NOT FOUND dimmed, [p.X] cites subtle. Escaped first, always. */
+function arExtFormat(body){
+  var lines=String(body).split('\n');
+  var html='', list=[];
+  function endList(){ if(list.length){ html+='<ul>'+list.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'; list=[]; } }
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i].trim();
+    if(!L) continue;
+    var e=arMdClean(escapeHtml(L))
+      .replace(/NOT FOUND/g,'<span class="xnf">Not found</span>')
+      .replace(/\[p\.?\s?(\d+[\d,\-\s]*)\]/gi,'<span class="xpg">[p.$1]</span>');
+    if(/^\d+\.\s/.test(L)){ endList(); html+='<div class="xq">'+e+'</div>'; }
+    else if(/^[-\u2022*]\s/.test(L)){ list.push(e.replace(/^[-\u2022*]\s*/,'')); }
+    else { endList(); html+='<div>'+e+'</div>'; }
+  }
+  endList();
+  return html;
+}
+
+var arExtCache={};
+function fetchArExtract(symbol){
+  if(arExtCache[symbol]) return arExtCache[symbol];
+  arExtCache[symbol]=fetch(WORKER_BASE+'/api/arsummary?symbol='+encodeURIComponent(symbol)+'&extract=1',{
+    headers:{'authorization':'Bearer '+(currentUser&&currentUser.token||'')}})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(j){ return arExtSections(j.extract||''); })
+    .catch(function(e){ delete arExtCache[symbol]; throw e; });
+  return arExtCache[symbol];
+}
+
+function arCardToggle(ev){
+  var card=ev.currentTarget||(ev.target&&ev.target.closest&&ev.target.closest('.ar-card'));
+  if(!card) return;
+  var open=card.classList.toggle('open');
+  if(!open) return;
+  var bodyEl=card.querySelector('.ar-cbody');
+  if(!bodyEl||bodyEl.getAttribute('data-filled')) return;
+  bodyEl.innerHTML='<span class="xnf">Loading section\u2026</span>';
+  var symbol=card.getAttribute('data-arsym');
+  var secs=AR_THEME_SECTIONS[card.getAttribute('data-artheme')]||['A'];
+  fetchArExtract(symbol).then(function(map){
+    var html='';
+    for(var i=0;i<secs.length;i++){
+      var sec=map[secs[i]];
+      if(!sec) continue;
+      html+='<div class="xs">'+escapeHtml(sec.title)+'</div>'+arExtFormat(sec.body);
+    }
+    bodyEl.innerHTML=html||'<span class="xnf">No matching section in the extraction.</span>';
+    bodyEl.setAttribute('data-filled','1');
+  }).catch(function(){
+    bodyEl.innerHTML='<span class="xnf">Couldn\'t load the full extraction \u2014 tap to retry.</span>';
+  });
+}
+
+function toggleAr(symbol){
+  if(!symbol) return;
+  if(arState[symbol]){ delete arState[symbol]; renderConstituentsTable(consState.data); return; }
+  arState[symbol]=true;
+  renderConstituentsTable(consState.data);   /* paint loading first */
+  if(arCache[symbol]&&!arCache[symbol].error) return;
+  delete arCache[symbol];
+  fetchAr(symbol);
+}
+
+/* ════════════════════════════════════════
+   AI summary pipeline (three worker steps, results streamed).
+
+   prepare  -> worker pulls the latest AR PDF into Gemini Files
+   extract  -> Gemini flash-lite runs the A-G extraction, streamed here live
+   condense -> Claude compresses it into the research note, streamed + cached
+
+   The extract stream is shown while it runs (progress you can read), then
+   replaced by the condensed note. Cached symbols skip all three steps.
+   State lives in arSum so the 60s poll repaint never eats an in-flight run.
+════════════════════════════════════════ */
+var arSum={};
+
+function arSumSet(symbol,patch){
+  arSum[symbol]=Object.assign(arSum[symbol]||{},patch);
+  renderConstituentsTable(consState.data);
+}
+
+async function arStream(symbol,step,onDelta){
+  var res=await fetch(WORKER_BASE+'/api/arsummary',{
+    method:'POST',
+    headers:{'content-type':'application/json','authorization':'Bearer '+(currentUser&&currentUser.token||'')},
+    body:JSON.stringify({symbol:symbol,step:step})
+  });
+  if(!res.ok){
+    var msg; try{ msg=(await res.json()).error; }catch(e){ msg='HTTP '+res.status; }
+    throw new Error(msg||('HTTP '+res.status));
+  }
+  var ct=res.headers.get('content-type')||'';
+  if(ct.indexOf('application/json')>=0) return res.json();   /* non-streamed step */
+  var reader=res.body.getReader(), dec=new TextDecoder(), out='';
+  for(;;){
+    var r=await reader.read();
+    if(r.done) break;
+    out+=dec.decode(r.value,{stream:true});
+    onDelta(out);
+  }
+  return out;
+}
+
+async function runArSummary(symbol){
+  if(!(window.currentUser&&currentUser.token)){
+    arSumSet(symbol,{status:'Sign in to generate AI summaries.',text:''});
+    return;
+  }
+  var s=arSum[symbol];
+  if(s&&s.running) return;               /* one run per symbol at a time */
+  arSumSet(symbol,{running:true,stage:'Checking\u2026',status:'',text:''});
+  try{
+    /* cached in D1? */
+    var g=await fetch(WORKER_BASE+'/api/arsummary?symbol='+encodeURIComponent(symbol),{
+      headers:{'authorization':'Bearer '+currentUser.token}}).then(function(r){return r.json();});
+    if(g&&g.final){ arSumSet(symbol,{running:false,status:'',text:g.final,done:true}); return; }
+
+    /* If a prior run already extracted, resume at condense — a retry must not
+       re-upload a 40 MB PDF the server already has. */
+    var resume=(g&&g.hasExtract)?'condense':null;
+    var p=null;
+    if(!resume){
+      arSumSet(symbol,{stage:'Fetching the Annual Report\u2026'});
+      p=await arStream(symbol,'prepare',function(){});
+    }
+    if(p&&p.stage==='done'&&p.cached){
+      var g2=await fetch(WORKER_BASE+'/api/arsummary?symbol='+encodeURIComponent(symbol),{
+        headers:{'authorization':'Bearer '+currentUser.token}}).then(function(r){return r.json();});
+      arSumSet(symbol,{running:false,status:'',text:(g2&&g2.final)||'',done:true});
+      return;
+    }
+    if(p&&p.error) throw new Error(p.error);
+
+    /* The streams still flow (that is what keeps the edge from timing out a
+       multi-minute generation) — they just are not rendered. The animation is
+       the progress indicator now. */
+    if(!resume){
+      arSumSet(symbol,{stage:'Reading the report\u2026'});
+      await arStream(symbol,'extract',function(){});
+    }
+
+    arSumSet(symbol,{stage:'Writing the summary\u2026'});
+    var finalText=await arStream(symbol,'condense',function(){});
+    arSumSet(symbol,{running:false,status:'',text:finalText,done:true});
+  }catch(e){
+    arSumSet(symbol,{running:false,status:'Failed: '+e.message+' \u2014 click AI Summary to retry.'});
+  }
+}
+
+/* ── User menu → AI Summaries: the last 5 summaries this user generated,
+   served from D1 history. Lets someone start a run, browse away, and pick the
+   result up later without re-finding the constituent row. Pane is built
+   lazily on first open. ── */
+function openArSumPane(){
+  var ovl=document.getElementById('arsum-ovl');
+  if(!ovl){
+    ovl=document.createElement('div');
+    ovl.id='arsum-ovl';
+    ovl.className='arsum-ovl';
+    ovl.style.display='none';
+    ovl.innerHTML='<div class="arsum-pane"><h3>AI Summaries <span onclick="closeArSumPane()">\u2715</span></h3><div id="arsum-list"></div></div>';
+    ovl.addEventListener('click',function(ev){ if(ev.target===ovl) closeArSumPane(); });
+    document.body.appendChild(ovl);
+  }
+  ovl.style.display='flex';
+  var list=document.getElementById('arsum-list');
+  list.innerHTML='<div class="arsum-empty">Loading\u2026</div>';
+  fetch(WORKER_BASE+'/api/arsummary?history=1',{
+    headers:{'authorization':'Bearer '+(currentUser&&currentUser.token||'')}})
+    .then(function(r){return r.json();})
+    .then(function(j){
+      var items=(j&&j.items)||[];
+      var cached=(j&&j.cached)||[];
+      /* De-dup: a symbol already in "your summaries" shouldn't repeat below. */
+      var own={};
+      for(var d=0;d<items.length;d++) own[items[d].symbol+':'+items[d].year]=1;
+      cached=cached.filter(function(c){ return !own[c.symbol+':'+c.year]; });
+
+      function row(it, lazy){
+        var when=new Date(it.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'});
+        return '<div class="arsum-item"'+(lazy?' data-lazysym="'+escapeHtml(it.symbol)+'"':'')+'>'
+          +'<div class="arsum-item-h">'
+          +'<span>'+escapeHtml(it.symbol)+' \u2014 '+escapeHtml(it.label||it.year)+'</span>'
+          +'<span class="when">'+escapeHtml(when)+'</span></div>'
+          +'<div class="arsum-item-b">'+(lazy?'':arSumFormat(it.summary||'',it.symbol))+'</div></div>';
+      }
+
+      var html='';
+      html+='<div class="arsum-sec">Your summaries</div>';
+      html+=items.length
+        ? items.map(function(it){return row(it,false);}).join('')
+        : '<div class="arsum-empty">None yet \u2014 expand a company row and press AI Summary.</div>';
+      if(cached.length){
+        html+='<div class="arsum-sec">Cached summaries <span class="arsum-sec-n">'+cached.length+' \u2014 free to read</span></div>';
+        html+=cached.map(function(it){return row(it,true);}).join('');
+      }
+      list.innerHTML=html;
+
+      var hs=list.querySelectorAll('.arsum-item-h');
+      for(var k=0;k<hs.length;k++){
+        hs[k].addEventListener('click',function(ev){
+          var item=ev.currentTarget.parentNode;
+          var open=item.classList.toggle('open');
+          /* Cached rows arrive as index entries only (200 of them with full
+             text would bloat the pane); fetch the summary on first expand.
+             The GET also records it into "your summaries" history serverside. */
+          var sym=item.getAttribute('data-lazysym');
+          if(open&&sym&&!item.getAttribute('data-loaded')){
+            var b=item.querySelector('.arsum-item-b');
+            b.innerHTML='<span class="xnf">Loading\u2026</span>';
+            fetch(WORKER_BASE+'/api/arsummary?symbol='+encodeURIComponent(sym),{
+              headers:{'authorization':'Bearer '+(currentUser&&currentUser.token||'')}})
+              .then(function(r){return r.json();})
+              .then(function(g){
+                b.innerHTML=(g&&g.final)?arSumFormat(g.final,sym):'<span class="xnf">Couldn\'t load \u2014 tap to retry.</span>';
+                if(g&&g.final) item.setAttribute('data-loaded','1');
+              })
+              .catch(function(){ b.innerHTML='<span class="xnf">Couldn\'t load \u2014 tap to retry.</span>'; });
+          }
+        });
+      }
+    })
+    .catch(function(){ list.innerHTML='<div class="arsum-empty">Could not load \u2014 try again.</div>'; });
+}
+function closeArSumPane(){
+  var ovl=document.getElementById('arsum-ovl');
+  if(ovl) ovl.style.display='none';
+}
+
+function fetchAr(symbol){
+  fetch(AR_BASE+'/ar?symbol='+encodeURIComponent(symbol))
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      /* years arrive newest-first; a 404 body carries .error. Failure is kept
+         distinct from "no reports" so the panel never lies about NSE. */
+      if(j&&j.years&&j.years.length){
+        arCache[symbol]={year:j.years[0].toYr,label:j.years[0].label};
+      } else if(j&&j.error&&/no annual reports/i.test(j.error)){
+        arCache[symbol]={year:null};
+      } else {
+        arCache[symbol]={error:true};
+      }
+    })
+    .catch(function(){ arCache[symbol]={error:true}; })
+    .then(function(){
+      if(arState[symbol]) renderConstituentsTable(consState.data);
+    });
 }
 
 
