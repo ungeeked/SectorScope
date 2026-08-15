@@ -920,17 +920,21 @@ html.light .sd-header{background:rgba(238,241,248,.96)}
 /* ── INDEX CONSTITUENTS (live NSE data inside detail overlay) ── */
 .sd-cons-wrap{background:var(--bg2);border:1px solid var(--bdr);border-radius:11px;overflow:hidden;margin-bottom:22px}
 .sd-cons-summary{padding:11px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-family:var(--mono);font-size:.62rem}
-.sd-cons-breadth{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.sd-cons-tally{display:inline-flex;align-items:center;gap:5px;font-variant-numeric:tabular-nums;font-weight:600}
-.sd-cons-tally.up{color:var(--chp-c)}
-.sd-cons-tally.down{color:var(--exp-c)}
-.sd-cons-tally.flat{color:var(--sub)}
-.sd-cons-tally-arrow{font-size:.74rem;line-height:1}
 .sd-cons-meta{color:var(--ghost);font-size:.52rem;letter-spacing:.4px;text-transform:uppercase}
 .sd-cons-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.7rem}
 .sd-cons-table thead th{text-align:right;font-weight:500;font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ghost);padding:9px 10px 7px;border-bottom:1px solid var(--bdr);cursor:pointer;user-select:none;white-space:nowrap;transition:color .15s}
 .sd-cons-table thead th:first-child{text-align:left;padding-left:14px}
 .sd-cons-table thead th:last-child{padding-right:14px}
+.sd-cons-table th.sd-cons-col-ar,.sd-cons-table td.sd-cons-col-ar,.sd-cons-table th.sd-cons-col-ai,.sd-cons-table td.sd-cons-col-ai,.sd-cons-table th.sd-cons-col-tx,.sd-cons-table td.sd-cons-col-tx{text-align:left}
+/* Tighten inter-column gaps: Weight sits close to Symbol; AR/AI/Transcripts
+   sit close to each other. Row padding (vertical) is unchanged. */
+.sd-cons-table thead th.sd-cons-weight,.sd-cons-table tbody td.sd-cons-weight{padding-left:4px;padding-right:6px}
+.sd-cons-table thead th.sd-cons-col-ar,.sd-cons-table tbody td.sd-cons-col-ar{padding-left:6px;padding-right:4px}
+.sd-cons-table thead th.sd-cons-col-ai,.sd-cons-table tbody td.sd-cons-col-ai{padding-left:4px;padding-right:4px}
+.sd-cons-table thead th.sd-cons-col-tx,.sd-cons-table tbody td.sd-cons-col-tx{padding-left:4px;padding-right:6px}
+/* Disabled 'Coming soon' pill — same visual weight as sd-ar-btn but muted
+   and non-interactive, so users read it as "here later" rather than broken. */
+.sd-tx-soon{display:inline-block;padding:3px 9px;border-radius:5px;font-family:var(--mono);font-size:.55rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--ghost);background:var(--bg3);border:1px dashed var(--bdr);cursor:not-allowed;user-select:none;white-space:nowrap}
 .sd-cons-table thead th:hover{color:var(--txt)}
 .sd-cons-table thead th.is-sorted{color:var(--txt)}
 .sd-cons-table thead th.is-sorted::after{content:"";display:inline-block;width:0;height:0;margin-left:5px;border-left:4px solid transparent;border-right:4px solid transparent;vertical-align:2px}
@@ -942,17 +946,6 @@ html.light .sd-header{background:rgba(238,241,248,.96)}
 .sd-cons-table tbody tr:last-child td{border-bottom:0}
 .sd-cons-table tbody tr:hover td{background:rgba(255,255,255,.02)}
 html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
-.sd-cons-num.up{color:var(--chp-c)}
-.sd-cons-num.down{color:var(--exp-c)}
-.sd-cons-num.flat{color:var(--sub)}
-.sd-cons-chip{display:inline-block;padding:2px 7px;border-radius:5px;font-weight:600;min-width:54px;text-align:center;font-size:.65rem}
-.sd-cons-chip.up{background:var(--chp-tl);color:var(--chp-c);border:1px solid var(--chp-bd)}
-.sd-cons-chip.down{background:var(--exp-tl);color:var(--exp-c);border:1px solid var(--exp-bd)}
-.sd-cons-chip.flat{background:var(--bg3);color:var(--sub);border:1px solid var(--bdr)}
-.sd-cons-range{display:inline-flex;flex-direction:column;gap:3px;width:96px;text-align:left;vertical-align:middle}
-.sd-cons-range-bar{position:relative;height:3px;background:var(--bg3);border-radius:2px}
-.sd-cons-range-bar::after{content:"";position:absolute;top:-2px;left:var(--pos,0%);width:2px;height:7px;background:var(--txt);border-radius:1px;transform:translateX(-1px)}
-.sd-cons-range-bounds{display:flex;justify-content:space-between;font-size:.5rem;color:var(--ghost)}
 .sd-cons-state{padding:30px 16px;text-align:center;color:var(--ghost);font-family:var(--mono);font-size:.62rem}
 /* ── Expandable constituent row → latest annual report ──
    Whole row is the toggle (better tap target than a chevron on mobile). */
@@ -1067,13 +1060,11 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 /* Responsive column collapse — match the breakpoints used by the
    median / quarterly tables elsewhere in the detail overlay. */
 @media(max-width:680px){
-  .sd-cons-col-chg-abs,.sd-cons-col-range{display:none}
   .sd-cons-table thead th,.sd-cons-table tbody td{padding-left:8px;padding-right:8px}
   .sd-cons-table thead th:first-child,.sd-cons-table tbody td:first-child{padding-left:12px}
   .sd-cons-table thead th:last-child,.sd-cons-table tbody td:last-child{padding-right:12px}
 }
 @media(max-width:420px){
-  .sd-cons-col-volume{display:none}
 }
 
 /* quarterly table */
@@ -2223,7 +2214,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
     <div class="hp-p" style="margin-bottom:8px">Beyond just reading the numbers, the card has three interactive elements:</div>
     <div class="hp-card info">
       <div class="hp-card-ttl">↗ Tap the card</div>
-      <div class="hp-p" style="margin-bottom:0">Tap anywhere on a card to open a full-screen detail page with the AI-written summary, the current snapshot, historical medians, EPS growth charts, and live constituent stocks. This is the deeper dive — <strong>section 5</strong> walks through every element on it.</div>
+      <div class="hp-p" style="margin-bottom:0">Tap anywhere on a card to open a full-screen detail page with the AI-written summary, the current snapshot, historical medians, EPS growth charts, and the index constituents. This is the deeper dive — <strong>section 5</strong> walks through every element on it.</div>
     </div>
     <div class="hp-card info">
       <div class="hp-card-ttl">🔔 Set Alert</div>
@@ -2408,7 +2399,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   <!-- ══ 5. THE DETAIL PAGE ══ -->
   <div class="hp-sec" id="h-detail">
     <div class="hp-sec-h">5 · The detail page</div>
-    <div class="hp-p">When you tap a card, a full-screen overlay opens with everything that didn't fit on the card. There's an AI-written summary at the top (Plus only — covered in <strong>section 8</strong>), then six information sections: a snapshot of the current numbers, a side-by-side view of how today compares to historical medians at three time horizons, a pair of bar charts showing the sector's earnings trajectory, a live table of the index's constituent stocks (Plus only), a quarterly shareholding-pattern table — FII, DII, promoter and others per constituent (Plus only) — and finally a scrollable quarterly history table.</div>
+    <div class="hp-p">When you tap a card, a full-screen overlay opens with everything that didn't fit on the card. There's an AI-written summary at the top (Plus only — covered in <strong>section 8</strong>), then six information sections: a snapshot of the current numbers, a side-by-side view of how today compares to historical medians at three time horizons, a pair of bar charts showing the sector's earnings trajectory, a table of the index's constituent stocks with weights, annual reports and AI summaries (Plus only), a quarterly shareholding-pattern table — FII, DII, promoter and others per constituent (Plus only) — and finally a scrollable quarterly history table.</div>
     <div class="hp-p">This is where you go after the dashboard tells you a sector is interesting and you want to confirm whether the cheapness is genuine or a trap.</div>
 
     <!-- 3 sections -->
@@ -2557,43 +2548,33 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       <div class="hp-ov-section">
         <div class="hp-ov-head">④ Index Constituents <span class="plus-tag">PLUS</span></div>
         <div class="hp-ov-body">
-          <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">A live table of every stock in the sector's NSE index — sourced directly from NSE's official index-tracker feed and refreshed every 60 seconds while the overlay is open. Useful for confirming whether a sector-level move is broad-based or driven by a few large names.</div>
+          <div class="hp-p" style="margin-bottom:10px;font-size:.82rem">Every stock in the sector's NSE index, ranked by its <strong>official index weight</strong> — so you can see at a glance which names actually drive the sector's valuation. Each row links straight to the company's latest annual report and to an AI-written summary of it. Served from a once-daily snapshot, so it opens instantly and makes no live exchange calls.</div>
 
-          <!-- Mock breadth strip + table -->
+          <!-- Mock weight + AR table -->
           <div style="background:var(--bg3);border:1px solid var(--bdr2);border-radius:8px;overflow:hidden;margin:8px 0 4px">
-            <div style="padding:9px 13px;border-bottom:1px solid var(--bdr2);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-family:var(--mono);font-size:.6rem">
-              <div style="display:flex;gap:14px;flex-wrap:wrap">
-                <span style="color:var(--chp-c);font-weight:600">↑ 7 up</span>
-                <span style="color:var(--exp-c);font-weight:600">↓ 3 down</span>
-                <span style="color:var(--ghost);font-size:.52rem;letter-spacing:.4px;text-transform:uppercase">· ₹3,820 Cr traded</span>
-              </div>
-              <span style="color:var(--ghost);font-size:.5rem;letter-spacing:.4px;text-transform:uppercase">As of 3:30 PM</span>
-            </div>
+            <div style="padding:9px 13px;border-bottom:1px solid var(--bdr2);font-family:var(--mono);font-size:.52rem;letter-spacing:.4px;text-transform:uppercase;color:var(--ghost)">10 constituents · weighted by NSE index methodology</div>
             <table class="hp-qtbl-mock" style="font-size:.62rem">
               <thead><tr>
-                <th>Symbol</th><th>Price</th><th>% Chg</th><th>Day Range</th><th>Value (₹Cr)</th>
+                <th>Symbol</th><th>Weight</th><th>Annual Report</th><th>AI Summary</th>
               </tr></thead>
               <tbody>
                 <tr>
-                  <td style="font-family:var(--cond);font-weight:700;font-size:.78rem">COFORGE</td>
-                  <td>1,342</td>
-                  <td><span style="display:inline-block;padding:1px 6px;border-radius:4px;background:var(--chp-tl);color:var(--chp-c);border:1px solid var(--chp-bd);font-weight:700">+4.67%</span></td>
-                  <td><div style="width:80px;height:3px;background:var(--bg3);border-radius:2px;position:relative;display:inline-block;vertical-align:middle"><span style="position:absolute;top:-2px;left:92%;width:2px;height:7px;background:var(--txt);transform:translateX(-1px)"></span></div></td>
-                  <td>376</td>
-                </tr>
-                <tr>
                   <td style="font-family:var(--cond);font-weight:700;font-size:.78rem">TCS</td>
-                  <td>2,283</td>
-                  <td><span style="display:inline-block;padding:1px 6px;border-radius:4px;background:var(--chp-tl);color:var(--chp-c);border:1px solid var(--chp-bd);font-weight:700">+0.86%</span></td>
-                  <td><div style="width:80px;height:3px;background:var(--bg3);border-radius:2px;position:relative;display:inline-block;vertical-align:middle"><span style="position:absolute;top:-2px;left:46%;width:2px;height:7px;background:var(--txt);transform:translateX(-1px)"></span></div></td>
-                  <td>432</td>
+                  <td style="font-weight:700">28.41%</td>
+                  <td><span style="display:inline-block;padding:1px 7px;border-radius:5px;background:rgba(129,140,248,.14);color:#a5b4fc;border:1px solid rgba(129,140,248,.3);font-weight:600;font-size:.56rem">Annual Report 2024-25</span></td>
+                  <td><span style="display:inline-block;padding:1px 7px;border-radius:5px;background:rgba(129,140,248,.14);color:#a5b4fc;border:1px solid rgba(129,140,248,.3);font-weight:600;font-size:.56rem">AI Summary</span></td>
                 </tr>
                 <tr>
-                  <td style="font-family:var(--cond);font-weight:700;font-size:.78rem">WIPRO</td>
-                  <td>191.75</td>
-                  <td><span style="display:inline-block;padding:1px 6px;border-radius:4px;background:var(--exp-tl);color:var(--exp-c);border:1px solid var(--exp-bd);font-weight:700">−0.42%</span></td>
-                  <td><div style="width:80px;height:3px;background:var(--bg3);border-radius:2px;position:relative;display:inline-block;vertical-align:middle"><span style="position:absolute;top:-2px;left:22%;width:2px;height:7px;background:var(--txt);transform:translateX(-1px)"></span></div></td>
-                  <td>192</td>
+                  <td style="font-family:var(--cond);font-weight:700;font-size:.78rem">INFY</td>
+                  <td style="font-weight:700">24.06%</td>
+                  <td><span style="display:inline-block;padding:1px 7px;border-radius:5px;background:rgba(129,140,248,.14);color:#a5b4fc;border:1px solid rgba(129,140,248,.3);font-weight:600;font-size:.56rem">Annual Report 2024-25</span></td>
+                  <td><span style="display:inline-block;padding:1px 7px;border-radius:5px;background:rgba(129,140,248,.14);color:#a5b4fc;border:1px solid rgba(129,140,248,.3);font-weight:600;font-size:.56rem">AI Summary</span></td>
+                </tr>
+                <tr>
+                  <td style="font-family:var(--cond);font-weight:700;font-size:.78rem">HCLTECH</td>
+                  <td style="font-weight:700">11.18%</td>
+                  <td><span style="display:inline-block;padding:1px 7px;border-radius:5px;background:rgba(129,140,248,.14);color:#a5b4fc;border:1px solid rgba(129,140,248,.3);font-weight:600;font-size:.56rem">Annual Report 2024-25</span></td>
+                  <td><span style="display:inline-block;padding:1px 7px;border-radius:5px;background:rgba(129,140,248,.14);color:#a5b4fc;border:1px solid rgba(129,140,248,.3);font-weight:600;font-size:.56rem">AI Summary</span></td>
                 </tr>
               </tbody>
             </table>
@@ -2601,14 +2582,12 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
 
           <div class="hp-p" style="margin-top:10px;margin-bottom:6px;font-size:.8rem"><strong>What's in each column</strong></div>
           <dl class="hp-kv" style="margin-top:4px">
-            <dt>Breadth strip</dt><dd>Sits above the table. Shows <strong>up</strong> / <strong>down</strong> / <strong>flat</strong> counts (green / red / grey) plus total traded value across the index in ₹Cr. A quick read on whether a sector move is broad or narrow: 9 up · 1 down is participation, 3 up · 7 down with the index green means a few heavyweights are carrying the index.</dd>
-            <dt>Symbol &amp; Price</dt><dd>The NSE ticker and last traded price. Click "Symbol" in the header to sort A→Z.</dd>
-            <dt>Chg &amp; % Chg</dt><dd>Absolute and percentage change vs previous close. The % cell wears a coloured chip — green for up, red for down. Click "% Chg" to sort top-gainers / top-losers. The absolute Chg column is useful for high-priced stocks where small percentage moves still mean ₹50–100 swings.</dd>
-            <dt>Day Range</dt><dd>A tiny tick on a horizontal bar showing where the current price sits between today's low (left edge) and today's high (right edge). Tick near the right = stock holding near intraday high (often breakout-prone); tick near the left = near intraday low. Sortable too — handy for spotting names at the top of their day's range across the whole sector.</dd>
-            <dt>Volume &amp; Value</dt><dd>Total shares traded today (compact units — K, L, Cr) and total traded value in ₹Cr. Sorting by Value brings the day's most-traded names to the top — typically the heaviest-weighted index components.</dd>
+            <dt>Symbol &amp; Weight</dt><dd>The NSE ticker and its <strong>official-methodology index weight</strong> — the same free-float, capped weighting used in the Shareholding tab, so the numbers agree across the app. Sorted heaviest-first; click a header to re-sort by symbol or weight.</dd>
+            <dt>Annual Report</dt><dd>Opens the company's latest annual report PDF, pulled from the exchange the first time you tap it. A one-tap retry appears if the exchange is briefly unreachable; if nothing is filed yet, it says so plainly.</dd>
+            <dt>AI Summary</dt><dd>Runs the Gemini + Claude pipeline over that annual report and returns a plain-English research note — the same summaries covered in <strong>section 8</strong>. The run continues even if you browse away, and the result is saved under your menu → AI Summaries.</dd>
           </dl>
 
-          <div class="hp-p" style="margin-top:8px;margin-bottom:0;font-size:.8rem;color:var(--sub)">The table refreshes automatically every 60 seconds while the detail page is open. If you switch tabs and return, it refreshes immediately on focus. Closing the detail page stops the polling. Data is sourced from NSE's official index-tracker API and is cached at the edge for ~60s during market hours, so the entire workflow is cheap even with frequent re-opens.</div>
+          <div class="hp-p" style="margin-top:8px;margin-bottom:0;font-size:.8rem;color:var(--sub)">Index membership and weights change only at NSE's quarterly rebalance, so the table is refreshed once a day from a stored snapshot rather than polled live — opening a sector costs no exchange calls and loads instantly. Annual-report links and AI summaries are fetched on demand, only when you tap them.</div>
         </div>
       </div>
 
@@ -2877,7 +2856,7 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
   <!-- ══ 8. SECTORSCOPE PLUS ══ -->
   <div class="hp-sec" id="h-plus">
     <div class="hp-sec-h">8 · SectorScope Plus</div>
-    <div class="hp-p">Plus unlocks nine features layered on top of the free dashboard: the <strong>Timeline tab</strong>, the <strong>Smart Money tab</strong>, the <strong>Projections tab</strong>, <strong>expanded charts</strong>, <strong>AI sector summaries</strong>, <strong>live index constituents</strong>, <strong>email alerts</strong>, the <strong>weekly digest email</strong>, and <strong>vs-Nifty-50 alpha in backtests</strong>. This section walks through each one in the order you're likely to encounter it, with the concrete UI elements you'll see.</div>
+    <div class="hp-p">Plus unlocks nine features layered on top of the free dashboard: the <strong>Timeline tab</strong>, the <strong>Smart Money tab</strong>, the <strong>Projections tab</strong>, <strong>expanded charts</strong>, <strong>AI sector summaries</strong>, <strong>index constituents</strong>, <strong>email alerts</strong>, the <strong>weekly digest email</strong>, and <strong>vs-Nifty-50 alpha in backtests</strong>. This section walks through each one in the order you're likely to encounter it, with the concrete UI elements you'll see.</div>
 
     <div class="hp-card tip">
       <div class="hp-card-ttl">Currently free for signed-in users</div>
@@ -2943,13 +2922,13 @@ html.light .cm-paywall{background:rgba(238,241,248,.7)}
       </ul>
     </div>
 
-    <div class="hp-sub-h">Index constituents — live prices for every stock</div>
-    <div class="hp-p">In the sector detail overlay (tap any card to open it), an <strong>Index Constituents</strong> block shows every stock in that sector's NSE index with live price, intraday change, day-range position, traded volume, and traded value. The data refreshes every 60 seconds while the overlay is open and again the instant you switch back to the tab — so coming back from another window always shows fresh numbers.</div>
-    <div class="hp-p">At the top of the block sits a <strong>breadth strip</strong>: a quick read of how many constituents are up vs down vs flat. Useful for distinguishing broad-based sector moves (9 up · 1 down) from narrow ones driven by one or two heavyweights (3 up · 7 down with the index still green). Every column is sortable — click "% Chg" descending for top gainers, click "Volume" to find the day's most-traded names, click "Day Range" to find stocks near intraday highs vs lows. See <strong>section 5</strong> for the full column breakdown with a screenshot.</div>
+    <div class="hp-sub-h">Index constituents — weights and annual reports for every stock</div>
+    <div class="hp-p">In the sector detail overlay (tap any card to open it), an <strong>Index Constituents</strong> block lists every stock in that sector's NSE index alongside its <strong>official index weight</strong> — so you can see at a glance which names actually drive the sector's valuation. Each row links to the company's latest annual report and to an AI-written summary of it. The table is served from a once-daily snapshot, so it opens instantly and makes no live exchange calls.</div>
+    <div class="hp-p">Rows are sorted heaviest-weight-first by default; click the <strong>Symbol</strong> or <strong>Weight</strong> header to re-sort. Tapping <strong>Annual Report</strong> opens the latest filed PDF (fetched from the exchange on first tap), and <strong>AI Summary</strong> runs the Gemini + Claude pipeline over that report and returns a plain-English note. See <strong>section 5</strong> for the full column breakdown.</div>
 
     <div class="hp-card info">
       <div class="hp-card-ttl">Why this is useful alongside the dashboard signal</div>
-      <div class="hp-p" style="margin-bottom:0">The dashboard tells you whether a sector is cheap; the constituents table tells you what's actually moving inside it today. A sector that's "Cheap" on the band and has 8 of 10 stocks green is showing genuine participation. A sector that's "Cheap" but has 7 of 10 red while the index is up — because one mega-cap is rallying — is a much more fragile setup, and worth a second look at the per-stock breakdown before acting.</div>
+      <div class="hp-p" style="margin-bottom:0">The dashboard tells you whether a sector is cheap; the constituents table tells you <em>what makes up</em> that signal. Weights show whether a sector's valuation is a broad-based read or dominated by one or two heavyweights — an index where the top name carries 30% of the weight behaves very differently from an evenly-spread one. And the annual-report links plus AI summaries let you go straight from "this sector looks cheap" to reading what the underlying companies actually said.</div>
     </div>
 
     <div class="hp-sub-h">Email alerts — get notified at your level</div>
@@ -6414,9 +6393,9 @@ function buildSectorDetailHTML(sec, st, data){
     +'<div class="sd-section-title">Index Constituents <span class="plus-tag">PLUS</span></div>'
     +'<div class="sd-cons-wrap" id="sd-cons-wrap">'
       +'<div class="sd-cons-summary" id="sd-cons-summary">'
-        +'<div class="sd-cons-breadth"><span class="sd-cons-tally flat">Loading…</span></div>'
+        +'<div class="sd-cons-meta">Loading…</div>'
       +'</div>'
-      +'<div id="sd-cons-body"><div class="sd-cons-state">Fetching live constituent data…</div></div>'
+      +'<div id="sd-cons-body"><div class="sd-cons-state">Loading constituents…</div></div>'
     +'</div>'
     /* Institutional holdings (PLUS) — filled async by fetchShareholding()
        when the overlay opens. Non-subscribers see the gate; subscribers
@@ -6444,8 +6423,8 @@ function openSectorDetail(name){
   document.body.style.overflow='hidden';
   document.getElementById('sd-close').focus();
 
-  /* Kick off the live constituents fetch + start polling while the
-     overlay is open. Cleaned up in closeSectorDetail. */
+  /* Kick off the constituents fetch (single, static — no poll).
+     Cleaned up in closeSectorDetail. */
   startConstituentsTracking(name);
 
   /* Institutional holdings — one cached fetch per sector; renders into
@@ -6635,7 +6614,6 @@ function renderShpBlock(sector,d){
 
   var head='<th title="Rank movement since last quarterly rebalance" style="width:34px;text-align:center">\u21c5</th>'
     +'<th>Stock</th>'
-    +'<th title="Derived free-float weight — share of sector total">Weight</th>'
     +'<th>Trend</th>';
   for(var q=0;q<quarters.length;q++){
     head+='<th'+(q===quarters.length-1?' style="color:var(--txt)"':'')+'>'+shpQLabel(quarters[q])+'</th>';
@@ -6676,7 +6654,6 @@ function renderShpBlock(sector,d){
     return '<tr'+(isTotal?' class="sd-shp-total"':'')+'>'
       +'<td style="text-align:center;padding-left:10px;padding-right:4px">'+(rankMark||'')+'</td>'
       +'<td'+nameTitle+'>'+label+pledgeMark(pledge)+'</td>'
-      +'<td style="color:var(--'+(isTotal?'ghost':'sub')+')">'+wtxt+'</td>'
       +'<td>'+shpSparkline(vals)+'</td>'
       +tds
     +'</tr>';
@@ -6740,59 +6717,44 @@ function renderShpBlock(sector,d){
 }
 
 /* ════════════════════════════════════════
-   INDEX CONSTITUENTS — live NSE constituent prices for the open sector
+   INDEX CONSTITUENTS — static weight + annual-report table for the open sector
 
-   Backed by the worker's /index-tracker/<sector> endpoint (NSE's
-   indexTrackerApi behind it). The summary bar shows up/down/flat
-   counts and total traded value; the table is sortable and shows
-   each constituent's price, abs/% change, intraday day-range, volume,
-   and value.
+   Backed by the worker's /constituents/<sector> endpoint, which serves the
+   daily D1 snapshot (shp_constituents + shp_index_weights) with no live NSE
+   call. The table shows each constituent's symbol, official index weight, a
+   lazily-resolved Annual Report link, and an AI-summary toggle. No prices, no
+   polling — membership + weight change only at quarterly rebalance.
 
    Lifecycle:
-     - openSectorDetail   → startConstituentsTracking(name)
-                            • initial fetch
-                            • 60s polling while overlay is open
-                            • visibilitychange handler for tab-focus refresh
-     - closeSectorDetail  → stopConstituentsTracking()
-                            • clears interval + listener
+     - openSectorDetail   → startConstituentsTracking(name)  [single fetch]
+     - closeSectorDetail  → stopConstituentsTracking()       [clears state]
 
-   Polling cadence matches the worker's 60s edge-cache during market
-   hours, so most polls land warm at CF and don't hit NSE.
+   AR link + AI summary are resolved client-side against the AnnualReports
+   worker, per user intent — never pre-fetched across the whole table.
 ════════════════════════════════════════ */
-var consState={sector:null,data:null,sort:{key:'pChange',dir:'desc'},pollId:0,visHandler:null};
+var consState={sector:null,data:null,sort:{key:'weight',dir:'desc'}};
 
 function startConstituentsTracking(sector){
   stopConstituentsTracking();
   consState.sector=sector;
   consState.data=null;
-  consState.sort={key:'pChange',dir:'desc'};
+  consState.sort={key:'weight',dir:'desc'};
 
-  /* Plus gate. If the user isn't entitled, render the upsell card and
-     skip the fetch entirely — no point spending the network round-trip
-     or worker hit on data they can't see. The gate distinguishes
-     "not signed in" from "signed in but not Plus" with different CTAs,
-     matching the chart-modal paywall pattern. */
+  /* Plus gate. If the user isn't entitled, render the upsell card and skip
+     the fetch entirely. Same gate as before; distinguishes "not signed in"
+     from "signed in but not Plus". */
   if(!userIsSubscribed()){
     renderConstituentsGate();
     return;
   }
 
+  /* Single fetch. The table is static per day (served from the daily D1
+     snapshot behind /constituents), so there is no poll and no
+     visibilitychange refresh — opening a sector makes zero live NSE calls. */
   fetchConstituents(sector);
-  consState.pollId=setInterval(function(){
-    if(consState.sector===sector && userIsSubscribed()) fetchConstituents(sector);
-  },60000);
-  consState.visHandler=function(){
-    if(document.visibilityState==='visible' && consState.sector===sector && userIsSubscribed()){
-      fetchConstituents(sector);
-    }
-  };
-  document.addEventListener('visibilitychange',consState.visHandler);
 }
 
 function renderConstituentsGate(){
-  /* Replace both the summary bar and the body with the gate — the
-     count tallies are part of the gated data and shouldn't peek
-     through above the paywall. */
   var summary=document.getElementById('sd-cons-summary');
   if(summary) summary.style.display='none';
   var body=document.getElementById('sd-cons-body');
@@ -6803,39 +6765,30 @@ function renderConstituentsGate(){
   body.innerHTML='<div class="sd-cons-gate">'
     +'<div class="sd-cons-gate-icon">🔒</div>'
     +'<div class="sd-cons-gate-title">Index Constituents <span class="plus-tag">PLUS</span></div>'
-    +'<div class="sd-cons-gate-desc">See live prices, intraday day-range, and traded volume for every stock in this index — sortable and auto-refreshing every 60 seconds during market hours.</div>'
+    +'<div class="sd-cons-gate-desc">See every stock in this index with its official index weight — plus one-tap access to the latest annual report and an AI-written summary of it.</div>'
     +'<button class="sd-cons-gate-btn" onclick="'+ctaCall+'">'+ctaLabel+'</button>'
   +'</div>';
 }
 
 function stopConstituentsTracking(){
-  if(consState.pollId){ clearInterval(consState.pollId); consState.pollId=0; }
-  if(consState.visHandler){
-    document.removeEventListener('visibilitychange',consState.visHandler);
-    consState.visHandler=null;
-  }
   consState.sector=null;
   consState.data=null;
 }
 
 function fetchConstituents(sector){
-  fetch(WORKER_BASE+'/index-tracker/'+encodeURIComponent(sector),{redirect:'follow'})
+  fetch(WORKER_BASE+'/constituents/'+encodeURIComponent(sector),{redirect:'follow'})
     .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
     .then(function(json){
-      /* Guard against the user having closed the overlay or switched
-         sectors during the in-flight fetch. */
-      if(consState.sector!==sector) return;
+      if(consState.sector!==sector) return;   /* overlay closed / switched mid-flight */
       consState.data=json;
       renderConstituents();
     })
     .catch(function(err){
       console.warn('[constituents]',sector,err && err.message);
       if(consState.sector!==sector) return;
-      /* Only show error if we don't already have data — keep stale
-         data visible across transient failures rather than blanking. */
       if(!consState.data){
         var body=document.getElementById('sd-cons-body');
-        if(body) body.innerHTML='<div class="sd-cons-state err">Couldn\'t load constituents. Will retry.</div>';
+        if(body) body.innerHTML='<div class="sd-cons-state err">Couldn\'t load constituents.</div>';
       }
     });
 }
@@ -6852,55 +6805,53 @@ function renderConstituents(){
 }
 
 function renderConstituentsSummary(d){
-  var up=0,down=0,flat=0,totalVal=0;
-  for(var i=0;i<d.stocks.length;i++){
-    var s=d.stocks[i];
-    if(s.pChange>0) up++;
-    else if(s.pChange<0) down++;
-    else flat++;
-    totalVal+=s.tradedValue||0;
-  }
-  var t=new Date(d.updated);
-  var timeStr=t.toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit',hour12:true});
-  var crStr=(totalVal/1e7).toLocaleString('en-IN',{maximumFractionDigits:0});
   var summary=document.getElementById('sd-cons-summary');
   if(!summary) return;
-  summary.innerHTML=
-    '<div class="sd-cons-breadth">'
-      +'<span class="sd-cons-tally up"><span class="sd-cons-tally-arrow">↑</span>'+up+' up</span>'
-      +'<span class="sd-cons-tally down"><span class="sd-cons-tally-arrow">↓</span>'+down+' down</span>'
-      +(flat?'<span class="sd-cons-tally flat">— '+flat+' flat</span>':'')
-      +'<span class="sd-cons-meta">· ₹'+crStr+' Cr traded</span>'
-    +'</div>'
-    +'<div class="sd-cons-meta">As of '+timeStr+'</div>';
+  summary.style.display='';
+  summary.innerHTML='<div class="sd-cons-meta">'+d.count+' constituents · weighted by NSE index methodology</div>';
+}
+
+/* AR link cell — state-driven from arCache[symbol]. The year is resolved
+   lazily on the FIRST click (one AnnualReports-worker call per user intent),
+   never pre-fetched for the whole table (that would burst the worker → NSE
+   per symbol). Once resolved to a year it becomes a native <a> the user taps,
+   so there is no async window.open for a popup blocker to swallow. */
+function arLinkCell(symbol){
+  var d=arCache[symbol];
+  if(!d){
+    if(arReq[symbol]) return '<span class="sd-ar-note">Loading…</span>';
+    return '<a class="sd-ar-btn" data-arlink data-symbol="'+escapeHtml(symbol)+'">Annual Report</a>';
+  }
+  if(d.error) return '<a class="sd-ar-retry" data-symbol="'+escapeHtml(symbol)+'">Couldn\'t reach NSE — retry</a>';
+  if(!d.year) return '<span class="sd-ar-note">No AR on NSE</span>';
+  return '<a class="sd-ar-btn" href="'+AR_BASE+'/ar?symbol='+encodeURIComponent(symbol)
+    +'&year='+encodeURIComponent(d.year)+'" target="_blank" rel="noopener">Annual Report</a>';
+}
+
+/* AI Summary toggle. Expands the summary sub-row and kicks off the run only
+   if there isn't already one running or finished for this symbol — re-expanding
+   a completed summary just shows it, never re-spends credits. */
+function openArSummary(symbol){
+  if(!symbol) return;
+  if(arState[symbol]){ delete arState[symbol]; renderConstituentsTable(consState.data); return; }
+  arState[symbol]=true;
+  renderConstituentsTable(consState.data);
+  var s=arSum[symbol];
+  if(!s || (!s.running && !s.done)) runArSummary(symbol);
 }
 
 function renderConstituentsTable(d){
+  if(!d||!d.stocks) return;
   var sort=consState.sort;
-  /* Compute synthetic day-range position once per render so it's
-     sortable and reusable across cells. */
-  var rows=d.stocks.map(function(s){
-    var pos=(s.high>s.low&&isFinite(s.lastPrice))
-      ? Math.max(0,Math.min(100,((s.lastPrice-s.low)/(s.high-s.low))*100))
-      : -1;
-    return Object.assign({},s,{rangePos:pos});
-  });
+  var rows=d.stocks.slice();
   rows.sort(function(a,b){
-    var x=a[sort.key],y=b[sort.key];
-    if(typeof x==='string') return sort.dir==='asc'?x.localeCompare(y):y.localeCompare(x);
+    if(sort.key==='symbol'){
+      return sort.dir==='asc'?a.symbol.localeCompare(b.symbol):b.symbol.localeCompare(a.symbol);
+    }
+    var x=(a.weight==null?-Infinity:a.weight), y=(b.weight==null?-Infinity:b.weight);
+    if(x===y) return a.symbol.localeCompare(b.symbol);
     return sort.dir==='asc'?x-y:y-x;
   });
-
-  function fmtNum(v){ return (typeof v==='number'&&isFinite(v))?v.toLocaleString('en-IN',{maximumFractionDigits:2}):'—'; }
-  function fmtPct(v){ return (v>0?'+':'')+v.toFixed(2)+'%'; }
-  function fmtCompact(v){
-    if(!isFinite(v)) return '—';
-    if(v>=1e7) return (v/1e7).toFixed(2)+' Cr';
-    if(v>=1e5) return (v/1e5).toFixed(2)+' L';
-    if(v>=1e3) return (v/1e3).toFixed(1)+'K';
-    return String(Math.round(v));
-  }
-  function fmtCr(v){ return (v/1e7).toLocaleString('en-IN',{maximumFractionDigits:0}); }
 
   function th(key,label,extraClass){
     var cls='';
@@ -6911,41 +6862,29 @@ function renderConstituentsTable(d){
 
   var head='<thead><tr>'
     +th('symbol','Symbol')
-    +th('lastPrice','Price')
-    +th('change','Chg','sd-cons-col-chg-abs')
-    +th('pChange','% Chg')
-    +th('rangePos','Day Range','sd-cons-col-range')
-    +th('tradedVolume','Volume','sd-cons-col-volume')
-    +th('tradedValue','Value (₹Cr)')
+    +th('weight','Weight')
+    +'<th class="sd-cons-col-ar">Annual Report</th>'
+    +'<th class="sd-cons-col-tx">Transcripts</th>'
+    +'<th class="sd-cons-col-ai">AI Summary</th>'
     +'</tr></thead>';
 
   var body='<tbody>';
   for(var i=0;i<rows.length;i++){
     var s=rows[i];
-    var dir=s.pChange>0?'up':s.pChange<0?'down':'flat';
-    var sign=s.change>0?'+':'';
-    var rangeCell;
-    if(s.rangePos<0){
-      rangeCell='—';
-    } else {
-      rangeCell='<div class="sd-cons-range">'
-        +'<div class="sd-cons-range-bar" style="--pos:'+s.rangePos+'%"></div>'
-        +'<div class="sd-cons-range-bounds"><span>'+fmtNum(s.low)+'</span><span>'+fmtNum(s.high)+'</span></div>'
-      +'</div>';
-    }
-    var arOpen=arState[s.symbol];
-    body+='<tr class="sd-cons-row'+(arOpen?' is-open':'')+'" data-symbol="'+escapeHtml(s.symbol)+'">'
-      +'<td><span class="sd-cons-caret">\u25B8</span>'+escapeHtml(s.symbol)+'</td>'
-      +'<td>'+fmtNum(s.lastPrice)+'</td>'
-      +'<td class="sd-cons-col-chg-abs sd-cons-num '+dir+'">'+sign+fmtNum(s.change)+'</td>'
-      +'<td><span class="sd-cons-chip '+dir+'">'+fmtPct(s.pChange)+'</span></td>'
-      +'<td class="sd-cons-col-range">'+rangeCell+'</td>'
-      +'<td class="sd-cons-col-volume">'+fmtCompact(s.tradedVolume)+'</td>'
-      +'<td>'+fmtCr(s.tradedValue)+'</td>'
+    var sym=s.symbol;
+    var wCell=(s.weight!=null&&isFinite(s.weight))?s.weight.toFixed(2)+'%':'—';
+    var arOpen=arState[sym];
+    body+='<tr class="sd-cons-row'+(arOpen?' is-open':'')+'" data-symbol="'+escapeHtml(sym)+'">'
+      +'<td>'+escapeHtml(sym)+'</td>'
+      +'<td class="sd-cons-weight">'+wCell+'</td>'
+      +'<td class="sd-cons-col-ar">'+arLinkCell(sym)+'</td>'
+      +'<td class="sd-cons-col-tx"><span class="sd-tx-soon" title="Earnings call transcripts \u2014 coming soon">Coming soon</span></td>'
+      +'<td class="sd-cons-col-ai"><a class="sd-ar-btn sd-ar-ai'+(arOpen?' is-open':'')+'" data-symbol="'+escapeHtml(sym)+'">'
+        +(arOpen?'Hide summary':'AI Summary')+'</a></td>'
     +'</tr>';
-    /* Re-emit the open panel on every render — this table re-renders on sort
-       and on the 60s poll, so DOM-only state would collapse mid-read. */
-    if(arOpen) body+=arRowHtml(s.symbol);
+    /* Re-emit the open summary panel on every render — the table re-renders
+       on sort and on AR-state changes, so DOM-only state would collapse it. */
+    if(arOpen) body+=arRowHtml(sym);
   }
   body+='</tbody>';
 
@@ -6953,9 +6892,7 @@ function renderConstituentsTable(d){
   if(!bodyEl) return;
   bodyEl.innerHTML='<table class="sd-cons-table">'+head+body+'</table>';
 
-  /* Wire column-header sort clicks. Re-runs on every render — cheap
-     and keeps event handlers attached to the live nodes. */
-  var ths=bodyEl.querySelectorAll('thead th');
+  var ths=bodyEl.querySelectorAll('thead th[data-key]');
   for(var j=0;j<ths.length;j++){
     ths[j].addEventListener('click',function(ev){
       var key=ev.currentTarget.getAttribute('data-key');
@@ -6964,28 +6901,21 @@ function renderConstituentsTable(d){
       renderConstituentsTable(consState.data);
     });
   }
-
-  var trs=bodyEl.querySelectorAll('tbody tr.sd-cons-row');
-  for(var k=0;k<trs.length;k++){
-    trs[k].addEventListener('click',function(ev){
-      toggleAr(ev.currentTarget.getAttribute('data-symbol'));
+  function wireArResolve(el){
+    el.addEventListener('click',function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      arOpenLazy(ev.currentTarget.getAttribute('data-symbol'));
     });
   }
+  var links=bodyEl.querySelectorAll('[data-arlink]');
+  for(var k=0;k<links.length;k++) wireArResolve(links[k]);
+  var rts=bodyEl.querySelectorAll('.sd-ar-retry');
+  for(var m=0;m<rts.length;m++) wireArResolve(rts[m]);
   var ais=bodyEl.querySelectorAll('.sd-ar-ai');
   for(var q=0;q<ais.length;q++){
     ais[q].addEventListener('click',function(ev){
       ev.preventDefault(); ev.stopPropagation();
-      runArSummary(ev.currentTarget.getAttribute('data-symbol'));
-    });
-  }
-  var rts=bodyEl.querySelectorAll('.sd-ar-retry');
-  for(var m=0;m<rts.length;m++){
-    rts[m].addEventListener('click',function(ev){
-      ev.preventDefault(); ev.stopPropagation();
-      var sym=ev.currentTarget.getAttribute('data-symbol');
-      delete arCache[sym];
-      renderConstituentsTable(consState.data);
-      fetchAr(sym);
+      openArSummary(ev.currentTarget.getAttribute('data-symbol'));
     });
   }
 }
@@ -7001,32 +6931,17 @@ function renderConstituentsTable(d){
 ════════════════════════════════════════ */
 var AR_BASE='https://annualreports.prashant-06f.workers.dev';
 var arState={};
+var arReq={};
 var arCache={};
 
 function arRowHtml(symbol){
-  var d=arCache[symbol];
-  var inner;
-  if(!d){
-    inner='<span class="sd-ar-note">Loading\u2026</span>';
-  } else if(d.error){
-    inner='<span class="sd-ar-note">Couldn\'t reach NSE \u2014 '
-      +'<a class="sd-ar-retry" data-symbol="'+escapeHtml(symbol)+'">retry</a></span>';
-  } else if(!d.year){
-    inner='<span class="sd-ar-note">No annual report on NSE</span>';
-  } else {
-    inner='<a class="sd-ar-btn" href="'+AR_BASE+'/ar?symbol='+encodeURIComponent(symbol)
-      +'&year='+encodeURIComponent(d.year)+'" target="_blank" rel="noopener">'
-      +'Annual Report '+escapeHtml(d.label)+'</a>'
-      +' <a class="sd-ar-btn sd-ar-ai" data-symbol="'+escapeHtml(symbol)+'">AI Summary</a>';
-  }
-  /* The summary block re-renders from arSum state so it survives the 60s
-     poll repaint mid-stream — same lesson as the panel itself. */
+  /* Summary-only sub-row now — the AR link and AI-Summary buttons live in the
+     main constituent row. Re-renders from arSum state so it survives table
+     repaints (sort / AR-state) mid-stream. */
+  var inner='';
   var sum=arSum[symbol];
   if(sum){
     if(sum.running){
-      /* One animation for the whole ~2-minute run. The user can browse away —
-         the run continues, and the finished summary lands in the user-menu
-         history regardless of whether this panel is still open. */
       inner+='<div class="sd-ar-anim"><span class="dots"><span></span><span></span><span></span></span>'
         +escapeHtml(sum.stage||'Analysing Annual Report\u2026')
         +' <span style="color:var(--bdr)">|</span> ~2 min \u2014 free to browse meanwhile, result saved under your menu \u2192 AI Summaries</div>';
@@ -7035,7 +6950,8 @@ function arRowHtml(symbol){
     }
     if(!sum.running&&sum.text) inner+='<div class="sd-ar-sum">'+arSumFormat(sum.text,symbol)+'</div>';
   }
-  return '<tr class="sd-ar-row"><td colspan="7">'+inner+'</td></tr>';
+  if(!inner) inner='<span class="sd-ar-note">Preparing summary\u2026</span>';
+  return '<tr class="sd-ar-row"><td colspan="5">'+inner+'</td></tr>';
 }
 
 /* Bullet lines ("- x", "\u2022 x", "1. x") become a real <ul>; anything else
@@ -7136,12 +7052,19 @@ var AR_THEME_SECTIONS={
 function arExtSections(raw){
   var out={}, cur=null, title=null, buf=[];
   var lines=String(raw).split('\n');
-  function flush(){ if(cur) out[cur]={title:title,body:buf.join('\n').trim()}; buf=[]; }
+  /* Never overwrite an already-populated section. The COMPLETENESS CHECK block
+     ends the extract with a checklist that echoes every section name
+     ("- Section A \u2014 ...: Substantial disclosure"); without this guard those
+     echoes re-opened A-G and blanked their real bodies, so every card expanded
+     empty. */
+  function flush(){ if(cur && !(out[cur] && out[cur].body)) out[cur]={title:title,body:buf.join('\n').trim()}; buf=[]; }
   for(var i=0;i<lines.length;i++){
     var L=lines[i];
-    var m=L.match(/^\s*-{0,3}\s*SECTION\s+([A-G])\s*[\u2014\u2013-]+\s*(.+?)\s*$/i);
+    /* A real header is bare or carries a "--"/"---" rule; a single leading
+       "- " bullet is the checklist, NOT a header, so it stays body content. */
+    var m=L.match(/^\s*(?:-{2,3}\s*)?SECTION\s+([A-G])\s*[\u2014\u2013-]+\s*(.+?)\s*$/i);
     if(m){ flush(); cur=m[1].toUpperCase(); title=m[2]; continue; }
-    if(/^\s*-{0,3}\s*COMPLETENESS CHECK/i.test(L)){ flush(); cur='CHECK'; title='Completeness check'; continue; }
+    if(/^\s*(?:-{2,3}\s*)?COMPLETENESS CHECK/i.test(L)){ flush(); cur='CHECK'; title='Completeness check'; continue; }
     if(/^\s*---\s*$/.test(L)) continue;
     if(cur) buf.push(L);
   }
@@ -7202,16 +7125,6 @@ function arCardToggle(ev){
   }).catch(function(){
     bodyEl.innerHTML='<span class="xnf">Couldn\'t load the full extraction \u2014 tap to retry.</span>';
   });
-}
-
-function toggleAr(symbol){
-  if(!symbol) return;
-  if(arState[symbol]){ delete arState[symbol]; renderConstituentsTable(consState.data); return; }
-  arState[symbol]=true;
-  renderConstituentsTable(consState.data);   /* paint loading first */
-  if(arCache[symbol]&&!arCache[symbol].error) return;
-  delete arCache[symbol];
-  fetchAr(symbol);
 }
 
 /* ════════════════════════════════════════
@@ -7381,7 +7294,7 @@ function closeArSumPane(){
 }
 
 function fetchAr(symbol){
-  fetch(AR_BASE+'/ar?symbol='+encodeURIComponent(symbol))
+  return fetch(AR_BASE+'/ar?symbol='+encodeURIComponent(symbol))
     .then(function(r){ return r.json(); })
     .then(function(j){
       /* years arrive newest-first; a 404 body carries .error. Failure is kept
@@ -7396,8 +7309,30 @@ function fetchAr(symbol){
     })
     .catch(function(){ arCache[symbol]={error:true}; })
     .then(function(){
-      if(arState[symbol]) renderConstituentsTable(consState.data);
+      delete arReq[symbol];
+      if(consState.sector) renderConstituentsTable(consState.data);
+      return arCache[symbol];
     });
+}
+
+/* One-click Annual Report open. The PDF URL needs the year, which is resolved
+   async — and window.open() after an await is popup-blocked. So we open a blank
+   tab synchronously inside the click gesture, then redirect it once the year
+   lands. No AR / error -> close the blank tab; the row's inline note/retry
+   shows via the re-render. If the browser blocked the blank open (w null), the
+   resolve still turns the button into a live <a> the user can tap (graceful
+   fall back to a second click, only in that rare case). */
+function arOpenLazy(symbol){
+  var w=window.open('','_blank');
+  arReq[symbol]=1; delete arCache[symbol];
+  renderConstituentsTable(consState.data);
+  fetchAr(symbol).then(function(d){
+    if(d&&d.year){
+      var url=AR_BASE+'/ar?symbol='+encodeURIComponent(symbol)+'&year='+encodeURIComponent(d.year);
+      if(w&&!w.closed){ try{ w.location=url; }catch(e){} }
+      else { window.open(url,'_blank','noopener'); }
+    } else if(w&&!w.closed){ try{ w.close(); }catch(e){} }
+  }).catch(function(){ if(w&&!w.closed){ try{ w.close(); }catch(e){} } });
 }
 
 
@@ -12211,28 +12146,28 @@ function buildPlusFreeHTML(){
   h += "<div>";
   h += "<div class='pp-feat-num'>06 &middot; Index Constituents</div>";
   h += "<div class='pp-feat-title'>See what&#39;s moving inside</div>";
-  h += "<div class='pp-feat-desc'>When a sector is cheap or expensive, see which stocks are driving the signal. Every constituent of the underlying NSE index &#8212; live price, day&#39;s change, traded volume &#8212; sortable, auto-refreshing.</div>";
+  h += "<div class='pp-feat-desc'>When a sector is cheap or expensive, see which stocks carry the most index weight &#8212; and jump straight to each one&#39;s latest annual report and an AI summary of it.</div>";
   h += "<ul class='pp-bullets'>";
-  h += "<li>Every stock with <strong>live price and intraday % change</strong></li>";
-  h += "<li>Sort by <strong>change, traded value, volume</strong>, or symbol</li>";
-  h += "<li><strong>Auto-refreshes</strong> during market hours</li>";
-  h += "<li>Day&#39;s <strong>high / low / range position</strong> visible per stock</li>";
+  h += "<li>Every stock with its <strong>official index weight</strong></li>";
+  h += "<li>One tap to the <strong>latest annual report</strong> PDF</li>";
+  h += "<li><strong>AI summary</strong> of any report, Claude-powered</li>";
+  h += "<li>Sortable by <strong>weight or symbol</strong></li>";
   h += "</ul></div>";
   h += "<div class='pp-mock'>";
   h += "<div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div>";
   h += "<div class='pp-mock-body' style='padding:10px 9px'>";
   h += "<div style='display:flex;justify-content:space-between;font-family:var(--mono);font-size:.46rem;margin-bottom:6px;color:var(--ghost)'>";
-  h += "<span><span style='color:var(--vchp-c);font-weight:700'>&#8593; 9 up</span> &middot; <span style='color:var(--exp-c);font-weight:700'>&#8595; 3 down</span></span>";
-  h += "<span>NIFTY IT &middot; AS OF 2:47 PM</span>";
+  h += "<span>NIFTY IT &middot; 10 CONSTITUENTS</span>";
+  h += "<span>WEIGHTED BY INDEX METHODOLOGY</span>";
   h += "</div>";
   h += "<table class='ppm-tbl'>";
-  h += "<thead><tr><th style='text-align:left'>Symbol</th><th>Price</th><th>Chg</th><th>% Chg</th><th>Vol</th></tr></thead>";
+  h += "<thead><tr><th style='text-align:left'>Symbol</th><th>Weight</th><th>Annual Report</th><th>AI Summary</th></tr></thead>";
   h += "<tbody>";
-  h += "<tr><td style='text-align:left;font-weight:700'>INFY</td><td>1,548</td><td style='color:var(--vchp-c);font-weight:700'>+22</td><td style='color:var(--vchp-c);font-weight:700'>+1.45%</td><td>4.2M</td></tr>";
-  h += "<tr><td style='text-align:left;font-weight:700'>TCS</td><td>3,891</td><td style='color:var(--vchp-c);font-weight:700'>+42</td><td style='color:var(--vchp-c);font-weight:700'>+1.09%</td><td>2.1M</td></tr>";
-  h += "<tr><td style='text-align:left;font-weight:700'>HCLTECH</td><td>1,432</td><td style='color:var(--vchp-c);font-weight:700'>+11</td><td style='color:var(--vchp-c);font-weight:700'>+0.78%</td><td>1.8M</td></tr>";
-  h += "<tr><td style='text-align:left;font-weight:700'>WIPRO</td><td>475</td><td style='color:var(--exp-c);font-weight:700'>&#8722;3</td><td style='color:var(--exp-c);font-weight:700'>&#8722;0.63%</td><td>3.4M</td></tr>";
-  h += "<tr><td style='text-align:left;font-weight:700'>TECHM</td><td>1,612</td><td style='color:var(--exp-c);font-weight:700'>&#8722;8</td><td style='color:var(--exp-c);font-weight:700'>&#8722;0.49%</td><td>1.1M</td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>TCS</td><td style='font-weight:700'>28.41%</td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AR</span></td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AI</span></td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>INFY</td><td style='font-weight:700'>24.06%</td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AR</span></td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AI</span></td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>HCLTECH</td><td style='font-weight:700'>11.18%</td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AR</span></td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AI</span></td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>WIPRO</td><td style='font-weight:700'>9.02%</td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AR</span></td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AI</span></td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>TECHM</td><td style='font-weight:700'>7.44%</td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AR</span></td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AI</span></td></tr>";
   h += "</tbody></table>";
   h += "</div></div></div>";
   h += "<hr class='pp-divider'>";
@@ -12243,7 +12178,7 @@ function buildPlusFreeHTML(){
   h += "<ul class='pp-price-feats'>";
   h += "<li><strong>Email alerts</strong> on any sector</li>";
   h += "<li><strong>AI summaries</strong> powered by Claude &#8212; 30/day</li>";
-  h += "<li><strong>Live index constituents</strong> &#8212; every stock, sortable, auto-refreshing</li>";
+  h += "<li><strong>Index constituents</strong> &#8212; weight, annual report &amp; AI summary per stock</li>";
   h += "<li><strong>Macro overlays</strong> &#8212; USD EPS, 10Y G-Sec, RBI repo rate</li>";
   h += "<li><strong>Alpha vs Nifty 50</strong> in every backtest</li>";
   h += "<li><strong>Expanded charts</strong> &#8212; multi-metric, drag-to-measure, rolling median</li>";
@@ -12319,20 +12254,20 @@ function buildPlusPaidHTML(){
   h += "</div></div></div>";
   /* FEATURE 6 — INDEX CONSTITUENTS (active) */
   h += "<div class='pp-feature rev' id='pp-feat-6' style='margin-top:8px'>";
-  h += "<div><div class='pp-feat-num' style='color:var(--vchp-c)'>&#10003; Active</div><div class='pp-feat-title'>Index Constituents</div><div class='pp-feat-desc'>Inside every sector&#39;s detail page, the live constituents table shows every stock in the underlying NSE index &#8212; sortable by change, traded value, volume, or symbol, auto-refreshing during market hours.</div></div>";
+  h += "<div><div class='pp-feat-num' style='color:var(--vchp-c)'>&#10003; Active</div><div class='pp-feat-title'>Index Constituents</div><div class='pp-feat-desc'>Inside every sector&#39;s detail page, the constituents table shows every stock in the underlying NSE index with its official index weight &#8212; each linking to the latest annual report and an AI summary, sortable by weight or symbol.</div></div>";
   h += "<div class='pp-mock'><div class='pp-mock-bar'><div class='pp-dot' style='background:#ff5f57'></div><div class='pp-dot' style='background:#febc2e'></div><div class='pp-dot' style='background:#28c840'></div></div><div class='pp-mock-body' style='padding:10px 9px'>";
   h += "<div style='display:flex;justify-content:space-between;font-family:var(--mono);font-size:.46rem;margin-bottom:6px;color:var(--ghost)'>";
-  h += "<span><span style='color:var(--vchp-c);font-weight:700'>&#8593; 9 up</span> &middot; <span style='color:var(--exp-c);font-weight:700'>&#8595; 3 down</span></span>";
-  h += "<span>NIFTY IT &middot; AS OF 2:47 PM</span>";
+  h += "<span>NIFTY IT &middot; 10 CONSTITUENTS</span>";
+  h += "<span>WEIGHTED BY INDEX METHODOLOGY</span>";
   h += "</div>";
   h += "<table class='ppm-tbl'>";
-  h += "<thead><tr><th style='text-align:left'>Symbol</th><th>Price</th><th>Chg</th><th>% Chg</th><th>Vol</th></tr></thead>";
+  h += "<thead><tr><th style='text-align:left'>Symbol</th><th>Weight</th><th>Annual Report</th><th>AI Summary</th></tr></thead>";
   h += "<tbody>";
-  h += "<tr><td style='text-align:left;font-weight:700'>INFY</td><td>1,548</td><td style='color:var(--vchp-c);font-weight:700'>+22</td><td style='color:var(--vchp-c);font-weight:700'>+1.45%</td><td>4.2M</td></tr>";
-  h += "<tr><td style='text-align:left;font-weight:700'>TCS</td><td>3,891</td><td style='color:var(--vchp-c);font-weight:700'>+42</td><td style='color:var(--vchp-c);font-weight:700'>+1.09%</td><td>2.1M</td></tr>";
-  h += "<tr><td style='text-align:left;font-weight:700'>HCLTECH</td><td>1,432</td><td style='color:var(--vchp-c);font-weight:700'>+11</td><td style='color:var(--vchp-c);font-weight:700'>+0.78%</td><td>1.8M</td></tr>";
-  h += "<tr><td style='text-align:left;font-weight:700'>WIPRO</td><td>475</td><td style='color:var(--exp-c);font-weight:700'>&#8722;3</td><td style='color:var(--exp-c);font-weight:700'>&#8722;0.63%</td><td>3.4M</td></tr>";
-  h += "<tr><td style='text-align:left;font-weight:700'>TECHM</td><td>1,612</td><td style='color:var(--exp-c);font-weight:700'>&#8722;8</td><td style='color:var(--exp-c);font-weight:700'>&#8722;0.49%</td><td>1.1M</td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>TCS</td><td style='font-weight:700'>28.41%</td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AR</span></td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AI</span></td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>INFY</td><td style='font-weight:700'>24.06%</td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AR</span></td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AI</span></td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>HCLTECH</td><td style='font-weight:700'>11.18%</td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AR</span></td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AI</span></td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>WIPRO</td><td style='font-weight:700'>9.02%</td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AR</span></td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AI</span></td></tr>";
+  h += "<tr><td style='text-align:left;font-weight:700'>TECHM</td><td style='font-weight:700'>7.44%</td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AR</span></td><td><span style='display:inline-block;padding:1px 6px;border-radius:4px;background:rgba(129,140,248,.16);color:#a5b4fc;border:1px solid rgba(129,140,248,.32);font-weight:600'>AI</span></td></tr>";
   h += "</tbody></table>";
   h += "</div></div></div>";
   return h;
