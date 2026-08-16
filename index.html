@@ -935,6 +935,27 @@ html.light .sd-header{background:rgba(238,241,248,.96)}
 /* Disabled 'Coming soon' pill — same visual weight as sd-ar-btn but muted
    and non-interactive, so users read it as "here later" rather than broken. */
 .sd-tx-soon{display:inline-block;padding:3px 9px;border-radius:5px;font-family:var(--mono);font-size:.55rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--ghost);background:var(--bg3);border:1px dashed var(--bdr);cursor:not-allowed;user-select:none;white-space:nowrap}
+/* ── Transcripts: constituents-row button + popup (indianapi worker) ── */
+.sd-tx-link{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border:1px solid var(--bdr);border-radius:5px;background:var(--bg3);color:var(--txt);text-decoration:none;font-family:var(--mono);font-size:.62rem;cursor:pointer;transition:border-color .15s,color .15s;white-space:nowrap}
+.sd-tx-link:hover{border-color:var(--chp-c);color:var(--chp-c)}
+#ss-tx-ovl{position:fixed;inset:0;z-index:800;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(4,7,14,.72);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+#ss-tx-ovl.open{display:flex}
+#ss-tx-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:12px;width:100%;max-width:420px;max-height:82vh;overflow:auto;box-shadow:0 24px 60px rgba(0,0,0,.55)}
+#ss-tx-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:16px 18px 10px}
+#ss-tx-ttl{margin:0;font-family:var(--ttl);font-size:1.5rem;letter-spacing:.5px;line-height:1;color:var(--txt)}
+#ss-tx-sub{margin:3px 0 0;font-family:var(--mono);font-size:.58rem;letter-spacing:.4px;color:var(--ghost)}
+#ss-tx-x{background:none;border:0;color:var(--sub);font-size:1.15rem;line-height:1;cursor:pointer;padding:2px 6px}
+#ss-tx-x:hover{color:var(--txt)}
+.ss-tx-sec{padding:4px 18px 16px}
+.ss-tx-sec h4{margin:0 0 9px;font-family:var(--cond);font-weight:700;font-size:.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--sub)}
+.ss-tx-grid{display:flex;flex-wrap:wrap;gap:7px}
+.ss-tx-b{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--bdr);color:var(--txt);border-radius:6px;padding:8px 11px;text-decoration:none;font-family:var(--mono);font-weight:600;font-size:.62rem;letter-spacing:.3px;transition:border-color .12s,background .12s}
+.ss-tx-b:hover{background:var(--sur);border-color:var(--chp-c)}
+.ss-tx-b.wide{width:100%;justify-content:space-between}
+.ss-tx-b .tag{font-family:var(--body);font-weight:500;font-size:.56rem;color:var(--ghost)}
+.ss-tx-msg{padding:8px 0;text-align:center;color:var(--ghost);font-family:var(--mono);font-size:.62rem}
+.ss-tx-spin{width:20px;height:20px;border:2px solid var(--bdr);border-top-color:var(--chp-c);border-radius:50%;margin:6px auto;animation:ss-tx-rot .7s linear infinite}
+@keyframes ss-tx-rot{to{transform:rotate(360deg)}}
 .sd-cons-table thead th:hover{color:var(--txt)}
 .sd-cons-table thead th.is-sorted{color:var(--txt)}
 .sd-cons-table thead th.is-sorted::after{content:"";display:inline-block;width:0;height:0;margin-left:5px;border-left:4px solid transparent;border-right:4px solid transparent;vertical-align:2px}
@@ -960,6 +981,25 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .sd-ar-note a{color:var(--acc);text-decoration:underline;cursor:pointer}
 .sd-ar-row td{white-space:normal!important;font-variant-numeric:normal}
 .sd-ar-sum{margin-top:10px;max-height:520px;overflow-y:auto;padding:4px 2px;color:var(--txt)}
+.sd-ai-actions{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+.sd-tx-ai{white-space:nowrap}
+.tx-sum{margin-top:10px;max-height:520px;overflow-y:auto;padding:4px 2px;color:var(--txt);font-family:var(--body);font-size:.82rem;line-height:1.7}
+.tx-meta{font-family:var(--mono);font-size:.58rem;color:var(--ghost);margin-bottom:8px}
+.tx-note{font-family:var(--mono);font-size:.6rem;color:var(--neu-c);background:var(--neu-tl);border:1px solid var(--neu-bd);border-radius:6px;padding:6px 8px;margin-bottom:10px}
+.tx-sec{font-family:var(--cond);font-weight:700;font-size:.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--sub);margin:14px 0 6px;border-bottom:1px solid var(--bdr);padding-bottom:3px}
+.tx-sec:first-child{margin-top:2px}
+.tx-line{margin:0 0 7px}
+.tx-flag{margin:0 0 6px;padding:6px 9px;border-radius:6px;border-left:3px solid var(--ghost)}
+.tx-flag.tx-red{background:var(--exp-tl);border-left-color:var(--exp-c)}
+.tx-flag.tx-green{background:var(--chp-tl);border-left-color:var(--chp-c)}
+.tx-flag .tx-tag{font-family:var(--mono);font-size:.55rem;font-weight:700;letter-spacing:.5px;margin-right:6px}
+.tx-red .tx-tag{color:var(--exp-c)}
+.tx-green .tx-tag{color:var(--chp-c)}
+.tx-verdict{font-family:var(--mono);font-size:.56rem;font-weight:700;padding:1px 6px;border-radius:4px;letter-spacing:.4px}
+.tx-hit{color:var(--chp-c);background:var(--chp-tl)}
+.tx-partial{color:var(--neu-c);background:var(--neu-tl)}
+.tx-miss{color:var(--exp-c);background:var(--exp-tl)}
+.tx-sum .num{color:var(--txt);font-weight:700}
 .ar-cards{display:flex;flex-direction:column;gap:7px}
 .ar-card{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--bdr);border-left:3px solid var(--ar);border-radius:7px;background:linear-gradient(90deg,color-mix(in srgb,var(--ar) 7%,transparent),transparent 60%);transition:transform .1s}
 .ar-card:hover{transform:translateX(2px)}
@@ -1002,6 +1042,17 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .arsum-item-h .when{color:var(--ghost)}
 .arsum-item-b{display:none;padding:10px;border-top:1px solid var(--bdr);color:var(--txt)}
 .arsum-item.open .arsum-item-b{display:block}
+.arsum-grp{border:1px solid var(--bdr);border-radius:6px;margin-bottom:8px;overflow:hidden}
+.arsum-grp-h{display:grid;grid-template-columns:minmax(60px,88px) 1fr 1fr;gap:8px;align-items:center;padding:9px 11px}
+.arsum-grp-sym{font-family:var(--mono);font-size:.66rem;font-weight:700;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arsum-slot{font-family:var(--mono);font-size:.6rem;color:var(--txt);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:6px;padding:5px 9px;border:1px solid var(--bdr);border-radius:5px;background:var(--bg3);transition:border-color .12s,color .12s}
+.arsum-slot:hover{border-color:var(--chp-c)}
+.arsum-slot.open{border-color:var(--chp-c);color:var(--chp-c)}
+.arsum-slot-c{color:var(--ghost);transition:transform .15s;display:inline-block}
+.arsum-slot.open .arsum-slot-c{transform:rotate(90deg)}
+.arsum-slot-empty{display:block}
+.arsum-body{display:none;padding:10px 12px;border-top:1px solid var(--bdr);color:var(--txt)}
+.arsum-body.open{display:block}
 .arsum-empty{font-family:var(--mono);font-size:.62rem;color:var(--ghost);padding:12px 4px}
 .arsum-sec{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);margin:18px 0 8px;display:flex;align-items:baseline;gap:8px}
 .arsum-sec:first-child{margin-top:4px}
@@ -6831,6 +6882,150 @@ function arLinkCell(symbol){
 /* AI Summary toggle. Expands the summary sub-row and kicks off the run only
    if there isn't already one running or finished for this symbol — re-expanding
    a completed summary just shows it, never re-spends credits. */
+/* ════════════════════════════════════════
+   Concall (transcript) AI summary — sibling of the AR summary flow above.
+   Same three worker steps (prepare -> extract -> condense), same streaming,
+   but driven against /api/txsummary and keyed per (symbol, latest quarter).
+   prepare is heavy (up to 6 transcripts + the latest deck pushed to Gemini)
+   and is resumable server-side, so a timeout is retried rather than surfaced.
+════════════════════════════════════════ */
+var txSum={};
+var txState={};
+
+function txSumSet(symbol,patch){
+  txSum[symbol]=Object.assign(txSum[symbol]||{},patch);
+  renderConstituentsTable(consState.data);
+}
+
+async function txStream(symbol,step,onDelta){
+  var res=await fetch(WORKER_BASE+'/api/txsummary',{
+    method:'POST',
+    headers:{'content-type':'application/json','authorization':'Bearer '+(currentUser&&currentUser.token||'')},
+    body:JSON.stringify({symbol:symbol,step:step})
+  });
+  if(!res.ok){
+    var msg; try{ msg=(await res.json()).error; }catch(e){ msg='HTTP '+res.status; }
+    var err=new Error(msg||('HTTP '+res.status)); err.httpStatus=res.status; throw err;
+  }
+  var ct=res.headers.get('content-type')||'';
+  if(ct.indexOf('application/json')>=0) return res.json();   /* prepare (non-streamed) */
+  var reader=res.body.getReader(), dec=new TextDecoder(), out='';
+  for(;;){ var r=await reader.read(); if(r.done) break; out+=dec.decode(r.value,{stream:true}); onDelta(out); }
+  return out;
+}
+
+async function runTxSummary(symbol){
+  if(!(window.currentUser&&currentUser.token)){
+    txSumSet(symbol,{status:'Sign in to generate AI summaries.',text:''}); return;
+  }
+  var s=txSum[symbol];
+  if(s&&s.running) return;
+  txSumSet(symbol,{running:true,stage:'Checking\u2026',status:'',text:'',warnings:null});
+  try{
+    /* cached final in D1? */
+    var g=await fetch(WORKER_BASE+'/api/txsummary?symbol='+encodeURIComponent(symbol),{
+      headers:{'authorization':'Bearer '+currentUser.token}}).then(function(r){return r.json();});
+    if(g&&g.final){ txSumSet(symbol,{running:false,status:'',text:g.final,done:true}); return; }
+
+    var resume=(g&&g.hasExtract)?'condense':null;
+    if(!resume){
+      /* prepare: idempotent + resumable. A 5xx/524/network blip just means
+         call it again — it skips files already ACTIVE. Quota (429) or other
+         4xx surface immediately. */
+      var prepared=false;
+      for(var attempt=0; attempt<3 && !prepared; attempt++){
+        txSumSet(symbol,{stage:attempt?'Still fetching transcripts\u2026':'Fetching transcripts\u2026'});
+        try{
+          var p=await txStream(symbol,'prepare',function(){});
+          if(p&&p.error) throw new Error(p.error);
+          if(p&&p.stage==='done'&&p.cached){
+            var g2=await fetch(WORKER_BASE+'/api/txsummary?symbol='+encodeURIComponent(symbol),{
+              headers:{'authorization':'Bearer '+currentUser.token}}).then(function(r){return r.json();});
+            txSumSet(symbol,{running:false,status:'',text:(g2&&g2.final)||'',done:true}); return;
+          }
+          prepared=true;
+          if(p&&p.warnings&&p.warnings.length) txSumSet(symbol,{warnings:p.warnings});
+        }catch(e){
+          var retriable=(!e.httpStatus)||e.httpStatus>=500;   /* network / 5xx / 524 */
+          if(attempt>=2 || !retriable) throw e;
+        }
+      }
+    }
+
+    if(!resume){ txSumSet(symbol,{stage:'Reading the calls\u2026'}); await txStream(symbol,'extract',function(){}); }
+    txSumSet(symbol,{stage:'Writing the review\u2026'});
+    var finalText=await txStream(symbol,'condense',function(){});
+    txSumSet(symbol,{running:false,status:'',text:finalText,done:true});
+  }catch(e){
+    txSumSet(symbol,{running:false,status:'Failed: '+e.message+' \u2014 click Concall summary to retry.'});
+  }
+}
+
+function openTxSummary(symbol){
+  if(!symbol) return;
+  if(txState[symbol]){ delete txState[symbol]; renderConstituentsTable(consState.data); return; }
+  txState[symbol]=true;
+  renderConstituentsTable(consState.data);
+  var s=txSum[symbol];
+  if(!s || (!s.running && !s.done)) runTxSummary(symbol);
+}
+
+function txRowHtml(symbol){
+  var inner='';
+  var sum=txSum[symbol];
+  if(sum){
+    if(sum.running){
+      inner+='<div class="sd-ar-anim"><span class="dots"><span></span><span></span><span></span></span>'
+        +escapeHtml(sum.stage||'Analysing earnings calls\u2026')
+        +' <span style="color:var(--bdr)">|</span> ~2 min \u2014 free to browse meanwhile</div>';
+    } else if(sum.status){
+      inner+='<div class="sd-ar-status">'+escapeHtml(sum.status)+'</div>';
+    }
+    if(!sum.running && sum.warnings && sum.warnings.length){
+      inner+='<div class="tx-note">Note: '+escapeHtml(sum.warnings.join(' '))+'</div>';
+    }
+    if(!sum.running&&sum.text) inner+='<div class="tx-sum">'+txSumFormat(sum.text)+'</div>';
+  }
+  if(!inner) inner='<span class="sd-ar-note">Preparing review\u2026</span>';
+  return '<tr class="sd-ar-row"><td colspan="5">'+inner+'</td></tr>';
+}
+
+/* Renderer for the condense output. Unlike the AR note (flat "- " bullets), the
+   review is sectioned (WHAT THEY DO / SAID VS DELIVERED / TONE DRIFT / FLAGS)
+   with HIT/PARTIAL/MISS verdicts and RED/GREEN flags. Reuses arMdClean/arEmph
+   for markdown-strip + number emphasis; everything is escaped first. */
+function txSumFormat(text){
+  var lines=String(text).split('\n');
+  var out='';
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i].trim();
+    if(!L) continue;
+    var safe=escapeHtml(L);
+    if(/^(WHAT THEY DO AND HOW IT'S GOING|SAID VS DELIVERED|TONE DRIFT|FLAGS)$/i.test(L)){
+      out+='<div class="tx-sec">'+safe+'</div>'; continue;
+    }
+    if(/AI summary\. Not investment advice/i.test(L)){ out+='<div class="tx-meta">'+safe+'</div>'; continue; }
+    if(/^Note:/i.test(L)){ out+='<div class="tx-note">'+safe+'</div>'; continue; }
+    if(/^This note is based solely/i.test(L)){ out+='<div class="tx-meta">'+safe+'</div>'; continue; }
+    var fm=safe.match(/^(RED|GREEN):\s*([\s\S]*)$/i);
+    if(fm){
+      var cls=/red/i.test(fm[1])?'tx-red':'tx-green';
+      out+='<div class="tx-flag '+cls+'"><span class="tx-tag">'+fm[1].toUpperCase()+'</span>'+arEmph(arMdClean(fm[2]))+'</div>';
+      continue;
+    }
+    var body=arEmph(arMdClean(safe)).replace(/\b(HIT|PARTIAL|MISS)\b/g,function(w){
+      var c=(w==='HIT')?'tx-hit':((w==='MISS')?'tx-miss':'tx-partial');
+      return '<span class="tx-verdict '+c+'">'+w+'</span>';
+    }).replace(/\bVerdict:\s*(Hit|Partial|Miss)\b/gi,function(m,w){
+      var W=w.toUpperCase(), c=(W==='HIT')?'tx-hit':((W==='MISS')?'tx-miss':'tx-partial');
+      return 'Verdict: <span class="tx-verdict '+c+'">'+W+'</span>';
+    });
+    out+='<div class="tx-line">'+body+'</div>';
+  }
+  if(!out) out=escapeHtml(String(text));
+  return out;
+}
+
 function openArSummary(symbol){
   if(!symbol) return;
   if(arState[symbol]){ delete arState[symbol]; renderConstituentsTable(consState.data); return; }
@@ -6874,17 +7069,23 @@ function renderConstituentsTable(d){
     var sym=s.symbol;
     var wCell=(s.weight!=null&&isFinite(s.weight))?s.weight.toFixed(2)+'%':'—';
     var arOpen=arState[sym];
+    var txOpen=txState[sym];
     body+='<tr class="sd-cons-row'+(arOpen?' is-open':'')+'" data-symbol="'+escapeHtml(sym)+'">'
       +'<td>'+escapeHtml(sym)+'</td>'
       +'<td class="sd-cons-weight">'+wCell+'</td>'
       +'<td class="sd-cons-col-ar">'+arLinkCell(sym)+'</td>'
-      +'<td class="sd-cons-col-tx"><span class="sd-tx-soon" title="Earnings call transcripts \u2014 coming soon">Coming soon</span></td>'
-      +'<td class="sd-cons-col-ai"><a class="sd-ar-btn sd-ar-ai'+(arOpen?' is-open':'')+'" data-symbol="'+escapeHtml(sym)+'">'
-        +(arOpen?'Hide summary':'AI Summary')+'</a></td>'
+      +'<td class="sd-cons-col-tx"><a class="sd-tx-link" data-txlink data-symbol="'+escapeHtml(sym)+'">Transcripts</a></td>'
+      +'<td class="sd-cons-col-ai"><div class="sd-ai-actions">'
+        +'<a class="sd-ar-btn sd-ar-ai'+(arOpen?' is-open':'')+'" data-symbol="'+escapeHtml(sym)+'">'
+        +(arOpen?'Hide AR':((arSum[sym]&&arSum[sym].done&&arSum[sym].arYear)?('AR '+arSum[sym].arYear):'AR summary'))+'</a>'
+        +'<a class="sd-ar-btn sd-tx-ai'+(txOpen?' is-open':'')+'" data-symbol="'+escapeHtml(sym)+'">'
+        +(txOpen?'Hide concall':'Concall summary')+'</a>'
+      +'</div></td>'
     +'</tr>';
     /* Re-emit the open summary panel on every render — the table re-renders
        on sort and on AR-state changes, so DOM-only state would collapse it. */
     if(arOpen) body+=arRowHtml(sym);
+    if(txOpen) body+=txRowHtml(sym);
   }
   body+='</tbody>';
 
@@ -6911,6 +7112,20 @@ function renderConstituentsTable(d){
   for(var k=0;k<links.length;k++) wireArResolve(links[k]);
   var rts=bodyEl.querySelectorAll('.sd-ar-retry');
   for(var m=0;m<rts.length;m++) wireArResolve(rts[m]);
+  var txl=bodyEl.querySelectorAll('[data-txlink]');
+  for(var tix=0;tix<txl.length;tix++){
+    txl[tix].addEventListener('click',function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      SSTx.open(ev.currentTarget.getAttribute('data-symbol'));
+    });
+  }
+  var tais=bodyEl.querySelectorAll('.sd-tx-ai');
+  for(var tq=0;tq<tais.length;tq++){
+    tais[tq].addEventListener('click',function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      openTxSummary(ev.currentTarget.getAttribute('data-symbol'));
+    });
+  }
   var ais=bodyEl.querySelectorAll('.sd-ar-ai');
   for(var q=0;q<ais.length;q++){
     ais[q].addEventListener('click',function(ev){
@@ -6930,6 +7145,80 @@ function renderConstituentsTable(d){
    poll re-render because it lives in arState, not the DOM.
 ════════════════════════════════════════ */
 var AR_BASE='https://annualreports.prashant-06f.workers.dev';
+/* -- Transcripts popup (indianapi worker: Screener-derived resolved links) --
+   Self-injecting overlay, opened from the constituents Transcripts cell via
+   SSTx.open(symbol). Latest 6 transcripts + latest investor presentation as
+   month-year buttons ("Apr 26"). Label comes from the date field, never the
+   worker's inferred period, so off-cycle rows can't show a wrong Qn. Uses the
+   global escapeHtml (defined later in file; called only at runtime). */
+var SSTx=(function(){
+  var TX_BASE='https://indianapi.prashant-06f.workers.dev';
+  var TX_MAX=6, ovl=null, ttl=null, sub=null, body=null;
+  function build(){
+    ovl=document.getElementById('ss-tx-ovl');
+    if(!ovl){
+      ovl=document.createElement('div');
+      ovl.id='ss-tx-ovl';
+      ovl.setAttribute('role','dialog');
+      ovl.setAttribute('aria-modal','true');
+      ovl.innerHTML='<div id="ss-tx-card">'
+        +'<div id="ss-tx-head"><div><h3 id="ss-tx-ttl">\u2014</h3><p id="ss-tx-sub"></p></div>'
+        +'<button id="ss-tx-x" aria-label="Close">\u00d7</button></div>'
+        +'<div id="ss-tx-body"></div></div>';
+      document.body.appendChild(ovl);
+      ovl.addEventListener('click',function(e){ if(e.target===ovl) close(); });
+      ovl.querySelector('#ss-tx-x').addEventListener('click',close);
+      document.addEventListener('keydown',function(e){
+        if(e.key==='Escape'&&ovl.classList.contains('open')) close();
+      });
+    }
+    ttl=document.getElementById('ss-tx-ttl');
+    sub=document.getElementById('ss-tx-sub');
+    body=document.getElementById('ss-tx-body');
+  }
+  function label(d){
+    if(!d) return '';
+    var p=String(d).trim().split(/\s+/);
+    return p.length<2 ? d : p[0]+' '+p[1].slice(-2);
+  }
+  function btn(url,text,tag,wide){
+    return '<a class="ss-tx-b'+(wide?' wide':'')+'" href="'+escapeHtml(url)
+      +'" target="_blank" rel="noopener noreferrer"><span>'+escapeHtml(text)+'</span>'
+      +(tag?'<span class="tag">'+escapeHtml(tag)+'</span>':'')+'</a>';
+  }
+  function render(d){
+    ttl.textContent=d.name||d.symbol||'Transcripts';
+    sub.textContent=d.symbol||'';
+    var tx=(d.transcripts||[]).slice(0,TX_MAX), ppt=(d.presentations||[])[0], h='';
+    h+='<div class="ss-tx-sec"><h4>Concall Transcripts</h4>';
+    h+= tx.length
+      ? '<div class="ss-tx-grid">'+tx.map(function(t){return btn(t.url,label(t.date));}).join('')+'</div>'
+      : '<div class="ss-tx-msg">No transcripts available.</div>';
+    h+='</div><div class="ss-tx-sec"><h4>Investor Presentation</h4>';
+    h+= ppt
+      ? '<div class="ss-tx-grid">'+btn(ppt.url,label(ppt.date),'Latest',true)+'</div>'
+      : '<div class="ss-tx-msg">No presentation available.</div>';
+    h+='</div>';
+    body.innerHTML=h;
+  }
+  function open(symbol){
+    build();
+    var sym=String(symbol||'').trim().toUpperCase();
+    ttl.textContent=sym||'\u2014'; sub.textContent='';
+    body.innerHTML='<div class="ss-tx-msg"><div class="ss-tx-spin"></div>Loading\u2026</div>';
+    ovl.classList.add('open');
+    if(!sym){ body.innerHTML='<div class="ss-tx-msg">No symbol.</div>'; return; }
+    fetch(TX_BASE+'/docs?symbol='+encodeURIComponent(sym))
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .then(render)
+      .catch(function(err){
+        body.innerHTML='<div class="ss-tx-msg">Couldn\u2019t load documents.<br>'
+          +escapeHtml(err&&err.message||'error')+'</div>';
+      });
+  }
+  function close(){ if(ovl) ovl.classList.remove('open'); }
+  return { open:open, close:close };
+})();
 var arState={};
 var arReq={};
 var arCache={};
@@ -7179,6 +7468,7 @@ async function runArSummary(symbol){
     /* cached in D1? */
     var g=await fetch(WORKER_BASE+'/api/arsummary?symbol='+encodeURIComponent(symbol),{
       headers:{'authorization':'Bearer '+currentUser.token}}).then(function(r){return r.json();});
+    if(g&&(g.label||g.year)) arSumSet(symbol,{arYear:g.label||g.year});
     if(g&&g.final){ arSumSet(symbol,{running:false,status:'',text:g.final,done:true}); return; }
 
     /* If a prior run already extracted, resume at condense — a retry must not
@@ -7188,6 +7478,7 @@ async function runArSummary(symbol){
     if(!resume){
       arSumSet(symbol,{stage:'Fetching the Annual Report\u2026'});
       p=await arStream(symbol,'prepare',function(){});
+      if(p&&(p.label||p.year)) arSumSet(symbol,{arYear:p.label||p.year});
     }
     if(p&&p.stage==='done'&&p.cached){
       var g2=await fetch(WORKER_BASE+'/api/arsummary?symbol='+encodeURIComponent(symbol),{
@@ -7231,55 +7522,71 @@ function openArSumPane(){
   ovl.style.display='flex';
   var list=document.getElementById('arsum-list');
   list.innerHTML='<div class="arsum-empty">Loading\u2026</div>';
-  fetch(WORKER_BASE+'/api/arsummary?history=1',{
-    headers:{'authorization':'Bearer '+(currentUser&&currentUser.token||'')}})
-    .then(function(r){return r.json();})
-    .then(function(j){
-      var items=(j&&j.items)||[];
-      var cached=(j&&j.cached)||[];
-      /* De-dup: a symbol already in "your summaries" shouldn't repeat below. */
-      var own={};
-      for(var d=0;d<items.length;d++) own[items[d].symbol+':'+items[d].year]=1;
-      cached=cached.filter(function(c){ return !own[c.symbol+':'+c.year]; });
+  var H={'authorization':'Bearer '+(currentUser&&currentUser.token||'')};
+  function ent(o,kind,lazy){
+    return {symbol:o.symbol, kind:kind, label:(kind==='ar'?(o.label||o.year):''), summary:o.summary, lazy:lazy};
+  }
+  Promise.all([
+    fetch(WORKER_BASE+'/api/arsummary?history=1',{headers:H}).then(function(r){return r.json();}).catch(function(){return {};}),
+    fetch(WORKER_BASE+'/api/txsummary?history=1',{headers:H}).then(function(r){return r.json();}).catch(function(){return {};})
+  ]).then(function(res){
+      var ar=res[0]||{}, tx=res[1]||{};
+      var raw=[].concat((ar.items||[]).map(function(o){return ent(o,'ar',false);}))
+                .concat((tx.items||[]).map(function(o){return ent(o,'tx',false);}))
+                .concat((ar.cached||[]).map(function(o){return ent(o,'ar',true);}))
+                .concat((tx.cached||[]).map(function(o){return ent(o,'tx',true);}));
+      /* One slot per (symbol, kind); prefer the copy that already carries text. */
+      var best={};
+      raw.forEach(function(e){ var k=e.symbol+'|'+e.kind; if(!best[k]||(best[k].lazy&&!e.lazy)) best[k]=e; });
+      /* One row per symbol, with an AR slot and/or a Concall slot. */
+      var groups={}, order=[];
+      Object.keys(best).forEach(function(k){
+        var e=best[k];
+        if(!groups[e.symbol]){ groups[e.symbol]={symbol:e.symbol,ar:null,tx:null}; order.push(e.symbol); }
+        groups[e.symbol][e.kind]=e;
+      });
+      var glist=order.map(function(s){return groups[s];});
+      glist.sort(function(a,b){return String(a.symbol).localeCompare(String(b.symbol));});
 
-      function row(it, lazy){
-        var when=new Date(it.created_at).toLocaleDateString('en-IN',{day:'numeric',month:'short'});
-        return '<div class="arsum-item"'+(lazy?' data-lazysym="'+escapeHtml(it.symbol)+'"':'')+'>'
-          +'<div class="arsum-item-h">'
-          +'<span>'+escapeHtml(it.symbol)+' \u2014 '+escapeHtml(it.label||it.year)+'</span>'
-          +'<span class="when">'+escapeHtml(when)+'</span></div>'
-          +'<div class="arsum-item-b">'+(lazy?'':arSumFormat(it.summary||'',it.symbol))+'</div></div>';
+      function fmt(kind,e){ return kind==='tx'?txSumFormat(e.summary||''):arSumFormat(e.summary||'',e.symbol); }
+      function slot(kind,e){
+        if(!e) return '<span class="arsum-slot-empty"></span>';
+        var lbl=(kind==='ar')?('AR'+(e.label?(' '+escapeHtml(e.label)):'')):'Concall';
+        return '<span class="arsum-slot" data-slot="'+kind+'">'+lbl+' <span class="arsum-slot-c">\u203a</span></span>';
+      }
+      function body(kind,e){
+        if(!e) return '';
+        return '<div class="arsum-body arsum-body-'+kind+'"'+(e.lazy?' data-lazy="1"':'')+'>'+(e.lazy?'':fmt(kind,e))+'</div>';
+      }
+      function grp(g){
+        return '<div class="arsum-grp" data-sym="'+escapeHtml(g.symbol)+'">'
+          +'<div class="arsum-grp-h"><span class="arsum-grp-sym">'+escapeHtml(g.symbol)+'</span>'
+          +slot('ar',g.ar)+slot('tx',g.tx)+'</div>'
+          +body('ar',g.ar)+body('tx',g.tx)+'</div>';
       }
 
-      var html='';
-      html+='<div class="arsum-sec">Your summaries</div>';
-      html+=items.length
-        ? items.map(function(it){return row(it,false);}).join('')
-        : '<div class="arsum-empty">None yet \u2014 expand a company row and press AI Summary.</div>';
-      if(cached.length){
-        html+='<div class="arsum-sec">Cached summaries <span class="arsum-sec-n">'+cached.length+' \u2014 free to read</span></div>';
-        html+=cached.map(function(it){return row(it,true);}).join('');
-      }
-      list.innerHTML=html;
+      list.innerHTML=glist.length
+        ? glist.map(grp).join('')
+        : '<div class="arsum-empty">None yet \u2014 expand a company row and press AI Summary or Concall summary.</div>';
 
-      var hs=list.querySelectorAll('.arsum-item-h');
-      for(var k=0;k<hs.length;k++){
-        hs[k].addEventListener('click',function(ev){
-          var item=ev.currentTarget.parentNode;
-          var open=item.classList.toggle('open');
-          /* Cached rows arrive as index entries only (200 of them with full
-             text would bloat the pane); fetch the summary on first expand.
-             The GET also records it into "your summaries" history serverside. */
-          var sym=item.getAttribute('data-lazysym');
-          if(open&&sym&&!item.getAttribute('data-loaded')){
-            var b=item.querySelector('.arsum-item-b');
+      var slots=list.querySelectorAll('.arsum-slot');
+      for(var k=0;k<slots.length;k++){
+        slots[k].addEventListener('click',function(){
+          var g=this.closest('.arsum-grp'); if(!g) return;
+          var kind=this.getAttribute('data-slot');
+          var b=g.querySelector('.arsum-body-'+kind);
+          var sym=g.getAttribute('data-sym');
+          var open=b.classList.toggle('open');
+          this.classList.toggle('open',open);
+          if(open && b.getAttribute('data-lazy')==='1' && !b.getAttribute('data-loaded')){
             b.innerHTML='<span class="xnf">Loading\u2026</span>';
-            fetch(WORKER_BASE+'/api/arsummary?symbol='+encodeURIComponent(sym),{
-              headers:{'authorization':'Bearer '+(currentUser&&currentUser.token||'')}})
+            var ep=(kind==='tx')?'txsummary':'arsummary';
+            fetch(WORKER_BASE+'/api/'+ep+'?symbol='+encodeURIComponent(sym),{headers:H})
               .then(function(r){return r.json();})
-              .then(function(g){
-                b.innerHTML=(g&&g.final)?arSumFormat(g.final,sym):'<span class="xnf">Couldn\'t load \u2014 tap to retry.</span>';
-                if(g&&g.final) item.setAttribute('data-loaded','1');
+              .then(function(gg){
+                var out=(gg&&gg.final)?((kind==='tx')?txSumFormat(gg.final):arSumFormat(gg.final,sym)):'';
+                b.innerHTML=out||'<span class="xnf">Couldn\'t load \u2014 tap to retry.</span>';
+                if(gg&&gg.final) b.setAttribute('data-loaded','1');
               })
               .catch(function(){ b.innerHTML='<span class="xnf">Couldn\'t load \u2014 tap to retry.</span>'; });
           }
