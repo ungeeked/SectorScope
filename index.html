@@ -1000,6 +1000,30 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .tx-partial{color:var(--neu-c);background:var(--neu-tl)}
 .tx-miss{color:var(--exp-c);background:var(--exp-tl)}
 .tx-sum .num{color:var(--txt);font-weight:700}
+/* Concall summary: per-section Full-details expander (mirrors AR cards). */
+.tx-secgrp{margin:14px 0 4px}
+.tx-secgrp:first-child{margin-top:2px}
+.tx-secgrp .tx-sec{margin-top:0}
+.tx-sec-x{display:flex;align-items:center;gap:8px;cursor:pointer}
+.tx-sec-x:hover{color:var(--txt)}
+.tx-sec-x .tx-full{margin-left:auto;font-family:var(--mono);font-size:.52rem;font-weight:400;letter-spacing:.3px;color:var(--ghost);text-transform:none}
+.tx-sec-x .tx-caret{flex-shrink:0;color:var(--ghost);font-size:.6rem;transition:transform .15s}
+.tx-secgrp.open .tx-sec-x .tx-caret{transform:rotate(90deg);color:var(--acc)}
+.tx-secgrp.open .tx-sec-x .tx-full{color:var(--acc)}
+.tx-cbody{display:none;margin:2px 0 10px;padding:9px 11px;border:1px dashed var(--bdr);border-radius:6px;background:var(--bg3);font-size:.8rem;line-height:1.6;color:var(--sub)}
+.tx-secgrp.open .tx-cbody{display:block}
+.tx-cbody .xs{font-family:var(--mono);font-size:.58rem;letter-spacing:.05em;text-transform:uppercase;color:var(--acc);margin:12px 0 5px}
+.tx-cbody .xs:first-child{margin-top:0}
+.tx-cbody .xq{font-weight:600;color:var(--txt);margin:8px 0 3px}
+.tx-cbody ul{margin:2px 0 6px;padding-left:16px;display:flex;flex-direction:column;gap:3px}
+.tx-cbody .xnf{color:var(--ghost);font-style:italic}
+.tx-cbody .xpg{color:var(--ghost);font-size:.66rem}
+.tx-cbody .tx-flag{margin:6px 0}
+.tx-xtblw{overflow-x:auto;margin:6px 0 8px}
+.tx-xtbl{border-collapse:collapse;width:100%;font-size:.7rem;line-height:1.4}
+.tx-xtbl th,.tx-xtbl td{border:1px solid var(--bdr);padding:4px 7px;text-align:left;vertical-align:top}
+.tx-xtbl th{font-family:var(--mono);font-size:.56rem;letter-spacing:.03em;text-transform:uppercase;color:var(--sub);background:var(--bg2);white-space:nowrap}
+.tx-xtbl td .num{color:var(--txt);font-weight:700}
 .ar-cards{display:flex;flex-direction:column;gap:7px}
 .ar-card{display:flex;gap:10px;align-items:flex-start;padding:9px 11px;border:1px solid var(--bdr);border-left:3px solid var(--ar);border-radius:7px;background:linear-gradient(90deg,color-mix(in srgb,var(--ar) 7%,transparent),transparent 60%);transition:transform .1s}
 .ar-card:hover{transform:translateX(2px)}
@@ -6984,7 +7008,7 @@ function txRowHtml(symbol){
     if(!sum.running && sum.warnings && sum.warnings.length){
       inner+='<div class="tx-note">Note: '+escapeHtml(sum.warnings.join(' '))+'</div>';
     }
-    if(!sum.running&&sum.text) inner+='<div class="tx-sum">'+txSumFormat(sum.text)+'</div>';
+    if(!sum.running&&sum.text) inner+='<div class="tx-sum">'+txSumFormat(sum.text,symbol)+'</div>';
   }
   if(!inner) inner='<span class="sd-ar-note">Preparing review\u2026</span>';
   return '<tr class="sd-ar-row"><td colspan="5">'+inner+'</td></tr>';
@@ -6994,24 +7018,18 @@ function txRowHtml(symbol){
    review is sectioned (WHAT THEY DO / SAID VS DELIVERED / TONE DRIFT / FLAGS)
    with HIT/PARTIAL/MISS verdicts and RED/GREEN flags. Reuses arMdClean/arEmph
    for markdown-strip + number emphasis; everything is escaped first. */
-function txSumFormat(text){
+function txSumFormat(text,symbol){
   var lines=String(text).split('\n');
-  var out='';
-  for(var i=0;i<lines.length;i++){
-    var L=lines[i].trim();
-    if(!L) continue;
+  var SECRE=/^(WHAT THEY DO AND HOW IT'S GOING|SAID VS DELIVERED|TONE DRIFT|FLAGS)$/i;
+  function renderLine(L){
     var safe=escapeHtml(L);
-    if(/^(WHAT THEY DO AND HOW IT'S GOING|SAID VS DELIVERED|TONE DRIFT|FLAGS)$/i.test(L)){
-      out+='<div class="tx-sec">'+safe+'</div>'; continue;
-    }
-    if(/AI summary\. Not investment advice/i.test(L)){ out+='<div class="tx-meta">'+safe+'</div>'; continue; }
-    if(/^Note:/i.test(L)){ out+='<div class="tx-note">'+safe+'</div>'; continue; }
-    if(/^This note is based solely/i.test(L)){ out+='<div class="tx-meta">'+safe+'</div>'; continue; }
+    if(/AI summary\. Not investment advice/i.test(L)) return '<div class="tx-meta">'+safe+'</div>';
+    if(/^Note:/i.test(L)) return '<div class="tx-note">'+safe+'</div>';
+    if(/^This note is based solely/i.test(L)) return '<div class="tx-meta">'+safe+'</div>';
     var fm=safe.match(/^(RED|GREEN):\s*([\s\S]*)$/i);
     if(fm){
       var cls=/red/i.test(fm[1])?'tx-red':'tx-green';
-      out+='<div class="tx-flag '+cls+'"><span class="tx-tag">'+fm[1].toUpperCase()+'</span>'+arEmph(arMdClean(fm[2]))+'</div>';
-      continue;
+      return '<div class="tx-flag '+cls+'"><span class="tx-tag">'+fm[1].toUpperCase()+'</span>'+arEmph(arMdClean(fm[2]))+'</div>';
     }
     var body=arEmph(arMdClean(safe)).replace(/\b(HIT|PARTIAL|MISS)\b/g,function(w){
       var c=(w==='HIT')?'tx-hit':((w==='MISS')?'tx-miss':'tx-partial');
@@ -7020,10 +7038,156 @@ function txSumFormat(text){
       var W=w.toUpperCase(), c=(W==='HIT')?'tx-hit':((W==='MISS')?'tx-miss':'tx-partial');
       return 'Verdict: <span class="tx-verdict '+c+'">'+W+'</span>';
     });
-    out+='<div class="tx-line">'+body+'</div>';
+    return '<div class="tx-line">'+body+'</div>';
   }
-  if(!out) out=escapeHtml(String(text));
+  /* Group the condensed note under its four headings; each becomes an
+     expandable section that lazily reveals the full extract for that theme,
+     the same pattern the AR cards use. Lines before the first heading (meta,
+     Note:) stay outside any group. */
+  var pre='', groups=[], cur=null;
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i].trim();
+    if(!L) continue;
+    if(SECRE.test(L)){ cur={name:L, inner:''}; groups.push(cur); continue; }
+    if(cur) cur.inner+=renderLine(L); else pre+=renderLine(L);
+  }
+  if(!groups.length) return pre || escapeHtml(String(text));  /* old/flat fallback */
+  var out=pre, canExpand=!!symbol;
+  for(var g=0;g<groups.length;g++){
+    var nm=groups[g].name, key=nm.toUpperCase();
+    var mapped=canExpand && !!TX_SEC_MAP[key];
+    out+='<div class="tx-secgrp">'
+      +'<div class="tx-sec'+(mapped?' tx-sec-x':'')+'"'
+        +(mapped?' data-txsym="'+escapeHtml(symbol)+'" data-txsec="'+escapeHtml(key)+'" onclick="txSecToggle(event)"':'')
+        +'>'+escapeHtml(nm)
+        +(mapped?'<span class="tx-full">Full details</span><span class="tx-caret">\u25B8</span>':'')
+      +'</div>'
+      +'<div class="tx-secbody">'+groups[g].inner+'</div>'
+      +(mapped?'<div class="tx-cbody"></div>':'')
+    +'</div>';
+  }
   return out;
+}
+
+/* Which extraction sections back each condensed heading. Codes are the
+   extract's own SECTION 1A-1D (latest-call deep dive) and 2A-2G (cross-call
+   trackers). Most-important content (2C guidance-vs-actual) leads its group. */
+var TX_SEC_MAP={
+  "WHAT THEY DO AND HOW IT'S GOING":['1A','2B','1D'],
+  "SAID VS DELIVERED":['2C','2E','2A'],
+  "TONE DRIFT":['1C','2D'],
+  "FLAGS":['2F','2G','1B']
+};
+
+/* Parse 'SECTION 1A \u2014 ...' / 'SECTION 2C \u2014 ...' blocks out of the raw
+   extraction. PART dividers and box-drawing rules are skipped; a section is
+   never overwritten once populated. */
+function txExtSections(raw){
+  var out={}, cur=null, title=null, buf=[];
+  var lines=String(raw).split('\n');
+  function flush(){ if(cur && !(out[cur] && out[cur].body)) out[cur]={title:title,body:buf.join('\n').trim()}; buf=[]; }
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i];
+    var m=L.match(/^\s*(?:#{1,4}\s*)?(?:-{2,3}\s*)?SECTION\s+([12][A-G])\s*[\u2014\u2013-]+\s*(.+?)\s*$/i);
+    if(m){ flush(); cur=m[1].toUpperCase(); title=m[2]; continue; }
+    if(/^\s*[\u2500-\u257F]+\s*$/.test(L)) continue;   /* box-drawing rule */
+    if(/^\s*PART\s+[12]\b/i.test(L)) continue;          /* PART divider */
+    if(cur) buf.push(L);
+  }
+  flush();
+  return out;
+}
+
+/* HIT/PARTIAL/MISS badge only (RED/GREEN handled as flag blocks). Input is
+   already-escaped safe text. */
+function txBadge(safe){
+  return safe.replace(/\b(HIT|PARTIAL|MISS)\b/g,function(w){
+    var c=(w==='HIT')?'tx-hit':((w==='MISS')?'tx-miss':'tx-partial');
+    return '<span class="tx-verdict '+c+'">'+w+'</span>';
+  });
+}
+
+/* Format one extract section body: markdown pipe tables (2A-2G) -> real
+   tables; RED:/GREEN: -> flag blocks; numbered -> emphasised; bullets -> ul;
+   NOT DISCUSSED / [p.X] dimmed. Escaped first, always. */
+function txExtFormat(body){
+  var lines=String(body).split('\n');
+  var html='', list=[], tbl=null;
+  function endList(){ if(list.length){ html+='<ul>'+list.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'; list=[]; } }
+  function cellHtml(s){ return txBadge(arEmph(arMdClean(escapeHtml(String(s).trim())))); }
+  function isSep(cells){ for(var k=0;k<cells.length;k++){ if(!/^:?-{2,}:?$/.test(cells[k].trim())) return false; } return cells.length>0; }
+  function splitRow(L){ return L.trim().replace(/^\|/,'').replace(/\|$/,'').split('|'); }
+  function endTbl(){
+    if(!tbl) return;
+    var h='<div class="tx-xtblw"><table class="tx-xtbl">';
+    if(tbl.head){ h+='<thead><tr>'; for(var c=0;c<tbl.head.length;c++) h+='<th>'+cellHtml(tbl.head[c])+'</th>'; h+='</tr></thead>'; }
+    h+='<tbody>';
+    for(var r=0;r<tbl.rows.length;r++){ h+='<tr>'; for(var d=0;d<tbl.rows[r].length;d++) h+='<td>'+cellHtml(tbl.rows[r][d])+'</td>'; h+='</tr>'; }
+    h+='</tbody></table></div>'; html+=h; tbl=null;
+  }
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i].trim();
+    if(!L) continue;
+    if(/^\|.*\|/.test(L)){
+      var cells=splitRow(L);
+      if(!tbl){ endList(); tbl={head:null,rows:[]}; }
+      if(isSep(cells)) continue;
+      if(!tbl.head){ tbl.head=cells; } else { tbl.rows.push(cells); }
+      continue;
+    }
+    endTbl();
+    var flag=L.match(/^(RED|GREEN):\s*(.*)$/i);
+    if(flag){ endList(); var fc=/red/i.test(flag[1])?'tx-red':'tx-green';
+      html+='<div class="tx-flag '+fc+'"><span class="tx-tag">'+flag[1].toUpperCase()+'</span>'+arEmph(arMdClean(escapeHtml(flag[2])))+'</div>'; continue; }
+    var e=arMdClean(escapeHtml(L))
+      .replace(/NOT (?:DISCUSSED IN THIS CALL|FOUND IN ANY CALL|STATED[^<]*)/gi,function(x){return '<span class="xnf">'+x+'</span>';})
+      .replace(/\[p\.?\s?(\d+[\d,\-\s]*)\]/gi,'<span class="xpg">[p.$1]</span>');
+    e=txBadge(arEmph(e));
+    if(/^\d+\.\s/.test(L)){ endList(); html+='<div class="xq">'+e+'</div>'; }
+    else if(/^[-\u2022*]\s/.test(L)){ list.push(e.replace(/^[-\u2022*]\s*/,'')); }
+    else { endList(); html+='<div>'+e+'</div>'; }
+  }
+  endList(); endTbl();
+  return html;
+}
+
+var txExtCache={};
+function fetchTxExtract(symbol){
+  if(txExtCache[symbol]) return txExtCache[symbol];
+  txExtCache[symbol]=fetch(WORKER_BASE+'/api/txsummary?symbol='+encodeURIComponent(symbol)+'&extract=1',{
+    headers:{'authorization':'Bearer '+(currentUser&&currentUser.token||'')}})
+    .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+    .then(function(j){ return txExtSections(j.extract||''); })
+    .catch(function(e){ delete txExtCache[symbol]; throw e; });
+  return txExtCache[symbol];
+}
+
+/* Expand a section header -> lazy-load its mapped extract section(s). Toggles
+   the DOM directly so it also works in the history pane, which never
+   re-renders. */
+function txSecToggle(ev){
+  var hdr=ev.currentTarget||(ev.target&&ev.target.closest&&ev.target.closest('.tx-sec-x'));
+  if(!hdr) return;
+  var grp=hdr.parentNode; if(!grp) return;
+  var open=grp.classList.toggle('open');
+  if(!open) return;
+  var bodyEl=grp.querySelector('.tx-cbody');
+  if(!bodyEl||bodyEl.getAttribute('data-filled')) return;
+  bodyEl.innerHTML='<span class="xnf">Loading full details\u2026</span>';
+  var symbol=hdr.getAttribute('data-txsym');
+  var secs=TX_SEC_MAP[hdr.getAttribute('data-txsec')]||[];
+  fetchTxExtract(symbol).then(function(map){
+    var html='';
+    for(var i=0;i<secs.length;i++){
+      var sec=map[secs[i]];
+      if(!sec) continue;
+      html+='<div class="xs">'+escapeHtml(secs[i]+' \u2014 '+sec.title)+'</div>'+txExtFormat(sec.body);
+    }
+    bodyEl.innerHTML=html||'<span class="xnf">No matching section in the extraction.</span>';
+    bodyEl.setAttribute('data-filled','1');
+  }).catch(function(){
+    bodyEl.innerHTML='<span class="xnf">Couldn\'t load the full extraction \u2014 tap to retry.</span>';
+  });
 }
 
 function openArSummary(symbol){
@@ -7548,7 +7712,7 @@ function openArSumPane(){
       var glist=order.map(function(s){return groups[s];});
       glist.sort(function(a,b){return String(a.symbol).localeCompare(String(b.symbol));});
 
-      function fmt(kind,e){ return kind==='tx'?txSumFormat(e.summary||''):arSumFormat(e.summary||'',e.symbol); }
+      function fmt(kind,e){ return kind==='tx'?txSumFormat(e.summary||'',e.symbol):arSumFormat(e.summary||'',e.symbol); }
       function slot(kind,e){
         if(!e) return '<span class="arsum-slot-empty"></span>';
         var lbl=(kind==='ar')?('AR'+(e.label?(' '+escapeHtml(e.label)):'')):'Concall';
@@ -7584,7 +7748,7 @@ function openArSumPane(){
             fetch(WORKER_BASE+'/api/'+ep+'?symbol='+encodeURIComponent(sym),{headers:H})
               .then(function(r){return r.json();})
               .then(function(gg){
-                var out=(gg&&gg.final)?((kind==='tx')?txSumFormat(gg.final):arSumFormat(gg.final,sym)):'';
+                var out=(gg&&gg.final)?((kind==='tx')?txSumFormat(gg.final,sym):arSumFormat(gg.final,sym)):'';
                 b.innerHTML=out||'<span class="xnf">Couldn\'t load \u2014 tap to retry.</span>';
                 if(gg&&gg.final) b.setAttribute('data-loaded','1');
               })
