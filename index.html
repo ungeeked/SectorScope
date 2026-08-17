@@ -942,7 +942,7 @@ html.light .sd-header{background:rgba(238,241,248,.96)}
    and non-interactive, so users read it as "here later" rather than broken. */
 .sd-tx-soon{display:inline-block;padding:3px 9px;border-radius:5px;font-family:var(--mono);font-size:.55rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--ghost);background:var(--bg3);border:1px dashed var(--bdr);cursor:not-allowed;user-select:none;white-space:nowrap}
 /* ── Transcripts: constituents-row button + popup (indianapi worker) ── */
-.sd-tx-link{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border:1px solid var(--bdr);border-radius:5px;background:var(--bg3);color:var(--txt);text-decoration:none;font-family:var(--mono);font-size:.62rem;cursor:pointer;transition:border-color .15s,color .15s;white-space:nowrap}
+.sd-tx-link{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border:1px solid var(--bdr);border-radius:5px;background:var(--bg3);color:var(--txt);text-decoration:none;font-family:var(--mono);font-size:.58rem;cursor:pointer;transition:border-color .15s,color .15s;white-space:nowrap}
 .sd-tx-link:hover{border-color:var(--chp-c);color:var(--chp-c)}
 #ss-tx-ovl{position:fixed;inset:0;z-index:800;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(4,7,14,.72);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
 #ss-tx-ovl.open{display:flex}
@@ -980,7 +980,7 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .sd-cons-caret{display:inline-block;width:9px;margin-right:6px;color:var(--ghost);font-size:.6rem;transition:transform .15s}
 .sd-cons-row.is-open .sd-cons-caret{transform:rotate(90deg);color:var(--txt)}
 .sd-ar-row td{padding:10px 14px!important;border-bottom:1px solid var(--bdr2)!important;background:var(--bg3)}
-.sd-ar-btn{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border:1px solid var(--bdr);border-radius:5px;background:var(--card);color:var(--txt);text-decoration:none;font-family:var(--mono);font-size:.62rem;transition:border-color .15s,color .15s}
+.sd-ar-btn{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border:1px solid var(--bdr);border-radius:5px;background:var(--card);color:var(--txt);text-decoration:none;font-family:var(--mono);font-size:.58rem;transition:border-color .15s,color .15s}
 .sd-ar-btn:hover{border-color:var(--acc);color:var(--acc)}
 .sd-ar-btn::after{content:"\2197";font-size:.55rem;color:var(--ghost)}
 .sd-ar-note{font-family:var(--mono);font-size:.6rem;color:var(--ghost)}
@@ -993,9 +993,9 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 /* ── Quarterly results: row-expand table (indianapi /quarterly worker) ── */
 .sd-cons-table td.sd-q-cell{padding:0;background:var(--bg3)}
 .sd-q-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0 5px}
-.sd-q-tbl{border-collapse:collapse;width:100%;min-width:520px;font-variant-numeric:tabular-nums}
-.sd-cons-table .sd-q-tbl thead th{font-family:var(--mono);font-size:.54rem;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--sub);border-bottom:1px solid var(--bdr);padding:8px 12px;text-align:right;white-space:nowrap;background:var(--bg3)}
-.sd-cons-table .sd-q-tbl tbody td{font-family:var(--mono);font-size:.68rem;color:var(--txt);border-bottom:1px solid var(--bdr2);padding:8px 12px;text-align:right;white-space:nowrap}
+.sd-q-tbl{border-collapse:collapse;width:100%;min-width:440px;font-variant-numeric:tabular-nums}
+.sd-cons-table .sd-q-tbl thead th{font-family:var(--mono);font-size:.53rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--sub);border-bottom:1px solid var(--bdr);padding:6px 9px;text-align:right;white-space:nowrap;background:var(--bg3)}
+.sd-cons-table .sd-q-tbl tbody td{font-family:var(--mono);font-size:.66rem;color:var(--txt);border-bottom:1px solid var(--bdr2);padding:6px 9px;text-align:right;white-space:nowrap}
 .sd-cons-table .sd-q-tbl tbody tr:last-child td{border-bottom:0}
 .sd-cons-table .sd-q-tbl th.sd-q-lbl,.sd-cons-table .sd-q-tbl td.sd-q-lbl{position:sticky;left:0;z-index:2;text-align:left;padding-left:14px;background:var(--bg3)}
 .sd-cons-table .sd-q-tbl tbody td.sd-q-lbl{font-family:var(--cond);font-weight:700;font-size:.82rem;letter-spacing:-.2px}
@@ -1014,6 +1014,17 @@ html.light .sd-cons-table .sd-q-tbl .sd-q-main.sd-q-exp:hover td{background:rgba
 .sd-q-state{padding:20px 14px;text-align:center;color:var(--ghost);font-family:var(--mono);font-size:.62rem;display:flex;align-items:center;justify-content:center;gap:8px}
 .sd-q-caret{display:inline-block;width:9px;flex:0 0 auto;margin-right:1px;color:var(--ghost);font-size:.62rem;transition:transform .15s}
 .sd-cons-row.is-qopen .sd-q-caret{transform:rotate(90deg);color:var(--txt)}
+/* Mobile portrait: hide logos + older quarters so the grid fits the viewport;
+   landscape / tablets / desktop show everything. With only YoY+QoQ+latest
+   visible, the results table needs no min-width. */
+.sd-q-hp{}
+@media (orientation:portrait) and (max-width:600px){
+  .sd-cons-logo{display:none}
+  .sd-cons-symwrap{gap:0}
+  .sd-q-hp{display:none}
+  .sd-q-tbl{min-width:0}
+  .sd-tx-link,.sd-ar-btn{padding:3px 7px;font-size:.55rem;gap:4px}
+}
 .tx-sum{margin-top:10px;max-height:520px;overflow-y:auto;padding:4px 2px;color:var(--txt);font-family:var(--body);font-size:.82rem;line-height:1.7}
 .tx-meta{font-family:var(--mono);font-size:.58rem;color:var(--ghost);margin-bottom:8px}
 .tx-note{font-family:var(--mono);font-size:.6rem;color:var(--neu-c);background:var(--neu-tl);border:1px solid var(--neu-bd);border-radius:6px;padding:6px 8px;margin-bottom:10px}
@@ -6926,12 +6937,12 @@ function arLinkCell(symbol){
   var d=arCache[symbol];
   if(!d){
     if(arReq[symbol]) return '<span class="sd-ar-note">Loading…</span>';
-    return '<a class="sd-ar-btn" data-arlink data-symbol="'+escapeHtml(symbol)+'">Annual Report</a>';
+    return '<a class="sd-ar-btn" data-arlink data-symbol="'+escapeHtml(symbol)+'">AR</a>';
   }
   if(d.error) return '<a class="sd-ar-retry" data-symbol="'+escapeHtml(symbol)+'">Couldn\'t reach NSE — retry</a>';
   if(!d.year) return '<span class="sd-ar-note">No AR on NSE</span>';
   return '<a class="sd-ar-btn" href="'+AR_BASE+'/ar?symbol='+encodeURIComponent(symbol)
-    +'&year='+encodeURIComponent(d.year)+'" target="_blank" rel="noopener">Annual Report</a>';
+    +'&year='+encodeURIComponent(d.year)+'" target="_blank" rel="noopener">AR</a>';
 }
 
 /* AI Summary toggle. Expands the summary sub-row and kicks off the run only
@@ -7253,9 +7264,9 @@ function renderConstituentsTable(d){
   var head='<thead><tr>'
     +th('symbol','Symbol')
     +th('weight','Weight')
-    +'<th class="sd-cons-col-ar">Annual Report</th>'
-    +'<th class="sd-cons-col-tx">Transcripts</th>'
-    +'<th class="sd-cons-col-ai">AI Summary</th>'
+    +'<th class="sd-cons-col-ar">AR</th>'
+    +'<th class="sd-cons-col-tx">TX</th>'
+    +'<th class="sd-cons-col-ai">AI</th>'
     +'</tr></thead>';
 
   var body='<tbody>';
@@ -7270,12 +7281,12 @@ function renderConstituentsTable(d){
       +'<td class="sd-cons-sym">'+consSymCell(sym)+'</td>'
       +'<td class="sd-cons-weight">'+wCell+'</td>'
       +'<td class="sd-cons-col-ar">'+arLinkCell(sym)+'</td>'
-      +'<td class="sd-cons-col-tx"><a class="sd-tx-link" data-txlink data-symbol="'+escapeHtml(sym)+'">Transcripts</a></td>'
+      +'<td class="sd-cons-col-tx"><a class="sd-tx-link" data-txlink data-symbol="'+escapeHtml(sym)+'">TX</a></td>'
       +'<td class="sd-cons-col-ai"><div class="sd-ai-actions">'
         +'<a class="sd-ar-btn sd-ar-ai'+(arOpen?' is-open':'')+'" data-symbol="'+escapeHtml(sym)+'">'
-        +(arOpen?'Hide AR':((arSum[sym]&&arSum[sym].done&&arSum[sym].arYear)?('AR '+arSum[sym].arYear):'AR summary'))+'</a>'
+        +(arOpen?'Hide AR':((arSum[sym]&&arSum[sym].done&&arSum[sym].arYear)?('AR '+arSum[sym].arYear):'AR Summary'))+'</a>'
         +'<a class="sd-ar-btn sd-tx-ai'+(txOpen?' is-open':'')+'" data-symbol="'+escapeHtml(sym)+'">'
-        +(txOpen?'Hide concall':'Concall summary')+'</a>'
+        +(txOpen?'Hide TX':'TX Summary')+'</a>'
       +'</div></td>'
     +'</tr>';
     /* Re-emit the open summary panel on every render — the table re-renders
@@ -7455,7 +7466,7 @@ function qPcls(v){ return v==null?'':(v>=0?'sd-q-pos':'sd-q-neg'); }
 function qTableHtml(d){
   var cols=d.columns||[];
   var head='<thead><tr><th class="sd-q-lbl"></th><th>YoY</th><th>QoQ</th>'
-    +cols.map(function(c){return '<th>'+escapeHtml(c)+'</th>';}).join('')+'</tr></thead>';
+    +cols.map(function(c,i){return '<th'+(i>0?' class="sd-q-hp"':'')+'>'+escapeHtml(c)+'</th>';}).join('')+'</tr></thead>';
   var body='<tbody>';
   (d.rows||[]).forEach(function(r){
     var fmt=(r.unit==='Cr')?qFmtCr:qFmtEps;
@@ -7466,10 +7477,10 @@ function qTableHtml(d){
       +'<td class="sd-q-lbl">'+escapeHtml(r.label)+'<span class="sd-q-unit">'+unit+'</span>'+caret+'</td>'
       +'<td class="'+qPcls(r.yoy)+'">'+qFmtPct(r.yoy)+'</td>'
       +'<td class="'+qPcls(r.qoq)+'">'+qFmtPct(r.qoq)+'</td>'
-      +r.values.map(function(v){return '<td>'+fmt(v)+'</td>';}).join('')+'</tr>';
+      +r.values.map(function(v,i){return '<td'+(i>0?' class="sd-q-hp"':'')+'>'+fmt(v)+'</td>';}).join('')+'</tr>';
     if(mg){
       body+='<tr class="sd-q-sub" data-for="'+escapeHtml(r.key)+'"><td class="sd-q-lbl">'+mg.l+'</td><td></td><td></td>'
-        +mg.v.map(function(v){return '<td class="'+qPcls(v)+'">'+qFmtPct(v)+'</td>';}).join('')+'</tr>';
+        +mg.v.map(function(v,i){return '<td class="'+qPcls(v)+(i>0?' sd-q-hp':'')+'">'+qFmtPct(v)+'</td>';}).join('')+'</tr>';
     }
   });
   body+='</tbody>';
