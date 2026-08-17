@@ -964,6 +964,7 @@ html.light .sd-header{background:rgba(238,241,248,.96)}
 .ss-tx-b.wide{width:100%;justify-content:space-between}
 .ss-tx-ai{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;background:var(--chp-tl);border:1px solid var(--chp-bd);color:var(--chp-c);border-radius:6px;padding:9px 11px;font-family:var(--mono);font-weight:700;font-size:.64rem;letter-spacing:.3px;cursor:pointer;transition:border-color .12s,background .12s}
 .ss-tx-ai:hover{background:var(--sur);border-color:var(--chp-c)}
+.ss-tx-ai-note{font-family:var(--body);font-size:.6rem;color:var(--sub);line-height:1.5;margin:-2px 0 8px}
 .ss-tx-b .tag{font-family:var(--body);font-weight:500;font-size:.56rem;color:var(--ghost)}
 .ss-tx-msg{padding:8px 0;text-align:center;color:var(--ghost);font-family:var(--mono);font-size:.62rem}
 .ss-tx-spin{width:20px;height:20px;border:2px solid var(--bdr);border-top-color:var(--chp-c);border-radius:50%;margin:6px auto;animation:ss-tx-rot .7s linear infinite}
@@ -1126,6 +1127,8 @@ html.light .sd-cons-table .sd-q-tbl .sd-q-main.sd-q-exp:hover td{background:rgba
 .arsum-body{display:none;padding:10px 12px;border-top:1px solid var(--bdr);color:var(--txt)}
 .arsum-body.open{display:block}
 .arsum-empty{font-family:var(--mono);font-size:.62rem;color:var(--ghost);padding:12px 4px}
+.arsum-sec-h{font-family:var(--cond);font-weight:700;font-size:.7rem;letter-spacing:1px;text-transform:uppercase;color:var(--sub);margin:16px 4px 8px}
+.arsum-sec-h:first-child{margin-top:2px}
 .arsum-sec{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;color:var(--sub);margin:18px 0 8px;display:flex;align-items:baseline;gap:8px}
 .arsum-sec:first-child{margin-top:4px}
 .arsum-sec-n{font-size:.56rem;color:var(--ghost);text-transform:none;letter-spacing:0}
@@ -7431,9 +7434,10 @@ var SSTx=(function(){
   function render(d){
     ttl.textContent=d.name||d.symbol||(curKind==='ar'?'Annual Report':'Transcripts');
     sub.textContent=d.symbol||'';
-    var h='';
+    var h='', arLatest='';
     if(curKind==='ar'){
-      var ars=(d.annualReports||[]);
+      var ars=(d.annualReports||[]).slice(0,3);
+      arLatest=ars.length?(ars[0].year||''):'';
       h+='<div class="ss-tx-sec"><h4>Annual Report</h4>';
       h+= ars.length
         ? '<div class="ss-tx-grid">'+ars.map(function(a){return btn(a.url,a.year||'Annual Report');}).join('')+'</div>'
@@ -7451,7 +7455,10 @@ var SSTx=(function(){
         : '<div class="ss-tx-msg">No presentation available.</div>';
       h+='</div>';
     }
-    h+='<div class="ss-tx-sec"><div class="ss-tx-grid"><button type="button" class="ss-tx-ai" data-ssai>AI Summary</button></div></div>';
+    var aiNote=(curKind==='ar')
+      ? ('Summarises the latest annual report'+(arLatest?(' - '+escapeHtml(arLatest)):''))
+      : 'Uses the last 6 concalls + the latest investor presentation.';
+    h+='<div class="ss-tx-sec"><h4>AI Summary</h4><div class="ss-tx-ai-note">'+aiNote+'</div><div class="ss-tx-grid"><button type="button" class="ss-tx-ai" data-ssai>Generate / view</button></div></div>';
     body.innerHTML=h;
   }
   function open(symbol,kind){
@@ -7865,22 +7872,26 @@ function openArSumPane(){
     fetch(WORKER_BASE+'/api/txsummary?history=1',{headers:H}).then(function(r){return r.json();}).catch(function(){return {};})
   ]).then(function(res){
       var ar=res[0]||{}, tx=res[1]||{};
-      var raw=[].concat((ar.items||[]).map(function(o){return ent(o,'ar',false);}))
-                .concat((tx.items||[]).map(function(o){return ent(o,'tx',false);}))
-                .concat((ar.cached||[]).map(function(o){return ent(o,'ar',true);}))
-                .concat((tx.cached||[]).map(function(o){return ent(o,'tx',true);}));
-      /* One slot per (symbol, kind); prefer the copy that already carries text. */
-      var best={};
-      raw.forEach(function(e){ var k=e.symbol+'|'+e.kind; if(!best[k]||(best[k].lazy&&!e.lazy)) best[k]=e; });
-      /* One row per symbol, with an AR slot and/or a Concall slot. */
-      var groups={}, order=[];
-      Object.keys(best).forEach(function(k){
-        var e=best[k];
-        if(!groups[e.symbol]){ groups[e.symbol]={symbol:e.symbol,ar:null,tx:null}; order.push(e.symbol); }
-        groups[e.symbol][e.kind]=e;
-      });
-      var glist=order.map(function(s){return groups[s];});
-      glist.sort(function(a,b){return String(a.symbol).localeCompare(String(b.symbol));});
+      /* "My Summaries" = this user's own runs (items). "Cached" = shared D1
+         copies (cached), minus any (symbol,kind) the user already owns. */
+      var mine=[].concat((ar.items||[]).map(function(o){return ent(o,'ar',false);}))
+                 .concat((tx.items||[]).map(function(o){return ent(o,'tx',false);}));
+      var mineKeys={};
+      mine.forEach(function(e){ mineKeys[e.symbol+'|'+e.kind]=1; });
+      var cach=[].concat((ar.cached||[]).map(function(o){return ent(o,'ar',true);}))
+                 .concat((tx.cached||[]).map(function(o){return ent(o,'tx',true);}))
+                 .filter(function(e){ return !mineKeys[e.symbol+'|'+e.kind]; });
+      function toGroups(arr){
+        var groups={}, order=[];
+        arr.forEach(function(e){
+          if(!groups[e.symbol]){ groups[e.symbol]={symbol:e.symbol,ar:null,tx:null}; order.push(e.symbol); }
+          if(!groups[e.symbol][e.kind]) groups[e.symbol][e.kind]=e;
+        });
+        var gl=order.map(function(s){return groups[s];});
+        gl.sort(function(a,b){return String(a.symbol).localeCompare(String(b.symbol));});
+        return gl;
+      }
+      var mineG=toGroups(mine), cachG=toGroups(cach);
 
       function fmt(kind,e){ return kind==='tx'?txSumFormat(e.summary||'',e.symbol):arSumFormat(e.summary||'',e.symbol); }
       function slot(kind,e){
@@ -7899,9 +7910,11 @@ function openArSumPane(){
           +body('ar',g.ar)+body('tx',g.tx)+'</div>';
       }
 
-      list.innerHTML=glist.length
-        ? glist.map(grp).join('')
-        : '<div class="arsum-empty">None yet \u2014 expand a company row and press AI Summary or Concall summary.</div>';
+      var secHtml='';
+      if(mineG.length) secHtml+='<div class="arsum-sec-h">My Summaries</div>'+mineG.map(grp).join('');
+      if(cachG.length) secHtml+='<div class="arsum-sec-h">Cached Summaries</div>'+cachG.map(grp).join('');
+      list.innerHTML=secHtml
+        || '<div class="arsum-empty">None yet. Open an Annual Report or Transcripts pane and press AI Summary.</div>';
 
       var slots=list.querySelectorAll('.arsum-slot');
       for(var k=0;k<slots.length;k++){
