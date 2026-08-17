@@ -989,6 +989,31 @@ html.light .sd-cons-table tbody tr:hover td{background:rgba(0,0,0,.025)}
 .sd-ar-sum{margin-top:10px;max-height:520px;overflow-y:auto;padding:4px 2px;color:var(--txt)}
 .sd-ai-actions{display:flex;flex-direction:column;gap:4px;align-items:flex-start}
 .sd-tx-ai{white-space:nowrap}
+
+/* ── Quarterly results: row-expand table (indianapi /quarterly worker) ── */
+.sd-cons-table td.sd-q-cell{padding:0;background:var(--bg3)}
+.sd-q-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:2px 0 5px}
+.sd-q-tbl{border-collapse:collapse;width:100%;min-width:520px;font-variant-numeric:tabular-nums}
+.sd-cons-table .sd-q-tbl thead th{font-family:var(--mono);font-size:.54rem;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--sub);border-bottom:1px solid var(--bdr);padding:8px 12px;text-align:right;white-space:nowrap;background:var(--bg3)}
+.sd-cons-table .sd-q-tbl tbody td{font-family:var(--mono);font-size:.68rem;color:var(--txt);border-bottom:1px solid var(--bdr2);padding:8px 12px;text-align:right;white-space:nowrap}
+.sd-cons-table .sd-q-tbl tbody tr:last-child td{border-bottom:0}
+.sd-cons-table .sd-q-tbl th.sd-q-lbl,.sd-cons-table .sd-q-tbl td.sd-q-lbl{position:sticky;left:0;z-index:2;text-align:left;padding-left:14px;background:var(--bg3)}
+.sd-cons-table .sd-q-tbl tbody td.sd-q-lbl{font-family:var(--cond);font-weight:700;font-size:.82rem;letter-spacing:-.2px}
+.sd-q-unit{font-family:var(--body);font-weight:500;font-size:.54rem;color:var(--ghost);margin-left:4px}
+.sd-cons-table .sd-q-tbl .sd-q-pos{color:var(--vchp-c)}
+.sd-cons-table .sd-q-tbl .sd-q-neg{color:var(--vexp-c)}
+.sd-q-main.sd-q-exp{cursor:pointer}
+.sd-cons-table .sd-q-tbl .sd-q-main.sd-q-exp:hover td{background:rgba(255,255,255,.03)}
+html.light .sd-cons-table .sd-q-tbl .sd-q-main.sd-q-exp:hover td{background:rgba(0,0,0,.025)}
+.sd-q-mcaret{display:inline-block;margin-left:6px;color:var(--ghost);font-size:.5rem;transition:transform .15s;vertical-align:1px}
+.sd-q-main.is-open .sd-q-mcaret{transform:rotate(180deg);color:var(--txt)}
+.sd-cons-table .sd-q-tbl tr.sd-q-sub{display:none}
+.sd-cons-table .sd-q-tbl tr.sd-q-sub.is-open{display:table-row}
+.sd-cons-table .sd-q-tbl tr.sd-q-sub td{background:var(--bg2);font-size:.62rem}
+.sd-cons-table .sd-q-tbl tr.sd-q-sub td.sd-q-lbl{background:var(--bg2);font-family:var(--mono);font-weight:600;font-size:.55rem;letter-spacing:.4px;text-transform:uppercase;color:var(--sub);padding-left:26px}
+.sd-q-state{padding:20px 14px;text-align:center;color:var(--ghost);font-family:var(--mono);font-size:.62rem;display:flex;align-items:center;justify-content:center;gap:8px}
+.sd-q-caret{display:inline-block;width:9px;flex:0 0 auto;margin-right:1px;color:var(--ghost);font-size:.62rem;transition:transform .15s}
+.sd-cons-row.is-qopen .sd-q-caret{transform:rotate(90deg);color:var(--txt)}
 .tx-sum{margin-top:10px;max-height:520px;overflow-y:auto;padding:4px 2px;color:var(--txt);font-family:var(--body);font-size:.82rem;line-height:1.7}
 .tx-meta{font-family:var(--mono);font-size:.58rem;color:var(--ghost);margin-bottom:8px}
 .tx-note{font-family:var(--mono);font-size:.6rem;color:var(--neu-c);background:var(--neu-tl);border:1px solid var(--neu-bd);border-radius:6px;padding:6px 8px;margin-bottom:10px}
@@ -7240,7 +7265,8 @@ function renderConstituentsTable(d){
     var wCell=(s.weight!=null&&isFinite(s.weight))?s.weight.toFixed(2)+'%':'—';
     var arOpen=arState[sym];
     var txOpen=txState[sym];
-    body+='<tr class="sd-cons-row'+(arOpen?' is-open':'')+'" data-symbol="'+escapeHtml(sym)+'">'
+    var qOpen=qState[sym]&&qState[sym].open;
+    body+='<tr class="sd-cons-row'+(arOpen?' is-open':'')+(qOpen?' is-qopen':'')+'" data-symbol="'+escapeHtml(sym)+'">'
       +'<td class="sd-cons-sym">'+consSymCell(sym)+'</td>'
       +'<td class="sd-cons-weight">'+wCell+'</td>'
       +'<td class="sd-cons-col-ar">'+arLinkCell(sym)+'</td>'
@@ -7254,6 +7280,7 @@ function renderConstituentsTable(d){
     +'</tr>';
     /* Re-emit the open summary panel on every render — the table re-renders
        on sort and on AR-state changes, so DOM-only state would collapse it. */
+    if(qOpen) body+=qRowHtml(sym);
     if(arOpen) body+=arRowHtml(sym);
     if(txOpen) body+=txRowHtml(sym);
   }
@@ -7311,6 +7338,7 @@ function renderConstituentsTable(d){
       openArSummary(ev.currentTarget.getAttribute('data-symbol'));
     });
   }
+  qWire(bodyEl);
 }
 
 /* ════════════════════════════════════════
@@ -7331,6 +7359,7 @@ function consLogoMono(sym){
 function consSymCell(sym){
   var safe=escapeHtml(sym);
   return '<span class="sd-cons-symwrap">'
+    +'<span class="sd-q-caret">›</span>'
     +'<span class="sd-cons-logo">'+consLogoMono(sym)
     +'<img alt="" loading="lazy" data-logo-img="'+safe+'"></span>'
     +'<span class="sd-cons-symtext">'+safe+'</span>'
@@ -7410,6 +7439,85 @@ var SSTx=(function(){
   function close(){ if(ovl) ovl.classList.remove('open'); }
   return { open:open, close:close };
 })();
+/* ── Quarterly results (indianapi /quarterly worker): row-expand table ──
+   Clicking a constituents row toggles a downward panel with the last 5 quarters
+   (Revenue / Operating Profit / PAT / EPS) + YoY & QoQ, mirroring the source
+   card. Open state + fetched data live in qState (survives the table's sort
+   re-render, like arState); qCache prevents refetch on reopen. OPM / NPM expand
+   within the panel via qWire (DOM-only toggle). Bank/NBFC layout, negative
+   operating profit, and margins are all resolved worker-side. */
+var Q_BASE='https://indianapi.prashant-06f.workers.dev';
+var qState={}, qCache={};
+function qFmtCr(v){ return v==null?'—':Math.round(v).toLocaleString('en-IN'); }
+function qFmtEps(v){ return v==null?'—':Number(v).toLocaleString('en-IN',{minimumFractionDigits:1,maximumFractionDigits:1}); }
+function qFmtPct(v){ return v==null?'':(v.toFixed(1)+'%'); }
+function qPcls(v){ return v==null?'':(v>=0?'sd-q-pos':'sd-q-neg'); }
+function qTableHtml(d){
+  var cols=d.columns||[];
+  var head='<thead><tr><th class="sd-q-lbl"></th><th>YoY</th><th>QoQ</th>'
+    +cols.map(function(c){return '<th>'+escapeHtml(c)+'</th>';}).join('')+'</tr></thead>';
+  var body='<tbody>';
+  (d.rows||[]).forEach(function(r){
+    var fmt=(r.unit==='Cr')?qFmtCr:qFmtEps;
+    var mg=r.opm?{l:'OPM',v:r.opm}:(r.npm?{l:'NPM',v:r.npm}:null);
+    var caret=mg?'<span class="sd-q-mcaret">▾</span>':'';
+    var unit=escapeHtml(r.unit||'');
+    body+='<tr class="sd-q-main'+(mg?' sd-q-exp':'')+'" data-key="'+escapeHtml(r.key)+'">'
+      +'<td class="sd-q-lbl">'+escapeHtml(r.label)+'<span class="sd-q-unit">'+unit+'</span>'+caret+'</td>'
+      +'<td class="'+qPcls(r.yoy)+'">'+qFmtPct(r.yoy)+'</td>'
+      +'<td class="'+qPcls(r.qoq)+'">'+qFmtPct(r.qoq)+'</td>'
+      +r.values.map(function(v){return '<td>'+fmt(v)+'</td>';}).join('')+'</tr>';
+    if(mg){
+      body+='<tr class="sd-q-sub" data-for="'+escapeHtml(r.key)+'"><td class="sd-q-lbl">'+mg.l+'</td><td></td><td></td>'
+        +mg.v.map(function(v){return '<td class="'+qPcls(v)+'">'+qFmtPct(v)+'</td>';}).join('')+'</tr>';
+    }
+  });
+  body+='</tbody>';
+  return '<div class="sd-q-scroll"><table class="sd-q-tbl">'+head+body+'</table></div>';
+}
+function qRowHtml(sym){
+  var st=qState[sym]||{};
+  var inner;
+  if(st.loading) inner='<div class="sd-q-state"><span class="ss-tx-spin"></span>Loading results…</div>';
+  else if(st.error) inner='<div class="sd-q-state">'+escapeHtml(st.error==='insufficient_history'?'Not enough quarterly history yet.':'Couldn’t load results.')+'</div>';
+  else if(st.data) inner=qTableHtml(st.data);
+  else inner='<div class="sd-q-state">—</div>';
+  return '<tr class="sd-q-row"><td colspan="5" class="sd-q-cell">'+inner+'</td></tr>';
+}
+function qToggle(sym){
+  sym=String(sym||'').trim().toUpperCase();
+  if(!sym) return;
+  if(qState[sym]&&qState[sym].open){ delete qState[sym]; renderConstituentsTable(consState.data); return; }
+  if(qCache[sym]){ qState[sym]={open:true,data:qCache[sym]}; renderConstituentsTable(consState.data); return; }
+  qState[sym]={open:true,loading:true};
+  renderConstituentsTable(consState.data);
+  fetch(Q_BASE+'/quarterly?symbol='+encodeURIComponent(sym))
+    .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,j:j}; }); })
+    .then(function(res){
+      if(!(qState[sym]&&qState[sym].open)) return;
+      if(res.ok&&res.j&&res.j.rows){ qCache[sym]=res.j; qState[sym]={open:true,data:res.j}; }
+      else { qState[sym]={open:true,error:(res.j&&res.j.error)||'error'}; }
+      renderConstituentsTable(consState.data);
+    })
+    .catch(function(){ if(qState[sym]&&qState[sym].open){ qState[sym]={open:true,error:'load failed'}; renderConstituentsTable(consState.data); } });
+}
+function qWire(bodyEl){
+  var rows=bodyEl.querySelectorAll('.sd-cons-row');
+  for(var i=0;i<rows.length;i++){
+    rows[i].addEventListener('click',function(ev){ qToggle(ev.currentTarget.getAttribute('data-symbol')); });
+  }
+  var exps=bodyEl.querySelectorAll('.sd-q-exp');
+  for(var e=0;e<exps.length;e++){
+    exps[e].addEventListener('click',function(ev){
+      ev.stopPropagation();
+      var k=ev.currentTarget.getAttribute('data-key');
+      var sub=ev.currentTarget.parentNode.querySelector('.sd-q-sub[data-for="'+k+'"]');
+      ev.currentTarget.classList.toggle('is-open');
+      if(sub) sub.classList.toggle('is-open');
+    });
+  }
+}
+
 var arState={};
 var arReq={};
 var arCache={};
