@@ -938,6 +938,10 @@ html.light .sd-header{background:rgba(238,241,248,.96)}
 .sd-cons-table thead th.sd-cons-col-ar,.sd-cons-table tbody td.sd-cons-col-ar{padding-left:6px;padding-right:4px}
 .sd-cons-table thead th.sd-cons-col-ai,.sd-cons-table tbody td.sd-cons-col-ai{padding-left:4px;padding-right:4px}
 .sd-cons-table thead th.sd-cons-col-tx,.sd-cons-table tbody td.sd-cons-col-tx{padding-left:4px;padding-right:6px}
+/* Equal-width, evenly-spaced constituent columns (4-column layout). */
+.sd-cons-table{table-layout:fixed}
+.sd-cons-table>thead>tr>th{width:25%}
+.sd-cons-table>thead>tr>th.sd-cons-col-ar,.sd-cons-table>tbody>tr>td.sd-cons-col-ar,.sd-cons-table>thead>tr>th.sd-cons-col-tx,.sd-cons-table>tbody>tr>td.sd-cons-col-tx,.sd-cons-table>thead>tr>th[data-key="weight"],.sd-cons-table>tbody>tr>td.sd-cons-weight{text-align:center;padding-left:8px;padding-right:8px}
 /* Disabled 'Coming soon' pill — same visual weight as sd-ar-btn but muted
    and non-interactive, so users read it as "here later" rather than broken. */
 .sd-tx-soon{display:inline-block;padding:3px 9px;border-radius:5px;font-family:var(--mono);font-size:.55rem;font-weight:600;letter-spacing:.3px;text-transform:uppercase;color:var(--ghost);background:var(--bg3);border:1px dashed var(--bdr);cursor:not-allowed;user-select:none;white-space:nowrap}
@@ -958,6 +962,8 @@ html.light .sd-header{background:rgba(238,241,248,.96)}
 .ss-tx-b{display:inline-flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--bdr);color:var(--txt);border-radius:6px;padding:8px 11px;text-decoration:none;font-family:var(--mono);font-weight:600;font-size:.62rem;letter-spacing:.3px;transition:border-color .12s,background .12s}
 .ss-tx-b:hover{background:var(--sur);border-color:var(--chp-c)}
 .ss-tx-b.wide{width:100%;justify-content:space-between}
+.ss-tx-ai{display:inline-flex;align-items:center;justify-content:center;gap:6px;width:100%;background:var(--chp-tl);border:1px solid var(--chp-bd);color:var(--chp-c);border-radius:6px;padding:9px 11px;font-family:var(--mono);font-weight:700;font-size:.64rem;letter-spacing:.3px;cursor:pointer;transition:border-color .12s,background .12s}
+.ss-tx-ai:hover{background:var(--sur);border-color:var(--chp-c)}
 .ss-tx-b .tag{font-family:var(--body);font-weight:500;font-size:.56rem;color:var(--ghost)}
 .ss-tx-msg{padding:8px 0;text-align:center;color:var(--ghost);font-family:var(--mono);font-size:.62rem}
 .ss-tx-spin{width:20px;height:20px;border:2px solid var(--bdr);border-top-color:var(--chp-c);border-radius:50%;margin:6px auto;animation:ss-tx-rot .7s linear infinite}
@@ -7053,7 +7059,7 @@ function txRowHtml(symbol){
     if(!sum.running&&sum.text) inner+='<div class="tx-sum">'+txSumFormat(sum.text,symbol)+'</div>';
   }
   if(!inner) inner='<span class="sd-ar-note">Preparing review\u2026</span>';
-  return '<tr class="sd-ar-row"><td colspan="5">'+inner+'</td></tr>';
+  return '<tr class="sd-ar-row"><td colspan="4">'+inner+'</td></tr>';
 }
 
 /* Renderer for the condense output. Unlike the AR note (flat "- " bullets), the
@@ -7264,9 +7270,8 @@ function renderConstituentsTable(d){
   var head='<thead><tr>'
     +th('symbol','Symbol')
     +th('weight','Weight')
-    +'<th class="sd-cons-col-ar">AR</th>'
-    +'<th class="sd-cons-col-tx">TX</th>'
-    +'<th class="sd-cons-col-ai">AI</th>'
+    +'<th class="sd-cons-col-ar">Annual Report</th>'
+    +'<th class="sd-cons-col-tx">Transcripts</th>'
     +'</tr></thead>';
 
   var body='<tbody>';
@@ -7280,14 +7285,8 @@ function renderConstituentsTable(d){
     body+='<tr class="sd-cons-row'+(arOpen?' is-open':'')+(qOpen?' is-qopen':'')+'" data-symbol="'+escapeHtml(sym)+'">'
       +'<td class="sd-cons-sym">'+consSymCell(sym)+'</td>'
       +'<td class="sd-cons-weight">'+wCell+'</td>'
-      +'<td class="sd-cons-col-ar">'+arLinkCell(sym)+'</td>'
-      +'<td class="sd-cons-col-tx"><a class="sd-tx-link" data-txlink data-symbol="'+escapeHtml(sym)+'">TX</a></td>'
-      +'<td class="sd-cons-col-ai"><div class="sd-ai-actions">'
-        +'<a class="sd-ar-btn sd-ar-ai'+(arOpen?' is-open':'')+'" data-symbol="'+escapeHtml(sym)+'">'
-        +(arOpen?'Hide AR':((arSum[sym]&&arSum[sym].done&&arSum[sym].arYear)?('AR '+arSum[sym].arYear):'AR Summary'))+'</a>'
-        +'<a class="sd-ar-btn sd-tx-ai'+(txOpen?' is-open':'')+'" data-symbol="'+escapeHtml(sym)+'">'
-        +(txOpen?'Hide TX':'TX Summary')+'</a>'
-      +'</div></td>'
+      +'<td class="sd-cons-col-ar"><a class="sd-tx-link" data-arpane data-symbol="'+escapeHtml(sym)+'">Annual Report</a></td>'
+      +'<td class="sd-cons-col-tx"><a class="sd-tx-link" data-txlink data-symbol="'+escapeHtml(sym)+'">Transcripts</a></td>'
     +'</tr>';
     /* Re-emit the open summary panel on every render — the table re-renders
        on sort and on AR-state changes, so DOM-only state would collapse it. */
@@ -7325,6 +7324,13 @@ function renderConstituentsTable(d){
     txl[tix].addEventListener('click',function(ev){
       ev.preventDefault(); ev.stopPropagation();
       SSTx.open(ev.currentTarget.getAttribute('data-symbol'));
+    });
+  }
+  var arp=bodyEl.querySelectorAll('[data-arpane]');
+  for(var api=0;api<arp.length;api++){
+    arp[api].addEventListener('click',function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      SSTx.open(ev.currentTarget.getAttribute('data-symbol'),'ar');
     });
   }
   var tais=bodyEl.querySelectorAll('.sd-tx-ai');
@@ -7385,6 +7391,7 @@ function consSymCell(sym){
 var SSTx=(function(){
   var TX_BASE='https://indianapi.prashant-06f.workers.dev';
   var TX_MAX=6, ovl=null, ttl=null, sub=null, body=null;
+  var curKind='tx', curSym='';
   function build(){
     ovl=document.getElementById('ss-tx-ovl');
     if(!ovl){
@@ -7397,7 +7404,11 @@ var SSTx=(function(){
         +'<button id="ss-tx-x" aria-label="Close">\u00d7</button></div>'
         +'<div id="ss-tx-body"></div></div>';
       document.body.appendChild(ovl);
-      ovl.addEventListener('click',function(e){ if(e.target===ovl) close(); });
+      ovl.addEventListener('click',function(e){
+        var ai=e.target&&e.target.closest?e.target.closest('[data-ssai]'):null;
+        if(ai){ close(); if(curKind==='ar'){ if(!arState[curSym]) openArSummary(curSym); } else { if(!txState[curSym]) openTxSummary(curSym); } return; }
+        if(e.target===ovl) close();
+      });
       ovl.querySelector('#ss-tx-x').addEventListener('click',close);
       document.addEventListener('keydown',function(e){
         if(e.key==='Escape'&&ovl.classList.contains('open')) close();
@@ -7418,23 +7429,36 @@ var SSTx=(function(){
       +(tag?'<span class="tag">'+escapeHtml(tag)+'</span>':'')+'</a>';
   }
   function render(d){
-    ttl.textContent=d.name||d.symbol||'Transcripts';
+    ttl.textContent=d.name||d.symbol||(curKind==='ar'?'Annual Report':'Transcripts');
     sub.textContent=d.symbol||'';
-    var tx=(d.transcripts||[]).slice(0,TX_MAX), ppt=(d.presentations||[])[0], h='';
-    h+='<div class="ss-tx-sec"><h4>Concall Transcripts</h4>';
-    h+= tx.length
-      ? '<div class="ss-tx-grid">'+tx.map(function(t){return btn(t.url,label(t.date));}).join('')+'</div>'
-      : '<div class="ss-tx-msg">No transcripts available.</div>';
-    h+='</div><div class="ss-tx-sec"><h4>Investor Presentation</h4>';
-    h+= ppt
-      ? '<div class="ss-tx-grid">'+btn(ppt.url,label(ppt.date),'Latest',true)+'</div>'
-      : '<div class="ss-tx-msg">No presentation available.</div>';
-    h+='</div>';
+    var h='';
+    if(curKind==='ar'){
+      var ars=(d.annualReports||[]);
+      h+='<div class="ss-tx-sec"><h4>Annual Report</h4>';
+      h+= ars.length
+        ? '<div class="ss-tx-grid">'+ars.map(function(a){return btn(a.url,a.year||'Annual Report');}).join('')+'</div>'
+        : '<div class="ss-tx-msg">No annual report available.</div>';
+      h+='</div>';
+    } else {
+      var tx=(d.transcripts||[]).slice(0,TX_MAX), ppt=(d.presentations||[])[0];
+      h+='<div class="ss-tx-sec"><h4>Concall Transcripts</h4>';
+      h+= tx.length
+        ? '<div class="ss-tx-grid">'+tx.map(function(t){return btn(t.url,label(t.date));}).join('')+'</div>'
+        : '<div class="ss-tx-msg">No transcripts available.</div>';
+      h+='</div><div class="ss-tx-sec"><h4>Investor Presentation</h4>';
+      h+= ppt
+        ? '<div class="ss-tx-grid">'+btn(ppt.url,label(ppt.date),'Latest',true)+'</div>'
+        : '<div class="ss-tx-msg">No presentation available.</div>';
+      h+='</div>';
+    }
+    h+='<div class="ss-tx-sec"><div class="ss-tx-grid"><button type="button" class="ss-tx-ai" data-ssai>AI Summary</button></div></div>';
     body.innerHTML=h;
   }
-  function open(symbol){
+  function open(symbol,kind){
     build();
+    curKind=(kind==='ar')?'ar':'tx';
     var sym=String(symbol||'').trim().toUpperCase();
+    curSym=sym;
     ttl.textContent=sym||'\u2014'; sub.textContent='';
     body.innerHTML='<div class="ss-tx-msg"><div class="ss-tx-spin"></div>Loading\u2026</div>';
     ovl.classList.add('open');
@@ -7493,7 +7517,7 @@ function qRowHtml(sym){
   else if(st.error) inner='<div class="sd-q-state">'+escapeHtml(st.error==='insufficient_history'?'Not enough quarterly history yet.':'Couldn’t load results.')+'</div>';
   else if(st.data) inner=qTableHtml(st.data);
   else inner='<div class="sd-q-state">—</div>';
-  return '<tr class="sd-q-row"><td colspan="5" class="sd-q-cell">'+inner+'</td></tr>';
+  return '<tr class="sd-q-row"><td colspan="4" class="sd-q-cell">'+inner+'</td></tr>';
 }
 function qToggle(sym){
   sym=String(sym||'').trim().toUpperCase();
@@ -7550,7 +7574,7 @@ function arRowHtml(symbol){
     if(!sum.running&&sum.text) inner+='<div class="sd-ar-sum">'+arSumFormat(sum.text,symbol)+'</div>';
   }
   if(!inner) inner='<span class="sd-ar-note">Preparing summary\u2026</span>';
-  return '<tr class="sd-ar-row"><td colspan="5">'+inner+'</td></tr>';
+  return '<tr class="sd-ar-row"><td colspan="4">'+inner+'</td></tr>';
 }
 
 /* Bullet lines ("- x", "\u2022 x", "1. x") become a real <ul>; anything else
