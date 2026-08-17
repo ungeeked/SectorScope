@@ -922,6 +922,12 @@ html.light .sd-header{background:rgba(238,241,248,.96)}
 .sd-cons-summary{padding:11px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;font-family:var(--mono);font-size:.62rem}
 .sd-cons-meta{color:var(--ghost);font-size:.52rem;letter-spacing:.4px;text-transform:uppercase}
 .sd-cons-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.7rem}
+.sd-cons-table tbody td.sd-cons-sym{text-align:left;padding-left:14px}
+.sd-cons-symwrap{display:inline-flex;align-items:center;gap:8px;min-width:0}
+.sd-cons-logo{position:relative;flex:0 0 20px;width:20px;height:20px;border-radius:5px;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;background:var(--bg3);border:1px solid var(--bdr);color:var(--sub);font-size:.46rem;font-weight:600;letter-spacing:.02em;line-height:1;text-transform:uppercase}
+.sd-cons-logo img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;opacity:0;transition:opacity .2s}
+.sd-cons-logo img.is-loaded{opacity:1}
+.sd-cons-symtext{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sd-cons-table thead th{text-align:right;font-weight:500;font-size:.5rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ghost);padding:9px 10px 7px;border-bottom:1px solid var(--bdr);cursor:pointer;user-select:none;white-space:nowrap;transition:color .15s}
 .sd-cons-table thead th:first-child{text-align:left;padding-left:14px}
 .sd-cons-table thead th:last-child{padding-right:14px}
@@ -7235,7 +7241,7 @@ function renderConstituentsTable(d){
     var arOpen=arState[sym];
     var txOpen=txState[sym];
     body+='<tr class="sd-cons-row'+(arOpen?' is-open':'')+'" data-symbol="'+escapeHtml(sym)+'">'
-      +'<td>'+escapeHtml(sym)+'</td>'
+      +'<td class="sd-cons-sym">'+consSymCell(sym)+'</td>'
       +'<td class="sd-cons-weight">'+wCell+'</td>'
       +'<td class="sd-cons-col-ar">'+arLinkCell(sym)+'</td>'
       +'<td class="sd-cons-col-tx"><a class="sd-tx-link" data-txlink data-symbol="'+escapeHtml(sym)+'">Transcripts</a></td>'
@@ -7290,6 +7296,14 @@ function renderConstituentsTable(d){
       openTxSummary(ev.currentTarget.getAttribute('data-symbol'));
     });
   }
+  var logos=bodyEl.querySelectorAll('.sd-cons-logo img[data-logo-img]');
+  for(var li=0;li<logos.length;li++){
+    (function(img){
+      img.onload=function(){ img.classList.add('is-loaded'); };
+      img.onerror=function(){ if(img.parentNode) img.parentNode.removeChild(img); };
+      img.src=LOGO_BASE+'/logo?symbol='+encodeURIComponent(img.getAttribute('data-logo-img'));
+    })(logos[li]);
+  }
   var ais=bodyEl.querySelectorAll('.sd-ar-ai');
   for(var q=0;q<ais.length;q++){
     ais[q].addEventListener('click',function(ev){
@@ -7309,6 +7323,19 @@ function renderConstituentsTable(d){
    poll re-render because it lives in arState, not the DOM.
 ════════════════════════════════════════ */
 var AR_BASE='https://annualreports.prashant-06f.workers.dev';
+var LOGO_BASE='https://indianapi.prashant-06f.workers.dev';
+function consLogoMono(sym){
+  var s=String(sym||'').replace(/[^A-Za-z0-9]/g,'');
+  return escapeHtml(s.slice(0,2).toUpperCase());
+}
+function consSymCell(sym){
+  var safe=escapeHtml(sym);
+  return '<span class="sd-cons-symwrap">'
+    +'<span class="sd-cons-logo">'+consLogoMono(sym)
+    +'<img alt="" loading="lazy" data-logo-img="'+safe+'"></span>'
+    +'<span class="sd-cons-symtext">'+safe+'</span>'
+    +'</span>';
+}
 /* -- Transcripts popup (indianapi worker: Screener-derived resolved links) --
    Self-injecting overlay, opened from the constituents Transcripts cell via
    SSTx.open(symbol). Latest 6 transcripts + latest investor presentation as
