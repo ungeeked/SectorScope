@@ -1173,6 +1173,12 @@ html.light .sd-cons-table .sd-q-tbl .sd-q-main.sd-q-exp:hover td{background:rgba
 .sd-shp-tbl tbody tr.sd-shp-total td{background:var(--bg3);font-weight:700;color:var(--txt);border-top:2px solid var(--bdr)}
 .sd-shp-tbl tbody tr.sd-shp-total td:first-child,.sd-shp-tbl tbody tr.sd-shp-total td:nth-child(2){background:var(--bg3)}
 .sd-shp-tbl tbody tr.sd-shp-total:hover td{background:var(--bg3)}
+/* SHP is an 11-column horizontal-scroll table; it must NOT inherit the
+   fixed layout + 25% column width from .sd-cons-table (built for the
+   4-col constituents table). That rule starved the Trend column and let
+   the fixed-width (92px) sparkline SVG overflow into the quarter cells. */
+.sd-shp-tbl{table-layout:auto}
+.sd-shp-tbl>thead>tr>th{width:auto}
 .sd-cons-state.err{color:var(--exp-c)}
 /* Generic PLUS tag used by section titles outside the AI-summary /
    chart-modal scopes. Same gradient as the existing scoped rules. */
