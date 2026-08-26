@@ -1173,6 +1173,10 @@ html.light .sd-cons-table .sd-q-tbl .sd-q-main.sd-q-exp:hover td{background:rgba
 .sd-shp-tbl tbody tr.sd-shp-total td{background:var(--bg3);font-weight:700;color:var(--txt);border-top:2px solid var(--bdr)}
 .sd-shp-tbl tbody tr.sd-shp-total td:first-child,.sd-shp-tbl tbody tr.sd-shp-total td:nth-child(2){background:var(--bg3)}
 .sd-shp-tbl tbody tr.sd-shp-total:hover td{background:var(--bg3)}
+/* SHP is an 11-column horizontal-scroll table; must not inherit
+   fixed layout + 25% th width from .sd-cons-table (4-col table). */
+.sd-shp-tbl{table-layout:auto}
+.sd-shp-tbl>thead>tr>th{width:auto}
 .sd-cons-state.err{color:var(--exp-c)}
 /* Generic PLUS tag used by section titles outside the AI-summary /
    chart-modal scopes. Same gradient as the existing scoped rules. */
@@ -11943,7 +11947,7 @@ async function shareAISummary(sectorName){
   /* Font specs. Barlow Condensed is the brandmark face; everything else
      is system sans / mono for portability across the various platforms
      the screenshot ends up on. */
-  /* Site faces, not the OS — see note in shareSummaryImage. Barlow ships
+  /* Site faces, not the OS — see note in shareSummaryPdf. Barlow ships
      400-600, so bold headings use Barlow Condensed; numbers use JetBrains Mono. */
   var SANS='"Barlow",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
   var COND='"Barlow Condensed","Bebas Neue",sans-serif';
@@ -12153,7 +12157,7 @@ async function shareAISummary(sectorName){
 function shareSummaryBtn(ev){
   ev.stopPropagation();
   var b=ev.currentTarget;
-  shareSummaryImage(b.getAttribute('data-sharekind'), b.getAttribute('data-sharesym'));
+  shareSummaryPdf(b.getAttribute('data-sharekind'), b.getAttribute('data-sharesym'));
 }
 function shareBar(kind,symbol){
   return '<div style="display:flex;justify-content:flex-end;margin-top:10px">'
@@ -12216,182 +12220,184 @@ function txShareBlocks(text){
   return blocks;
 }
 
-async function shareSummaryImage(kind, symbol){
+/* ---- Vector PDF export (selectable text + embedded subset fonts) ----
+   pdf-lib + fontkit are loaded lazily on first share and cached by the service
+   worker; the three subsetted TTFs (~122 KB total) likewise. Barlow lacks the
+   rupee glyph (the site falls back to a system face on-screen too), so a 6 KB
+   fallback font covers U+20B9 and any stray symbol — chosen per character. */
+function loadScriptOnce(src){
+  return new Promise(function(res,rej){
+    var s=document.createElement('script'); s.src=src;
+    s.onload=function(){ res(); };
+    s.onerror=function(){ rej(new Error('failed to load '+src)); };
+    document.head.appendChild(s);
+  });
+}
+
+var _pdfAssets=null;
+function loadPdfAssets(){
+  if(_pdfAssets) return _pdfAssets;
+  _pdfAssets=(async function(){
+    if(!window.PDFLib)  await loadScriptOnce('/assets/vendor/pdf-lib.min.js');
+    if(!window.fontkit) await loadScriptOnce('/assets/vendor/fontkit.umd.min.js');
+    var base='/assets/fonts/pdf/';
+    async function ab(name){
+      var r=await fetch(base+name);
+      if(!r.ok) throw new Error('font '+name+' '+r.status);
+      return new Uint8Array(await r.arrayBuffer());
+    }
+    var body=await ab('Barlow-Regular.ttf');
+    var cond=await ab('BarlowCondensed-Bold.ttf');
+    var fall=await ab('Fallback.ttf');
+    /* Coverage objects are document-independent, so parse them once. */
+    var fk=window.fontkit;
+    return {
+      body:body, cond:cond, fall:fall,
+      covBody:fk.create(body), covCond:fk.create(cond), covFall:fk.create(fall),
+    };
+  })();
+  return _pdfAssets;
+}
+
+async function shareSummaryPdf(kind, symbol){
   var isTx=(kind==='tx');
   var sum=(isTx?txSum:arSum)[symbol];
   if(!sum || sum.running || !sum.text) return;
 
-  if(document.fonts && document.fonts.ready){ try{ await document.fonts.ready; }catch(e){} }
+  var A;
+  try{ A=await loadPdfAssets(); }
+  catch(e){ console.error('[summary-share] could not load PDF assets:', e.message); return; }
 
-  var blocks=isTx?txShareBlocks(sum.text):arShareBlocks(sum.text);
-  if(!blocks.length) return;
-  var isLight=document.documentElement.classList.contains('light');
+  var PDFLib=window.PDFLib, fontkit=window.fontkit, rgb=PDFLib.rgb;
+  var doc=await PDFLib.PDFDocument.create();
+  doc.registerFontkit(fontkit);
+  /* slice() so a detached buffer can never break a later embed */
+  var Fbody={pdf:await doc.embedFont(A.body.slice(),{subset:true}), cov:A.covBody};
+  var Fcond={pdf:await doc.embedFont(A.cond.slice(),{subset:true}), cov:A.covCond};
+  var Ffall={pdf:await doc.embedFont(A.fall.slice(),{subset:true}), cov:A.covFall};
 
-  var W=1080, PAD=60, contentW=W-PAD*2;
-  var accent=isTx?'#8b5cf6':'#3b82f6';
-  var chip=isTx?'\uD83C\uDF99\uFE0F  EARNINGS CALL SUMMARY':'\uD83D\uDCC4  ANNUAL REPORT SUMMARY';
-
-  /* Match the site faces so the image reads like the app, not the OS. The page
-     already loads these (Google Fonts, line ~42) and we await document.fonts.ready
-     above; the PNG is rasterised on-device, so the recipient never needs them
-     installed. Barlow ships weights 400-600 only, so anything bold uses Barlow
-     Condensed (600-800) to avoid synthetic bold; numbers/labels use JetBrains
-     Mono, the site's --mono. */
-  var SANS='"Barlow",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-  var COND='"Barlow Condensed","Bebas Neue",sans-serif';
-  var MONO='"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace';
-  var brandFont='700 64px '+COND;
-  var titleFont='700 60px '+COND;
-  var chipFont='600 22px '+MONO;
-  var footerFont='500 22px '+MONO;
-  var metaFont='400 26px '+SANS;
-  var bulletFont='400 30px '+SANS;
-  var headingFont='700 30px '+COND;
-  var lineFont='400 28px '+SANS;
-  var tagFont='700 20px '+MONO;
-
-  var tc=document.createElement('canvas').getContext('2d');
-  function wrap(text, maxW, font){
-    tc.font=font;
+  /* Per-character font choice: primary if it has the glyph, else the fallback
+     face (rupee etc.), else primary as last resort so drawText never throws. */
+  function pick(primary, ch){
+    var cp=ch.codePointAt(0);
+    if(primary.cov.hasGlyphForCodePoint(cp)) return primary.pdf;
+    if(Ffall.cov.hasGlyphForCodePoint(cp)) return Ffall.pdf;
+    return primary.pdf;
+  }
+  function runsOf(primary, text){
+    var out=[], cur='', curF=null, arr=Array.from(String(text));
+    for(var i=0;i<arr.length;i++){
+      var f=pick(primary, arr[i]);
+      if(f===curF){ cur+=arr[i]; } else { if(cur) out.push({f:curF,t:cur}); cur=arr[i]; curF=f; }
+    }
+    if(cur) out.push({f:curF,t:cur});
+    return out;
+  }
+  function measure(primary, text, size){
+    return runsOf(primary,text).reduce(function(w,r){ return w+r.f.widthOfTextAtSize(r.t,size); },0);
+  }
+  function wrap(primary, text, maxW, size){
     var words=String(text).split(/\s+/), lines=[], cur='';
     for(var i=0;i<words.length;i++){
-      var test=cur?cur+' '+words[i]:words[i];
-      if(tc.measureText(test).width>maxW && cur){ lines.push(cur); cur=words[i]; }
-      else cur=test;
+      var t=cur?cur+' '+words[i]:words[i];
+      if(measure(primary,t,size)>maxW && cur){ lines.push(cur); cur=words[i]; } else cur=t;
     }
     if(cur) lines.push(cur);
     return lines.length?lines:[''];
   }
 
-  /* One layout pass: wrap each block and record what to draw + its height, so
-     the height total and the paint loop can never diverge. */
-  var BULLET_INDENT=34;
+  var blocks=isTx?txShareBlocks(sum.text):arShareBlocks(sum.text);
+  if(!blocks.length) return;
+
+  var W=612, PAD=48, contentW=W-PAD*2;
+  var accent=isTx?rgb(0.55,0.36,0.96):rgb(0.23,0.51,0.96);
+  var metaC=rgb(0.40,0.45,0.50), bodyC=rgb(0.12,0.16,0.22), ghost=rgb(0.55,0.60,0.68);
+  var green=rgb(0.13,0.72,0.35), red=rgb(0.90,0.22,0.22), rule=rgb(0.85,0.87,0.90), ink=rgb(0.06,0.09,0.16);
+
+  var spec={
+    meta:   {p:Fbody,size:10.5,lh:15,gapAfter:6,indent:0},
+    bullet: {p:Fbody,size:12,  lh:17,gapAfter:9,indent:16},
+    heading:{p:Fcond,size:13.5,lh:18,gapAfter:5,gapBefore:11,indent:0,color:accent},
+    line:   {p:Fbody,size:11.5,lh:16,gapAfter:6,indent:0},
+    flag:   {p:Fbody,size:11.5,lh:16,gapAfter:6,indent:44},
+  };
+
   var laid=blocks.map(function(b){
-    var o={block:b, gapBefore:0};
-    if(b.type==='meta'){ o.font=metaFont; o.lineH=36; o.lines=wrap(b.text, contentW, metaFont); o.gapAfter=10; }
-    else if(b.type==='heading'){ o.font=headingFont; o.lineH=40; o.lines=wrap(b.text, contentW, headingFont); o.gapBefore=22; o.gapAfter=8; }
-    else if(b.type==='bullet'){ o.font=bulletFont; o.lineH=44; o.lines=wrap(b.text, contentW-BULLET_INDENT, bulletFont); o.gapAfter=16; }
-    else if(b.type==='flag'){ tc.font=tagFont; o.tagW=tc.measureText(b.tag).width+18; o.font=lineFont; o.lineH=42; o.lines=wrap(b.text, contentW-o.tagW, lineFont); o.gapAfter=14; }
-    else { o.font=lineFont; o.lineH=42; o.lines=wrap(b.text, contentW, lineFont); o.gapAfter=12; }
-    o.h=o.gapBefore+o.lines.length*o.lineH+o.gapAfter;
-    return o;
+    var s=spec[b.type]||spec.line;
+    return {b:b,s:s,lines:wrap(s.p,b.text,contentW-(s.indent||0),s.size)};
   });
 
-  var H=PAD;
-  H+=64;   /* brand */
-  H+=8;    /* gap */
-  H+=8;    /* rainbow */
-  H+=32;   /* gap */
-  H+=60;   /* title */
-  H+=24;   /* gap */
-  H+=30;   /* chip */
-  H+=14;   /* gap */
-  H+=1;    /* divider */
-  H+=28;   /* gap */
-  laid.forEach(function(o){ H+=o.h; });
-  H+=16;   /* gap */
-  H+=1;    /* divider */
-  H+=20;   /* gap */
-  H+=28;   /* footer */
-  H+=PAD;
+  var H=PAD + (34+8+8+34) + (30+18) + (14+8+1+16);
+  laid.forEach(function(o){ H+=(o.s.gapBefore||0)+o.lines.length*o.s.lh+o.s.gapAfter; });
+  H+=12+1+12+14+PAD;
 
-  var canvas=document.createElement('canvas');
-  canvas.width=W; canvas.height=H;
-  var ctx=canvas.getContext('2d');
+  var page=doc.addPage([W,H]);
+  page.drawRectangle({x:0,y:0,width:W,height:H,color:rgb(1,1,1)});
+  var y=H-PAD;
+  function drawRuns(primary,text,x,size,color){
+    var cx=x, rs=runsOf(primary,text);
+    for(var i=0;i<rs.length;i++){ page.drawText(rs[i].t,{x:cx,y:y-size,size:size,font:rs[i].f,color:color}); cx+=rs[i].f.widthOfTextAtSize(rs[i].t,size); }
+  }
 
-  ctx.fillStyle=isLight?'#ffffff':'#0b1220';
-  ctx.fillRect(0,0,W,H);
-  ctx.textBaseline='top'; ctx.textAlign='left';
-
-  var cy=PAD;
   /* Brandmark + rainbow underline */
-  ctx.font=brandFont;
-  ctx.fillStyle=isLight?'#0f172a':'#f1f5f9';
-  ctx.fillText('SectorScope', PAD, cy);
-  var brandTextW=ctx.measureText('SectorScope').width;
-  cy+=64; cy+=8;
-  var segW=(brandTextW*0.55)/5;
-  ['#00c853','#69f0ae','#ffd740','#ff7043','#ff1744'].forEach(function(c,i){ ctx.fillStyle=c; ctx.fillRect(PAD+i*segW, cy, segW, 8); });
-  cy+=8; cy+=32;
+  page.drawText('SectorScope',{x:PAD,y:y-30,size:30,font:Fcond.pdf,color:ink});
+  var bw=Fcond.pdf.widthOfTextAtSize('SectorScope',30); y-=34+8;
+  var seg=(bw*0.55)/5;
+  ['#00c853','#69f0ae','#ffd740','#ff7043','#ff1744'].forEach(function(c,i){
+    var n=parseInt(c.slice(1),16);
+    page.drawRectangle({x:PAD+i*seg,y:y-8,width:seg,height:5,color:rgb(((n>>16)&255)/255,((n>>8)&255)/255,(n&255)/255)});
+  });
+  y-=8+34;
 
-  /* Title: symbol + accent bar */
-  ctx.fillStyle=accent;
-  ctx.fillRect(PAD, cy+4, 6, 52);
-  ctx.font=titleFont;
-  ctx.fillStyle=isLight?'#0f172a':'#f1f5f9';
-  ctx.fillText(symbol, PAD+18, cy);
-  cy+=60; cy+=24;
+  /* Title + accent bar */
+  page.drawRectangle({x:PAD,y:y-30,width:4,height:28,color:accent});
+  page.drawText(String(symbol),{x:PAD+12,y:y-30,size:30,font:Fcond.pdf,color:ink}); y-=30+18;
 
   /* Chip + divider */
-  ctx.font=chipFont;
-  ctx.fillStyle=isLight?'#475569':'#94a3b8';
-  ctx.fillText(chip, PAD, cy);
-  cy+=30; cy+=14;
-  ctx.fillStyle=isLight?'rgba(0,0,0,.10)':'rgba(255,255,255,.10)';
-  ctx.fillRect(PAD, cy, contentW, 1);
-  cy+=1; cy+=28;
+  page.drawText(isTx?'EARNINGS CALL SUMMARY':'ANNUAL REPORT SUMMARY',{x:PAD,y:y-11,size:10.5,font:Fcond.pdf,color:metaC});
+  y-=14+8;
+  page.drawRectangle({x:PAD,y:y,width:contentW,height:0.8,color:rule}); y-=16;
 
-  var metaCol=isLight?'#64748b':'#94a3b8';
-  var bodyCol=isLight?'#1e293b':'#cbd5e1';
-  var dotFallback=isLight?'#94a3b8':'#64748b';
-
-  laid.forEach(function(o){
-    var b=o.block;
-    if(o.gapBefore) cy+=o.gapBefore;
-    ctx.font=o.font;
-    if(b.type==='meta'){
-      ctx.fillStyle=metaCol;
-      o.lines.forEach(function(ln){ ctx.fillText(ln, PAD, cy); cy+=o.lineH; });
-    } else if(b.type==='heading'){
-      ctx.fillStyle=accent;
-      o.lines.forEach(function(ln){ ctx.fillText(ln, PAD, cy); cy+=o.lineH; });
-    } else if(b.type==='bullet'){
-      ctx.fillStyle=b.dot||dotFallback;
-      ctx.beginPath(); ctx.arc(PAD+6, cy+16, 5, 0, Math.PI*2); ctx.fill();
-      ctx.fillStyle=bodyCol;
-      o.lines.forEach(function(ln){ ctx.fillText(ln, PAD+BULLET_INDENT, cy); cy+=o.lineH; });
-    } else if(b.type==='flag'){
-      var tagCol=/GREEN/.test(b.tag)?'#22c55e':'#ef4444';
-      ctx.font=tagFont; ctx.fillStyle=tagCol;
-      ctx.fillText(b.tag, PAD, cy+3);
-      ctx.font=o.font; ctx.fillStyle=bodyCol;
-      o.lines.forEach(function(ln){ ctx.fillText(ln, PAD+o.tagW, cy); cy+=o.lineH; });
-    } else {
-      ctx.fillStyle=bodyCol;
-      o.lines.forEach(function(ln){ ctx.fillText(ln, PAD, cy); cy+=o.lineH; });
+  /* Blocks */
+  for(var i=0;i<laid.length;i++){
+    var o=laid[i], b=o.b, s=o.s;
+    if(s.gapBefore) y-=s.gapBefore;
+    var x=PAD+(s.indent||0), color=s.color||(b.type==='meta'?metaC:bodyC);
+    if(b.type==='bullet'){
+      var dc=accent;
+      if(b.dot && /^#[0-9a-f]{6}$/i.test(b.dot)){ var dn=parseInt(b.dot.slice(1),16); dc=rgb(((dn>>16)&255)/255,((dn>>8)&255)/255,(dn&255)/255); }
+      page.drawEllipse({x:PAD+3,y:y-s.size+4,xScale:2.3,yScale:2.3,color:dc});
     }
-    cy+=o.gapAfter;
-  });
+    if(b.type==='flag') page.drawText(b.tag,{x:PAD,y:y-s.size,size:9,font:Fcond.pdf,color:(b.tag==='GREEN'?green:red)});
+    for(var l=0;l<o.lines.length;l++){ drawRuns(s.p,o.lines[l],x,s.size,color); y-=s.lh; }
+    y-=s.gapAfter;
+  }
 
-  cy+=16;
-  ctx.fillStyle=isLight?'rgba(0,0,0,.10)':'rgba(255,255,255,.10)';
-  ctx.fillRect(PAD, cy, contentW, 1);
-  cy+=1; cy+=20;
-  ctx.font=footerFont;
-  ctx.fillStyle=isLight?'#94a3b8':'#64748b';
-  ctx.textAlign='left';  ctx.fillText('\u2726  Powered by Claude', PAD, cy);
-  ctx.textAlign='right'; ctx.fillText('sectorscope.in', W-PAD, cy);
+  /* Footer */
+  y-=12; page.drawRectangle({x:PAD,y:y,width:contentW,height:0.8,color:rule}); y-=12;
+  page.drawText('Powered by Claude',{x:PAD,y:y-10,size:9.5,font:Fbody.pdf,color:ghost});
+  var site='sectorscope.in', sw=Fbody.pdf.widthOfTextAtSize(site,9.5);
+  page.drawText(site,{x:W-PAD-sw,y:y-10,size:9.5,font:Fbody.pdf,color:ghost});
 
+  var bytes=await doc.save();
+  var pdfBlob=new Blob([bytes],{type:'application/pdf'});
   var metaLine=(blocks[0]&&blocks[0].type==='meta')?blocks[0].text:'';
   var kindLabel=isTx?'Earnings Call Summary':'Annual Report Summary';
   var fname='sectorscope-'+kind+'-'+String(symbol).toLowerCase().replace(/[^a-z0-9]+/g,'-')
-    +'-'+new Date().toISOString().slice(0,10)+'.png';
+    +'-'+new Date().toISOString().slice(0,10)+'.pdf';
 
-  canvas.toBlob(async function(blob){
-    if(!blob){ console.error('[summary-share] toBlob returned null'); return; }
-    var file=new File([blob], fname, {type:'image/png'});
-    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
-      try{
-        await navigator.share({ files:[file], title:kindLabel+' \u00b7 '+symbol,
-          text:(metaLine||(kindLabel+' for '+symbol))+'\n\nsectorscope.in' });
-        return;
-      }catch(e){ if(e.name==='AbortError') return; console.warn('[summary-share] Web Share failed:', e.message); }
-    }
-    var url=URL.createObjectURL(blob);
-    var a=document.createElement('a'); a.href=url; a.download=fname;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(function(){ URL.revokeObjectURL(url); }, 200);
-  }, 'image/png');
+  var file=new File([pdfBlob], fname, {type:'application/pdf'});
+  if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+    try{
+      await navigator.share({ files:[file], title:kindLabel+' \u00b7 '+symbol,
+        text:(metaLine||(kindLabel+' for '+symbol))+'\n\nsectorscope.in' });
+      return;
+    }catch(e){ if(e.name==='AbortError') return; console.warn('[summary-share] Web Share failed:', e.message); }
+  }
+  var url=URL.createObjectURL(pdfBlob);
+  var a=document.createElement('a'); a.href=url; a.download=fname;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 200);
 }
 
 async function triggerAISummary(sectorName){
