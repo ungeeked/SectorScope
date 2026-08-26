@@ -1173,12 +1173,6 @@ html.light .sd-cons-table .sd-q-tbl .sd-q-main.sd-q-exp:hover td{background:rgba
 .sd-shp-tbl tbody tr.sd-shp-total td{background:var(--bg3);font-weight:700;color:var(--txt);border-top:2px solid var(--bdr)}
 .sd-shp-tbl tbody tr.sd-shp-total td:first-child,.sd-shp-tbl tbody tr.sd-shp-total td:nth-child(2){background:var(--bg3)}
 .sd-shp-tbl tbody tr.sd-shp-total:hover td{background:var(--bg3)}
-/* SHP is an 11-column horizontal-scroll table; it must NOT inherit the
-   fixed layout + 25% column width from .sd-cons-table (built for the
-   4-col constituents table). That rule starved the Trend column and let
-   the fixed-width (92px) sparkline SVG overflow into the quarter cells. */
-.sd-shp-tbl{table-layout:auto}
-.sd-shp-tbl>thead>tr>th{width:auto}
 .sd-cons-state.err{color:var(--exp-c)}
 /* Generic PLUS tag used by section titles outside the AI-summary /
    chart-modal scopes. Same gradient as the existing scoped rules. */
@@ -7065,7 +7059,7 @@ function txRowHtml(symbol){
     if(!sum.running && sum.warnings && sum.warnings.length){
       inner+='<div class="tx-note">Note: '+escapeHtml(sum.warnings.join(' '))+'</div>';
     }
-    if(!sum.running&&sum.text) inner+='<div class="tx-sum">'+txSumFormat(sum.text,symbol)+'</div>';
+    if(!sum.running&&sum.text) inner+='<div class="tx-sum">'+txSumFormat(sum.text,symbol)+'</div>'+shareBar('tx',symbol);
   }
   if(!inner) inner='<span class="sd-ar-note">Preparing review\u2026</span>';
   return '<tr class="sd-ar-row"><td colspan="4">'+inner+'</td></tr>';
@@ -7584,7 +7578,7 @@ function arRowHtml(symbol){
     } else if(sum.status){
       inner+='<div class="sd-ar-status">'+escapeHtml(sum.status)+'</div>';
     }
-    if(!sum.running&&sum.text) inner+='<div class="sd-ar-sum">'+arSumFormat(sum.text,symbol)+'</div>';
+    if(!sum.running&&sum.text) inner+='<div class="sd-ar-sum">'+arSumFormat(sum.text,symbol)+'</div>'+shareBar('ar',symbol);
   }
   if(!inner) inner='<span class="sd-ar-note">Preparing summary\u2026</span>';
   return '<tr class="sd-ar-row"><td colspan="4">'+inner+'</td></tr>';
@@ -11949,12 +11943,17 @@ async function shareAISummary(sectorName){
   /* Font specs. Barlow Condensed is the brandmark face; everything else
      is system sans / mono for portability across the various platforms
      the screenshot ends up on. */
-  var brandFont   = 'bold 64px "Barlow Condensed","Bebas Neue","Oswald",sans-serif';
-  var titleFont   = '700 60px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-  var chipFont    = '600 22px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-  var bodyFont    = '400 30px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-  var verdictFont = '600 28px ui-monospace,Menlo,Consolas,monospace';
-  var footerFont  = '500 22px ui-monospace,Menlo,Consolas,monospace';
+  /* Site faces, not the OS — see note in shareSummaryImage. Barlow ships
+     400-600, so bold headings use Barlow Condensed; numbers use JetBrains Mono. */
+  var SANS='"Barlow",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  var COND='"Barlow Condensed","Bebas Neue",sans-serif';
+  var MONO='"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace';
+  var brandFont   = '700 64px '+COND;
+  var titleFont   = '700 60px '+COND;
+  var chipFont    = '600 22px '+MONO;
+  var bodyFont    = '400 30px '+SANS;
+  var verdictFont = '600 28px '+MONO;
+  var footerFont  = '500 22px '+MONO;
   var bodyLineH    = 46;
   var verdictLineH = 42;
   var verdictPad   = 28;   /* inner padding of the verdict box */
@@ -12140,6 +12139,256 @@ async function shareAISummary(sectorName){
     var url = URL.createObjectURL(blob);
     var a   = document.createElement('a');
     a.href  = url; a.download = fname;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 200);
+  }, 'image/png');
+}
+
+/* ---- Share AR / Concall summary as an image ----
+   Mirrors shareAISummary (sector cards): pure-canvas render on a 1080px grid,
+   height computed after wrapping, Web Share on mobile with a download fallback.
+   Renders the NON-EXPANDED note only — the head/meta line plus the top-level
+   bullets (AR), or the four section headings and their visible lines (Tx); the
+   SECTION A-G / full-detail expansions are never drawn. */
+function shareSummaryBtn(ev){
+  ev.stopPropagation();
+  var b=ev.currentTarget;
+  shareSummaryImage(b.getAttribute('data-sharekind'), b.getAttribute('data-sharesym'));
+}
+function shareBar(kind,symbol){
+  return '<div style="display:flex;justify-content:flex-end;margin-top:10px">'
+    +'<button class="ai-share-btn" type="button"'
+    +' data-sharekind="'+kind+'" data-sharesym="'+escapeHtml(symbol)+'"'
+    +' onclick="shareSummaryBtn(event)">\u2197 Share</button></div>';
+}
+
+/* Strip residual model markdown to PLAIN text for canvas painting (arMdClean
+   emits HTML, which can't be drawn). Drops [p.X] page cites — noise on a card. */
+function shareStripMd(s){
+  return String(s)
+    .replace(/\*\*([^*]+)\*\*/g,'$1')
+    .replace(/`([^`]+)`/g,'$1')
+    .replace(/^#{1,4}\s*/,'')
+    .replace(/\[p\.?\s?\d[\d,\-\s]*\]/gi,'')
+    .replace(/\s+/g,' ')
+    .trim();
+}
+
+/* AR note -> blocks: head line(s) become 'meta', "- " bullets become 'bullet'
+   carrying the same theme colour the on-screen cards use. Mirrors the split in
+   arSumFormat so the image matches what's on screen. */
+function arShareBlocks(text){
+  var lines=String(text).split('\n'), head=[], items=[];
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i].trim(); if(!L) continue;
+    var m=L.match(/^(?:[-\u2022*]|\d{1,2}[.)])\s+(.*)$/);
+    if(m) items.push(m[1]);
+    else if(!items.length) head.push(L);
+    else items[items.length-1]+=' '+L;
+  }
+  var blocks=[];
+  head.forEach(function(h){ blocks.push({type:'meta', text:shareStripMd(h)}); });
+  items.forEach(function(it){
+    var th=arThemeOf(it);
+    var col=(th && th.col && th.col.indexOf('var(')<0)?th.col:null;
+    blocks.push({type:'bullet', text:shareStripMd(it), dot:col});
+  });
+  return blocks;
+}
+
+/* Concall note -> blocks: meta/Note lines become 'meta', the four headings
+   become 'heading', RED:/GREEN: lines become 'flag' with a coloured tag, the
+   rest 'line'. Mirrors txSumFormat's grouping. */
+function txShareBlocks(text){
+  var lines=String(text).split('\n');
+  var SECRE=/^(WHAT THEY DO AND HOW IT'S GOING|SAID VS DELIVERED|TONE DRIFT|FLAGS)$/i;
+  var blocks=[];
+  for(var i=0;i<lines.length;i++){
+    var L=lines[i].trim(); if(!L) continue;
+    if(SECRE.test(L)){ blocks.push({type:'heading', text:L}); continue; }
+    if(/AI summary\. Not investment advice/i.test(L) || /^Note:/i.test(L) || /^This note is based solely/i.test(L)){
+      blocks.push({type:'meta', text:shareStripMd(L)}); continue;
+    }
+    var fm=L.match(/^(RED|GREEN):\s*([\s\S]*)$/i);
+    if(fm){ blocks.push({type:'flag', tag:fm[1].toUpperCase(), text:shareStripMd(fm[2])}); continue; }
+    blocks.push({type:'line', text:shareStripMd(L)});
+  }
+  return blocks;
+}
+
+async function shareSummaryImage(kind, symbol){
+  var isTx=(kind==='tx');
+  var sum=(isTx?txSum:arSum)[symbol];
+  if(!sum || sum.running || !sum.text) return;
+
+  if(document.fonts && document.fonts.ready){ try{ await document.fonts.ready; }catch(e){} }
+
+  var blocks=isTx?txShareBlocks(sum.text):arShareBlocks(sum.text);
+  if(!blocks.length) return;
+  var isLight=document.documentElement.classList.contains('light');
+
+  var W=1080, PAD=60, contentW=W-PAD*2;
+  var accent=isTx?'#8b5cf6':'#3b82f6';
+  var chip=isTx?'\uD83C\uDF99\uFE0F  EARNINGS CALL SUMMARY':'\uD83D\uDCC4  ANNUAL REPORT SUMMARY';
+
+  /* Match the site faces so the image reads like the app, not the OS. The page
+     already loads these (Google Fonts, line ~42) and we await document.fonts.ready
+     above; the PNG is rasterised on-device, so the recipient never needs them
+     installed. Barlow ships weights 400-600 only, so anything bold uses Barlow
+     Condensed (600-800) to avoid synthetic bold; numbers/labels use JetBrains
+     Mono, the site's --mono. */
+  var SANS='"Barlow",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+  var COND='"Barlow Condensed","Bebas Neue",sans-serif';
+  var MONO='"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace';
+  var brandFont='700 64px '+COND;
+  var titleFont='700 60px '+COND;
+  var chipFont='600 22px '+MONO;
+  var footerFont='500 22px '+MONO;
+  var metaFont='400 26px '+SANS;
+  var bulletFont='400 30px '+SANS;
+  var headingFont='700 30px '+COND;
+  var lineFont='400 28px '+SANS;
+  var tagFont='700 20px '+MONO;
+
+  var tc=document.createElement('canvas').getContext('2d');
+  function wrap(text, maxW, font){
+    tc.font=font;
+    var words=String(text).split(/\s+/), lines=[], cur='';
+    for(var i=0;i<words.length;i++){
+      var test=cur?cur+' '+words[i]:words[i];
+      if(tc.measureText(test).width>maxW && cur){ lines.push(cur); cur=words[i]; }
+      else cur=test;
+    }
+    if(cur) lines.push(cur);
+    return lines.length?lines:[''];
+  }
+
+  /* One layout pass: wrap each block and record what to draw + its height, so
+     the height total and the paint loop can never diverge. */
+  var BULLET_INDENT=34;
+  var laid=blocks.map(function(b){
+    var o={block:b, gapBefore:0};
+    if(b.type==='meta'){ o.font=metaFont; o.lineH=36; o.lines=wrap(b.text, contentW, metaFont); o.gapAfter=10; }
+    else if(b.type==='heading'){ o.font=headingFont; o.lineH=40; o.lines=wrap(b.text, contentW, headingFont); o.gapBefore=22; o.gapAfter=8; }
+    else if(b.type==='bullet'){ o.font=bulletFont; o.lineH=44; o.lines=wrap(b.text, contentW-BULLET_INDENT, bulletFont); o.gapAfter=16; }
+    else if(b.type==='flag'){ tc.font=tagFont; o.tagW=tc.measureText(b.tag).width+18; o.font=lineFont; o.lineH=42; o.lines=wrap(b.text, contentW-o.tagW, lineFont); o.gapAfter=14; }
+    else { o.font=lineFont; o.lineH=42; o.lines=wrap(b.text, contentW, lineFont); o.gapAfter=12; }
+    o.h=o.gapBefore+o.lines.length*o.lineH+o.gapAfter;
+    return o;
+  });
+
+  var H=PAD;
+  H+=64;   /* brand */
+  H+=8;    /* gap */
+  H+=8;    /* rainbow */
+  H+=32;   /* gap */
+  H+=60;   /* title */
+  H+=24;   /* gap */
+  H+=30;   /* chip */
+  H+=14;   /* gap */
+  H+=1;    /* divider */
+  H+=28;   /* gap */
+  laid.forEach(function(o){ H+=o.h; });
+  H+=16;   /* gap */
+  H+=1;    /* divider */
+  H+=20;   /* gap */
+  H+=28;   /* footer */
+  H+=PAD;
+
+  var canvas=document.createElement('canvas');
+  canvas.width=W; canvas.height=H;
+  var ctx=canvas.getContext('2d');
+
+  ctx.fillStyle=isLight?'#ffffff':'#0b1220';
+  ctx.fillRect(0,0,W,H);
+  ctx.textBaseline='top'; ctx.textAlign='left';
+
+  var cy=PAD;
+  /* Brandmark + rainbow underline */
+  ctx.font=brandFont;
+  ctx.fillStyle=isLight?'#0f172a':'#f1f5f9';
+  ctx.fillText('SectorScope', PAD, cy);
+  var brandTextW=ctx.measureText('SectorScope').width;
+  cy+=64; cy+=8;
+  var segW=(brandTextW*0.55)/5;
+  ['#00c853','#69f0ae','#ffd740','#ff7043','#ff1744'].forEach(function(c,i){ ctx.fillStyle=c; ctx.fillRect(PAD+i*segW, cy, segW, 8); });
+  cy+=8; cy+=32;
+
+  /* Title: symbol + accent bar */
+  ctx.fillStyle=accent;
+  ctx.fillRect(PAD, cy+4, 6, 52);
+  ctx.font=titleFont;
+  ctx.fillStyle=isLight?'#0f172a':'#f1f5f9';
+  ctx.fillText(symbol, PAD+18, cy);
+  cy+=60; cy+=24;
+
+  /* Chip + divider */
+  ctx.font=chipFont;
+  ctx.fillStyle=isLight?'#475569':'#94a3b8';
+  ctx.fillText(chip, PAD, cy);
+  cy+=30; cy+=14;
+  ctx.fillStyle=isLight?'rgba(0,0,0,.10)':'rgba(255,255,255,.10)';
+  ctx.fillRect(PAD, cy, contentW, 1);
+  cy+=1; cy+=28;
+
+  var metaCol=isLight?'#64748b':'#94a3b8';
+  var bodyCol=isLight?'#1e293b':'#cbd5e1';
+  var dotFallback=isLight?'#94a3b8':'#64748b';
+
+  laid.forEach(function(o){
+    var b=o.block;
+    if(o.gapBefore) cy+=o.gapBefore;
+    ctx.font=o.font;
+    if(b.type==='meta'){
+      ctx.fillStyle=metaCol;
+      o.lines.forEach(function(ln){ ctx.fillText(ln, PAD, cy); cy+=o.lineH; });
+    } else if(b.type==='heading'){
+      ctx.fillStyle=accent;
+      o.lines.forEach(function(ln){ ctx.fillText(ln, PAD, cy); cy+=o.lineH; });
+    } else if(b.type==='bullet'){
+      ctx.fillStyle=b.dot||dotFallback;
+      ctx.beginPath(); ctx.arc(PAD+6, cy+16, 5, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle=bodyCol;
+      o.lines.forEach(function(ln){ ctx.fillText(ln, PAD+BULLET_INDENT, cy); cy+=o.lineH; });
+    } else if(b.type==='flag'){
+      var tagCol=/GREEN/.test(b.tag)?'#22c55e':'#ef4444';
+      ctx.font=tagFont; ctx.fillStyle=tagCol;
+      ctx.fillText(b.tag, PAD, cy+3);
+      ctx.font=o.font; ctx.fillStyle=bodyCol;
+      o.lines.forEach(function(ln){ ctx.fillText(ln, PAD+o.tagW, cy); cy+=o.lineH; });
+    } else {
+      ctx.fillStyle=bodyCol;
+      o.lines.forEach(function(ln){ ctx.fillText(ln, PAD, cy); cy+=o.lineH; });
+    }
+    cy+=o.gapAfter;
+  });
+
+  cy+=16;
+  ctx.fillStyle=isLight?'rgba(0,0,0,.10)':'rgba(255,255,255,.10)';
+  ctx.fillRect(PAD, cy, contentW, 1);
+  cy+=1; cy+=20;
+  ctx.font=footerFont;
+  ctx.fillStyle=isLight?'#94a3b8':'#64748b';
+  ctx.textAlign='left';  ctx.fillText('\u2726  Powered by Claude', PAD, cy);
+  ctx.textAlign='right'; ctx.fillText('sectorscope.in', W-PAD, cy);
+
+  var metaLine=(blocks[0]&&blocks[0].type==='meta')?blocks[0].text:'';
+  var kindLabel=isTx?'Earnings Call Summary':'Annual Report Summary';
+  var fname='sectorscope-'+kind+'-'+String(symbol).toLowerCase().replace(/[^a-z0-9]+/g,'-')
+    +'-'+new Date().toISOString().slice(0,10)+'.png';
+
+  canvas.toBlob(async function(blob){
+    if(!blob){ console.error('[summary-share] toBlob returned null'); return; }
+    var file=new File([blob], fname, {type:'image/png'});
+    if(navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+      try{
+        await navigator.share({ files:[file], title:kindLabel+' \u00b7 '+symbol,
+          text:(metaLine||(kindLabel+' for '+symbol))+'\n\nsectorscope.in' });
+        return;
+      }catch(e){ if(e.name==='AbortError') return; console.warn('[summary-share] Web Share failed:', e.message); }
+    }
+    var url=URL.createObjectURL(blob);
+    var a=document.createElement('a'); a.href=url; a.download=fname;
     document.body.appendChild(a); a.click(); document.body.removeChild(a);
     setTimeout(function(){ URL.revokeObjectURL(url); }, 200);
   }, 'image/png');
